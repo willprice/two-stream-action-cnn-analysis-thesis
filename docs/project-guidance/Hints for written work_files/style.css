@@ -1,0 +1,191 @@
+
+/******* NEW STYLES START ******/
+
+/*  This is where the main content of the homepage sits. Using class .cshp as a namespace
+	to protect elements clashing with other/legacy class names. */
+
+/*  Currently defining the width of the .content-container @ 1200px, this can change to any width
+  	and the containing elements should adapt accordingly */
+.cshp.content-container
+{
+	width:1200px; /* IMPORTANT VALUE - CHANGE THIS TO SET WIDTH OF THE CONTENT CHILD ELEMENTS SHOULD SCALE ACCORDINGLY */
+	margin:auto;
+	/* overflow:auto; */
+	margin-bottom:50px;
+	margin-left:-1em;
+	
+}
+
+.cshp.content-container .tiles
+{
+	overflow:auto;
+	list-style-type:none;
+	width:100%;
+	/* margin-top:60px; */
+	margin-left:0em;
+}
+
+.cshp.content-container .tiles .tile
+{
+	width: 30%;
+	height: 230px;
+	display:inline-block;
+	background-color:#999;
+	margin:1.5%;
+	position:relative;
+
+	background-position:center;
+	background-size:cover;
+}
+
+
+.cshp.content-container .tiles .tile.ugd
+{
+	background-image:url('/images/uob_2015/artboard_5.jpg');
+}
+
+.cshp.content-container .tiles .tile.pgd
+{
+	background-image:url('/images/uob_2015/artboard_4.jpg');
+	background-position:right;
+}
+
+.cshp.content-container .tiles .tile.res
+{
+	background-image:url('/images/uob_2015/artboard_0.jpg');
+}
+
+.cshp.content-container .tiles .tile.app
+{
+	background-image:url('/images/uob_2015/artboard_3.jpg');
+}
+
+.cshp.content-container .tiles .tile.prt
+{
+	background-image:url('/images/uob_2015/artboard_6.jpg');
+}
+
+.cshp.content-container .tiles .tile.nae
+{
+	background-image:url('/images/uob_2015/artboard_8.jpg');
+}
+
+.cshp.content-container .tiles .tile div
+{
+	position:absolute;
+	bottom:0px;
+	background-color:black;
+	opacity:0.8;
+	width:100%;
+	/* padding:5px; */
+	text-align: center;
+	text-decoration: none;
+	color:white;
+	font-size:1.3em;
+}
+
+.cshp.content-container .news-events
+{
+	font-size:1.75em;
+	font-weight:bold;
+	display: block;
+	padding-bottom:20px;
+	border-bottom:1px solid #ccc;
+	margin:45px 1.5% 30px 1.5%;
+	font-family: Arial, Helvetica, Verdana, sans-serif;
+}
+
+.cshp.content-container .news {
+    
+    text-align: inherit;
+}
+
+.cshp.content-container .video-container
+{
+	width:63.5%; 
+	margin-right: 1.5%; 
+	float:right;
+	overflow:auto;
+}
+
+.cshp.content-container .video
+{
+	background-color:#333;
+	height:350px;
+	margin-bottom:20px;
+}
+
+.cshp.content-container .video-info
+{
+	margin-top:20px;
+	margin-bottom:30px;
+}
+
+.cshp.content-container .news-item
+{
+	width:30%;
+	margin:0px 1.5% 0px 1.5%;
+	display:inline-block;
+	vertical-align: top;
+}
+
+
+.cshp.content-container .news-item-twitter
+{
+	float:right;
+	width:30%;
+	margin:0px 1.5% 0px 1.5%;
+	display:inline-block;
+	vertical-align: top;
+}
+
+.cshp.content-container .news-item a
+{
+	text-decoration:none;
+	color:black;
+}
+
+.cshp.content-container .news-item h2
+{
+	font-size:1.3em;
+	margin-bottom:25px;
+	margin-top:10px;
+}
+
+/******* NEW STYLES END ******/
+
+
+/* Twitter styles - these can probably be removed */
+
+.twitter-container
+{
+	border-top:1px solid #ddd;
+	margin-bottom:80px;
+	margin-left:30px;
+	margin-right:30px;
+	padding-top:50px;
+	overflow:auto;
+}
+
+.twitter-container .tweets
+{
+	list-style-type: none;
+}
+
+.twitter-container .tweets .tweet
+{
+	float:left;
+	width: 30.5%;
+	margin-right:2.5%;
+	text-align:center;
+	padding-left:5%;
+	padding-right:5%;
+	position:relative;
+	height:125px;
+}
+
+.twitter-container .tweets .tweet img
+{
+	position:absolute;
+	bottom:0px;
+}

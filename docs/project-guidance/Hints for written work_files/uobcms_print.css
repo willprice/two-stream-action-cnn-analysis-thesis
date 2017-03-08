@@ -1,0 +1,58 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* ----- uobcms_print.css ----- */
+@media print {
+body { padding: 0 25px 0 25px; margin: 0px; font-family: Arial, Helvetica, Verdana, sans-serif; }
+
+a { color: #0F35AA }
+
+.uobnav, #maintitle2 .hide,  #breadcrumbs, #uobcms-col1, #deptnav, #deptnavbottom, #uobnavbottom, #breadcrumbs-nonav, .screen { display: none;  visibility: hidden;  } 
+
+/* sets the colour scheme for the header/footer and path to logo. This can be changed for departments */
+#header    {  float: left; width: 100%; border-top: 0px; color: black;  margin-bottom: 10px ; border-bottom: 1px solid #ccc; padding-bottom: 5px }
+#uoblogo a { background-image: none;  width: auto;  float: right;   height: auto ;  padding: 0; color: black; font-size: 130%; text-decoration: none; font-family: Georgia, Times, Arial, Verdana, sans-serif; }
+#footer { line-height: 1.3; clear: both; background-color: white; color: #666666; font-size: 80%; border: 1px solid #ccc; padding: 5px  }
+#footer p { padding: 0; margin: 0;}
+
+/* titles in header */
+.maintitle  { margin-left: 0; font-family: Georgia, Times, Arial, Verdana, sans-serif; padding: 0 ; float: left; width: 70%  }
+.maintitle #title1  { display: block; font-weight: normal; font-size: 135%; margin: 0; padding: 0;  }
+#maintitle2 { padding-top: 10px  }
+
+/* may want to change the colour of second heading if applicable */
+#maintitle2 #title2 { font-size: 80%; text-transform: uppercase; font-weight: normal; color: black; padding-top: 10px; display: block }
+#maintitle2 #title2, .maintitle #title1 {  padding: 0; margin: 0 }
+
+.maintitle a { color: black; text-decoration: none }
+.maintitle a:hover { color: black;  text-decoration:underline; background-color: transparent  }
+
+/* may want to change the colour of second heading if applicable */
+#maintitle2 .title2 { color: black;  }
+.maintitle a { color: black;  }
+
+/* wrapper around content and navigation*/
+#uobcms-wrapper  { background-image: none; padding-top: 5px; padding-left: 0px; clear: both }
+
+/* content */
+#uobcms-content, #uobcms-content-nonav { margin-left: 0px; padding: 0; border-top: 1px solid white; height: 1%; padding: 0 10px 5px 0;  line-height: 1.3; }
+#uobcms-content ul, #uobcms-content-nonav ul {  margin-left: 2em }
+
+/* headings within content area */
+#pagetitle {  margin-top: 3px ;  font-size: 125%; font-weight: normal; color: #B2071C; border-bottom: 1px dashed #ccc; padding: 0 0 2px 0; line-height: 1.3 }
+h1 { font-size: 125%; font-weight: normal; color: #B2071C; }
+h2, h3, h4, h5, h6 { color: #232528; font-size: 105% }
+
+/* news */
+#rightcol {display: none}
+#news-story {margin-right: 0px; background-color: transparent; border: none }
+#news-story h2 {color: #334779; background-color: transparent}
+#quote {width: 40%;   font-size: 140%;  float: right;  border-left: 2px solid #b01c2e;  margin-left: 1em; padding: 1ex 1em;}
+#quote-txt {font-family: "times roman", serif;  font-style: italic; color: #b01c2e; }
+#quotee-txt {font-size: 70%;  color: #000000;  font-style: normal; font-weight: bold;  margin-top: 8px;}
+#news-story img {float:left; padding-right:5px}
+
+}
+
+
+

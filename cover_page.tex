@@ -1,0 +1,50 @@
+\documentclass[12pt,a4paper]{memoir}
+\usepackage{svg}
+\usepackage{datetime}
+
+\newdateformat{monthyeardate}{
+  \monthname[\THEMONTH], \THEYEAR
+}
+
+\begin{memoir}
+  \begin{titlingpage}
+  \centering
+  \includesvg[svgpath=./media/images/, width=0.6\textwidth]{uob-logo}
+  \vspace*{2cm}
+
+  {\huge Feature analysis of Dual Stream Convolutional Neural Networks for
+Egocentric Action Recognition}\\
+
+  \vspace*{1cm}
+  {\LARGE Department of Computer Science}\\
+  \vspace{5mm}
+  {\large \textsc{University of Bristol}}\\
+  \vspace{2cm}
+  \monthyeardate\today
+
+  \end{titlingpage}
+
+
+{\huge Declaration}
+
+\begin{SingleSpace}
+\begin{quote}
+
+\initial{I} declare that the work in this dissertation was carried out in
+accordance with the requirements of the University's Regulations and Code of
+Practice for Bachelors of Science and that is has not been submitted for any
+other academic award. Except where indicated by specific reference in the text,
+the work is the candidate's own work. Work done in collaboration with, or with
+the assistance of others is indicated as such. Any views expressed in the
+dissertation are those of the author.
+
+\vspace{1.5cm}
+\noindent
+\hspace{-0.75cm}\textsc{SIGNED:............................. DATE: ....................}
+\end{quote}
+\end{SingleSpace}
+
+\vspace{1cm}
+Will Price, \monthyeardate\today
+
+\end{document}

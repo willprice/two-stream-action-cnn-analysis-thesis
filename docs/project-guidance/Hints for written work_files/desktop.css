@@ -1,0 +1,33 @@
+@charset "utf-8";
+/* CSS Document */
+
+a.u-m-link ,a.u-m-link:visited {
+padding:.7em 1.65em!important; ; 
+}
+
+.header-container {
+min-height:95px;
+}
+
+.uob-mainnav > li > a.u-m-dropdown-link  {
+padding:.7em 2.7em .7em 1.55em!important; 
+}
+
+.u-m-dropdown-link:after {
+right: 0.75em;
+}
+
+
+.uob-mainnav-2 {
+padding:0;
+}
+
+.list-social-media {
+overflow: auto;
+}
+
+
+
+
+
+

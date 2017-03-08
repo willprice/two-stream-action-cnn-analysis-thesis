@@ -1,0 +1,13 @@
+/* hiding */
+.navtitle {
+visibility: hidden;
+}
+
+.maintitle {
+visibility: visible;
+}
+
+/* making search wider */
+.uob-search-field { 
+width: 17em; 
+background-position: 0.5em center }

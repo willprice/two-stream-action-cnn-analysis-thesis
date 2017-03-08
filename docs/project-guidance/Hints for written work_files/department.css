@@ -1,0 +1,341 @@
+@charset "utf-8";
+/* CSS Document */
+
+/*@import url(/media-library/resources/css/import.css);*/
+
+/*-----SITE MANAGER MIGRATION-----*/
+
+/* header */
+.uob-header-container {
+background: #1C7698;
+}
+
+/* header titles */
+.maintitle #title1,
+.maintitle a,
+.maintitle a:visited,
+.maintitle a:hover,
+.maintitle a:focus,
+#maintitle2 #title2,
+#maintitle2 #title2 a {
+color:white; /* use color: #333; if heading background is light */
+}
+
+.maintitle {
+border-left: 1px solid rgba(255, 255, 255, 0.2); /* do not change */
+}
+
+/* logo */
+/* uncomment if you want the white logo*/
+#uoblogo span {
+background-image: url(/images/uob-logo-white-largest.png);
+}
+
+/* turn on extra highlight and shadow lines */
+.uob-header-container:before,
+.uob-header-container:after {
+display: block;
+visibility: visible;
+}
+
+/* headings */
+#pagetitle,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navtitle,
+.navtitle a,
+.navtitle a:focus,
+.navtitle a:hover {
+color: #383d44
+}
+
+/* social icons */
+.after-navgroup .list-social-media [class*="icon-"]:before {
+background: #383d44;
+border-color: #383d44;
+}
+
+.after-navgroup .list-social-media [class*="icon-"]:hover:before { 
+background: #9278D1;
+border-color: #9278D1;
+}
+
+/* search button in header, un-comment one of these options */
+
+/* if using a dark header background */
+
+input.uob-search-button {
+background:  rgba(255, 255, 255, 0.3);
+border-color:  rgba(255, 255, 255, 0.3);
+color: #fff;
+}
+
+input.uob-search-button:hover,
+input.uob-search-button:focus {
+background:  rgba(255, 255, 255, 0.15);
+border-color:  rgba(255, 255, 255, 0.15);
+color: #fff; 
+}
+
+/* if using a light header background */
+/*
+input.uob-search-button {
+background:  rgba(0, 0, 0, 0.3);
+border-color:  rgba(0, 0, 0, 0.3);
+color: #fff;
+}
+
+input.uob-search-button:hover,
+input.uob-search-button:focus {
+background:  rgba(0, 0, 0, 0.15);
+border-color:  rgba(0, 0, 0, 0.15);
+color: #fff;
+} 
+*/
+
+/* migration fixes */
+.row {
+margin-bottom: 1.5em;
+}
+
+.box-style-one img, .box-style-two img {
+width: 100%;
+}
+
+/*-----END OF SM MIGRATION-----*/
+
+/*-----COLOUR SCHEME-----*/
+
+/* basic data table formatting */
+table {border: none; border-collapse: collapse;}
+table th {
+    background-color: #383d44; 
+    color: #fff; 
+    padding: 0.5em; 
+    text-align: left;
+    border-width: 1px 1px 1px 1px;
+	border-style: solid;
+	border-color: #C6C6C6;
+}
+
+table td {
+	border-width: 1px 1px 1px 1px;
+	border-style: solid;
+	border-color: #C6C6C6;
+	padding: 0.5em;
+	text-align: left;
+}
+table tr:nth-of-type(odd) {background-color: #eaeaea;}
+
+
+/* searchable table additional formatting */
+#uobcms-content .dataTables_filter {float: none; padding: 15px; margin: 0 0 20px 0; width: 450px; text-align: left; background-color: #383d44; color: #fff; font-weight: bold}
+#table-search th {background-color: #383d44; cursor: pointer}
+#table-search tr.odd td {background-color: #fff;}
+#table-search tr.even td {background-color: #fff;}
+
+#uobcms-content #news-article-description p {color: #9278d1;}
+
+/*-----GENERAL STYLES-----*/
+
+/* buttons */
+#uobcms-wrapper a.button-style {
+	background-color: #383d44;
+	color: #fff;
+}
+#uobcms-wrapper a:hover.button-style {
+	background-color: #9278d1;
+}
+
+/*'More info' link (see also Slider version)*/
+#uobcms-wrapper .more-info {
+	font-weight: bold
+}
+
+/* box style three */
+#uobcms-wrapper .box-style-three h2, #uobcms-wrapper .box-style-three h3 {
+	background-color: #383d44;
+	color: #fff;
+}
+/* pushing heading down, eg homepage */
+#uobcms-wrapper .box-style-three.box-no-overlap h2, #uobcms-wrapper .box-style-three.box-no-overlap h3 {
+	margin-top: 0;
+	opacity: 1;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";	
+	filter: alpha(opacity=100); 
+}
+
+/* list menu */
+#uobcms-wrapper ul.list-menu li a {
+	background-color: #efede9;
+}
+#uobcms-wrapper ul.list-menu li a:hover {
+	background-color: #fff;
+}	
+
+/* list without links */
+#uobcms-wrapper ul.list-no-menu {
+margin-top: 0px;
+padding-bottom: 4px;
+margin-left: 0;
+}
+#uobcms-wrapper ul.list-no-menu li {
+margin-left: 0;
+list-style: none;
+list-style-image: none;
+font-size: 90%;
+
+padding-bottom: 6px;
+margin-top: 6px;
+border-bottom: 1px dashed #ccc;
+}
+
+/*-----HOMEPAGE-----*/
+
+/* What our students think */
+
+img.quote-img {
+	float: right;
+	margin: 0 0 10px 10px;
+        width: 30%;
+}
+blockquote.quote {
+	margin: 0;
+
+}
+p.person {
+	font-weight: normal;
+	font-size: 14px;
+}
+
+.box-style-one p {
+	font-size: 14px;
+}
+
+/*-----PROGRAMME PAGES-----*/
+
+/* fixed image with text block */
+.image-with-text-block {
+	position: relative;
+    margin: 10px 0 15px 0;
+    width: 760px;
+    height: 236px;
+}
+.image-with-text-block img {
+	border: 0;
+    width: 500px;
+    height: 236px;
+}
+.image-with-text-block .text-block {
+	padding: 0 20px 10px 20px;
+    width: 220px;
+    height: 226px;
+    position: absolute;
+    left: 500px;
+    top: 0;
+    background-color: #9278d1; 
+}
+.image-with-text-block h1 {
+	font-family: "Times New Roman", Times, serif;
+    color: #FFF;
+    font-size: 140%;
+    line-height: 1.2;
+    margin: 0;
+    padding: 20px 0 0 0;
+}
+.image-with-text-block p {
+	color: #FFF;
+    font-size: 95%;
+}
+
+/* CELFS box style */
+
+.box-style-celfs h2 {font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 120%;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 6px 0;                   
+    border-bottom: 2px solid #D5D4C3;
+    color: #268388;
+}
+.box-style-celfs ul {
+	margin: 0; 
+	padding: 0;
+	list-style-type: none;
+	list-style-image: none;
+    font-size: 90%!important;
+}
+.box-style-celfs li {
+	margin: 0;
+	list-style-type: none;
+	list-style-image: none;
+    border-bottom: 1px solid #D5D4C3;
+}
+.box-style-celfs li a {
+	display: block;
+	zoom: 1;
+	padding: 0.45em 0 0.5em 0;
+	text-decoration: none;
+	background: none;
+	color: #333!important;
+}
+.box-style-celfs li a:hover {
+	background: #EAE9DB;
+}
+.box-style-celfs li a strong {
+	color: #494844;
+}
+
+/* essential info icons on programme pages */
+#registration-link a {background: #F1F0E4 url('../images/registration-link.gif') left 4px no-repeat;                
+                      padding-left: 40px;
+}
+#registration-link a:hover, #registration-link a.active {background-position: left -75px;
+}
+#units-link a {background: #F1F0E4 url('../images/units-link.gif') left 6px no-repeat;
+               padding-left: 40px;
+}
+#units-link a:hover, #units-link a.active {background-position: left -74px;
+}
+#timetables-link a {background: #F1F0E4 url('../images/timetables-link.gif') left 5px no-repeat;
+                    padding-left: 40px;
+}
+#timetables-link a:hover, #timetables-link a.active {background-position: left -75px;
+}
+#fees-link a {background: #F1F0E4 url('../images/fees-link.gif') left 6px no-repeat;                  
+              padding-left: 40px;
+}
+#fees-link a:hover, #fees-link a.active {background-position: left -74px;
+}
+#entry-link a {background: #F1F0E4 url('../images/entry-link.gif') left 5px no-repeat;
+               padding-left: 40px;
+}
+#entry-link a:hover, #entry-link a.active {background-position: left -74px;
+}
+
+
+#This is a temporary hack to align menus and content in admissions pages
+#please feel free to refactor to somewhere more appropiate
+
+
+.admissions-menu
+{
+display:inline;
+}
+
+.admissions-menu.left
+{
+float:left;
+width:25%;
+}
+
+.admissions-menu.right
+{
+float:right;
+width:70%;
+
+}

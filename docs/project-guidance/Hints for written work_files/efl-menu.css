@@ -1,0 +1,43 @@
+/*--------EFL DROP BOX STYLE--------*/
+li.celfs-drop {margin: 0; 
+	       padding: 0;
+                   list-style-type: none;
+	       list-style-image: none;
+                   border-bottom: 1px solid #D5D4C3;
+}
+li.celfs-drop a {display: block;
+		 zoom: 1;
+		 padding: 0.45em 0 0.5em 0;
+		 text-decoration: none;
+		 background-color: #F1F0E4;;
+		 color: #333;
+}
+li.celfs-drop a:hover {background-color: #F1F0E4;
+}
+li.celfs-drop a.active {background-color: #F1F0E4;
+}
+li.celfs-drop a.active strong {color: #268388;
+}
+
+/*--------CONTENT SPACING--------*/
+div.acitem a {display: inline;
+              text-decoration: underline;
+              padding: 0!important;
+              color: #268388!important;
+              background: none!important;
+}
+div.acitem a:hover {background: none;
+                    text-decoration: none;
+}
+div.acitem p {margin: 0;
+              padding: 0.45em 0 0.5em 40px;
+}
+div.acitem ul {padding: 0.45em 0 0.5em 56px!important;
+               font-size: 100%!important;
+}
+div.acitem ul li {list-style-image: url(cms../images/content-bullet-sub.gif);
+}
+div.acitem ul li {border-bottom: none;
+}
+div.acitem {margin-bottom: 0.1em;
+}

@@ -1,0 +1,359 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/* Box style one and box style two combined styles */
+
+.box-style-one h2, .box-style-two h2, .box-style-one h3, .box-style-two h3, .box-style-one h4, .box-style-two h4 { 
+		border-bottom: 1px solid #ccc; /* this colour can be changed to suit your colour scheme but please keep it light and subtle */
+		padding: 0 0 5px 0;
+		margin: 0 0 0.5em 0; /* can be adjusted if necessary */
+		/*font-family: Georgia, "Times New Roman", Times, serif; */
+		font-family: Arial;
+		font-weight: normal!important;
+		font-size: 10%; /* this font size can be tweaked slightly if necessary depending on your layout */
+		/* color: #2858bb;  colour can be altered to suit your colourscheme, make sure you adjust linked heading colour below too */ 
+		}
+.box-style-one h2 a, .box-style-two h2 a, .box-style-one h3 a, .box-style-two h3 a, .box-style-one h4 a, .box-style-two h4 a   {
+		/* color: #2858bb;  colour can be altered */
+		text-decoration: none;
+ }
+.box-style-one h2 a:hover, .box-style-two h2 a:hover, .box-style-one h3 a:hover, .box-style-two h3 a:hover, .box-style-one h4 a:hover, .box-style-two h4 a:hover {
+		/* color: #2858bb; colour can be altered */
+		text-decoration: underline;
+ }
+ 
+		
+/* Box style two  - useful for index type pages where you have lots of groups of links in categories. Use a image underneath the heading to illustrate the content */
+.box-style-two .list-menu { 
+ 		margin: -1px 0 0 0; /* to move list up */ 
+		}
+		
+
+/* Box style three - a box with image and heading overlayed using background transparency */
+.box-style-three h2, .box-style-three h3, .box-style-three h4 { 
+		padding: 0.2em 0 0.2em 10px;
+		line-height: 1.5em;
+		margin: -1.9em /* pulls heading up one line, line-height + padding. won't work if heading is on 2 lines*/ 0 0 0; 
+		font-family: Arial;
+		font-weight: normal!important;
+		/*font-family: Georgia, "Times New Roman", Times, serif; */
+		font-size: 120%; /* this font size can be tweaked slightly if necessary depending on your layout */
+		color: white; 
+		background: #333333;
+		position: relative /* so z-index can be set */;
+		z-index: 1 /* to put heading on top of image */;
+		opacity: .85;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";	
+		filter: alpha(opacity=85); 
+		text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0; /* optional */
+		}
+		
+.box-style-three h2 a, .box-style-three h3 a, .box-style-three h4 a { 
+		background: #333333;
+		text-decoration: none; 
+		color: white; 
+		display: block;
+		}
+.box-style-three h2 a:hover, .box-style-three h3 a:hover, .box-style-three h4 a:hover { 
+		background: #333333;
+		text-decoration: none; 
+		color: white; 
+		}
+.box-style-three p { font-size: 90%; line-height: 1.4 }
+.box-style-three .box-border { 		
+		border: 1px solid #ccc; 	
+		}
+.box-style-three .box-border img { 
+		border: 0;
+		}
+.box-style-three .box-border p { margin: 1em 10px }
+.box-style-three .box-border ul.list-menu { margin: 0; border-bottom: 0; border-top: 0; }
+.box-style-three ul.list-menu { 
+ 		margin: -1px 0 0 0!important; /* to move list up */ 
+		}
+
+/* optional curved bottom corners for box-border. Not suitable for boxes with just list-menus in them. */
+.box-border-curved {
+		-webkit-border-radius: 7px;
+		-moz-border-radius: 7px; 
+		border-radius: 7px;	 	
+		}
+.box-bottom-border-curved {
+		-webkit-border-bottom-right-radius: 7px;
+		-moz-border-radius-bottomright: 7px; 
+		border-bottom-right-radius: 7px;
+		-webkit-border-bottom-left-radius: 7px;
+		-moz-border-radius-bottomleft: 7px; 
+		border-bottom-left-radius: 7px; 	 	
+		}
+
+
+
+/* Box style four - image with heading overlayed */
+.box-style-four {  
+	position: relative; 
+	}
+.box-style-four img {  
+	z-index: 1; 
+	position: relative; 
+	border: 1px solid #ccc 
+	}
+
+.box-style-four h2, .box-style-four h3, .box-style-four h4 { 		
+		margin: 0; 
+		padding: 0;		
+		line-height: 1.5em;
+		font-family: Arial;
+		font-weight: normal!important;
+		font-size: 110%; /* this font size can be tweaked slightly if necessary depending on your layout */
+		 }
+.box-style-four h2 a, .box-style-four h3 a, .box-style-four h4 a {
+		display: block;
+		margin: 0; 
+		padding: 0;
+		text-decoration: none;
+		height: 173px; 
+		width: 173px;
+		z-index: 10;
+		position: relative;
+		border: 1px solid #ccc;		
+		}
+
+.box-style-four h2 a span, .box-style-four h3 a span, .box-style-four h4 a span {
+		width: 153px;  
+		display: block;
+		color: white; 	
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		z-index: 15;			
+		text-decoration: none;
+		padding: 7px 10px 7px 10px;
+		opacity: .90;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";	
+		filter: alpha(opacity=90); 	
+		}
+
+.box-style-four h2 a:hover span, .box-style-four h3 a:hover span, .box-style-four h4 a:hover span {		
+		text-decoration: none;  		
+		opacity: 1.00;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";	
+		filter: alpha(opacity=100); 		
+		}
+		
+.list-menu { 
+ 		margin: 0 0 0 0; 
+		padding: 0;
+		border-bottom: 1px solid #ccc; /* colour can be altered */	
+		font-size: 90%;
+		}
+#uobcms-content .list-menu li, #uobcms-content-nonav .list-menu li { 
+ 		margin: 0; 
+		padding: 0;
+		list-style-type: none;
+		list-style-image: none;	
+		border-top: 1px solid #ccc; /* colour can be altered */ 	
+				}
+#uobcms-content .list-menu li a, #uobcms-content-nonav .list-menu li a { 
+ 		display: block;
+		zoom:1;
+		padding: 0.4em 10px;
+		text-decoration: none;
+		background: #eee; /* colour can be altered. Background image is off canvas */ 
+		color: #333;	/* colour can be altered */ 
+		}
+#uobcms-content .list-menu li a:hover, #uobcms-content-nonav .list-menu li a:hover { 
+ 		background: #dbdada;	/* colour can be altered */ 
+		color: #333;	/* colour can be altered */ 
+		}
+
+
+/* DEFAULT BUTTON STYLE */
+/* This can be used to style an important link so that it stands out on the page. Useful for when you have a call to action. Apply to an <a> tag  */
+/* By default has curved corners - won't work in old IE */
+/* Use "button-style-intranet" when linking to a secure area*/
+#uobcms-content .button-style, #uobcms-content-nonav .button-style, .button-style, #uobcms-content .button-style-intranet, #uobcms-content-nonav .button-style-intranet, .button-style-intranet { 
+		display: block; 
+		padding: 0.5em 33px /* to clear arrow */ 0.5em 0.5em; 
+		/*color: white  can be altered */; 
+		font-weight: bold; 
+		text-decoration: none;
+		-webkit-border-radius: 7px; 
+		-moz-border-radius: 7px; 
+		border-radius: 7px;
+		/* text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;  optional */
+		}
+#uobcms-content .button-style, #uobcms-content-nonav .button-style, .button-style {
+		/* background colours to be specified in local CSS */
+		background: url(http://www.bris.ac.uk/cmsimages/button-arrow.png) no-repeat right ; 		
+		}
+#uobcms-content .button-style-intranet, #uobcms-content-nonav .button-style-intranet, .button-style-intranet {
+		/* background colours to be specified in local CSS */
+		background: url(http://www.bris.ac.uk/cmsimages/button-intranet.png) no-repeat right ; 		
+		}		
+#uobcms-content .button-style:hover, #uobcms-content-nonav .button-style:hover, .button-style:hover, #uobcms-content .button-style:focus, #uobcms-content-nonav .button-style:focus, .button-style:focus { 
+		 background-image: url(http://www.bris.ac.uk/cmsimages/button-arrow.png) no-repeat right center /* can be altered, but generally use a darker shade of the original colour */; 
+		/*color: white  can be altered */; 
+		text-decoration: none;		
+		/* -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		-webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);  	*/
+		}
+#uobcms-content .button-style-intranet:hover, #uobcms-content-nonav .button-style-intranet:hover, .button-style-intranet:hover, #uobcms-content .button-style-intranet:focus, #uobcms-content-nonav .button-style-intranet:focus, .button-style-intranet:focus { 
+		 background-image: url(http://www.bris.ac.uk/cmsimages/button-intranet.png) no-repeat right center /* can be altered, but generally use a darker shade of the original colour */; 
+		/*color: white  can be altered */; 
+		text-decoration: none;		
+		/* -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		-webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);  	*/
+		}		
+		
+	
+
+
+
+
+
+
+/*General landing page styling*/
+
+/* #main-column = primary content area; #right-column = right-hand sidebar */
+
+#uobcms-wrapper #main-column h3 {border: none; padding: 0}
+#uobcms-wrapper #main-column h3 {color: #999}
+#right-column .box-style-one h2 {margin-top: 5px; padding-bottom: 1px; color: #999}
+#right-column .box-style-one, #right-column .box-style-three {margin-bottom: 25px}
+#right-column p, #right-column li {font-size: 0.85em}
+#right-column .list-menu li {font-size: 1em}
+
+/*Image grid - for use when using list with images, eg. Research themes */
+#main-column ul.image-grid {list-style: none;  list-style-image: none; font-size: 0.9em}
+#main-column ul.image-grid li {margin-left: 0; overflow: auto; margin-bottom: 10px; font-size: 0.9em; }
+#main-column ul.image-grid li span {font-weight: bold; font-size: 1.1em;}
+#main-column ul.image-grid li img {float: left; margin-right: 10px;  border: 1px solid #ccc}
+
+/* image captions */
+p.image-caption, #right-column p.image-caption {font-size: 80%; background:#dfdfdf; padding: 3px 5px; font-weight: bold; color: #5f5f5f; margin-top: 3px} 
+
+
+/*  zRSSfeed styling */
+.rssFeed {
+	width: 240px;
+}
+
+.rssFeed a {
+	text-decoration: none;
+}
+
+.rssFeed a:hover {
+	text-decoration: underline;
+}
+
+.rssFeed .rssHeader { 
+	margin-top: 10px;
+}
+
+.rssFeed .rssHeader a {
+	background: none repeat scroll 0 0 #333333;
+    color: white;
+    display: block;
+    text-decoration: none;
+    font-family: Arial;
+    font-size: 120%;
+    line-height: 1.5em;
+    margin: 0 0;
+    opacity: 0.85;
+    padding: 0.2em 0 0 10px;
+    position: relative;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.rssFeed .rssHeader a {
+	opacity: 1;
+}
+
+.rssFeed .rssBody { border: 1px solid #999; }
+
+.rssBody ul, .rssBody ul li { 
+	list-style: none; 
+	list-style-type: none; 
+	list-style-image: none 
+}
+
+.rssBody ul, .rssRow, .rssRow h4, .rssRow p {
+	margin: 0;
+	padding: 0;
+} 
+
+.rssRow { padding: 10px 0.8em; }
+
+.rssFeed .rssRow.even {
+    background: #f9f9f9;
+    border-top: solid 1px #efefef;
+    border-bottom: solid 1px #efefef;
+}
+
+/* date */
+.rssRow div {
+	margin: 0.2em 0 0.4em 0;
+	color: #666;
+	font-size: 80%;
+}
+
+.rssRow p {
+	font-size: 90%;
+}
+
+/*Definition lists*/
+dt {margin: 0.5em 0 0 0; font-weight: bold}
+dd {display: list-item; list-style-image: url(http://www.bristol.ac.uk/cmsimages/content-bullet.gif) }
+
+/* added by Ben J, pre-2013 migration changes 
+#uobcms-content ul.list-menu li:before, #uobcms-content-nonav ul.list-menu li:before { 
+content: none!important;
+text-indent: 0!important;	
+font-size: 20px!important;
+}*/
+
+
+
+
+/* temporary changes to fix imgs in site manager pages */
+.page-with-nav [class*="box-style"] h1 + a img, 
+.page-with-nav [class*="box-style"] h2 + a img, 
+.page-with-nav [class*="box-style"] h3 + a img,
+.page-with-nav [class*="box-style"] h4 + a img,
+.page-with-nav [class*="box-style"] h5 + a img,
+.page-with-nav [class*="box-style"] h6 + a img,
+.page-with-nav .box-border > a img, 
+.page-with-nav .box-border > a img, 
+.page-with-nav .box-border > a img,
+.page-with-nav .box-border > a img,
+.page-with-nav .box-border > a img,
+.page-with-nav .box-border > a img,
+.page-with-nav .box-border > img, 
+.page-with-nav .box-border > img, 
+.page-with-nav .box-border > img,
+.page-with-nav .box-border > img,
+.page-with-nav .box-border > img,
+.page-with-nav .box-border > img { 
+width: 100%!important;
+display: block;
+		}
+
+.page-with-nav .box-style-three h2, 
+.page-with-nav .box-style-three h3, 
+.page-with-nav .box-style-three h4 { 
+	margin: -1.85em 0 0 0; 
+}
+
+
+
+
+
+
+
+
+
+
