@@ -8,13 +8,14 @@ THESIS_PDF:=thesis.pdf
 POSTER_PDF:=poster.pdf
 INCLUDE_PATHS:=fragments\
 			  diagrams
-BUILD_DIR:=build
 SVG_IMAGES := $(wildcard media/images/*.svg)
 IMAGES := $(SVG_IMAGES:.svg=.png)
 TIKZ_SRC := $(shell find diagrams -type f -name '*.tikz')
+
+BUILD_DIR:=build
 TIKZ_DEST := $(patsubst %.tikz,$(BUILD_DIR)/%.png,$(TIKZ_SRC))
 
-MARKDOWN_EXTENSIONS=link_attributes
+MARKDOWN_EXTENSIONS=link_attributes footnotes definition_lists
 PANDOC_OPTIONS:=--latex-engine=xelatex\
 			   --filter=pandoc-crossref\
 			   --filter=pandoc-citeproc --csl computer.csl\
@@ -45,10 +46,14 @@ GPP_OPTIONS:=$(foreach fragment,$(INCLUDE_PATHS), -I$(fragment)) \
          $(GPP_QUOTE)
 
 
+# See http://gnu-make.2324884.n4.nabble.com/concatenate-words-with-no-space-td9268.html
+# for details on how this trick for concatenating strings without spaces works
+_SPACE := #empty var
+SPACE := $(_SPACE) $(_SPACE)
 all: $(BUILD_DIR)/$(THESIS_PDF) $(BUILD_DIR)/$(POSTER_PDF) $(TIKZ_DEST) $(IMAGES) $(BUILD_DIR)
 
 $(BUILD_DIR):
-	mkdir -p $@
+	mkdir -p "$@"
 
 $(BUILD_DIR)/%.pdf: %.md $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
 	$(GPP) -O $(BUILD_DIR)/$<.pp\
@@ -59,7 +64,7 @@ $(BUILD_DIR)/%.pdf: %.md $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
 		$(PANDOC_OPTIONS)\
 		$(BUILD_DIR)/$<.pp\
 		--standalone\
-		--from=markdown$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext))\
+		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
 		--to=latex\
 		--output=$@\
 
