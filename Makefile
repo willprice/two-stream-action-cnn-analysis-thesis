@@ -4,7 +4,7 @@ GPP:=gpp
 INKSCAPE:=inkscape
 
 BIBLIOGRAPHY:=$(HOME)/references.bib
-THESIS_PDF:=thesis.pdf
+THESIS:=thesis
 POSTER_PDF:=poster.pdf
 INCLUDE_PATHS:=fragments\
 			  diagrams
@@ -50,19 +50,29 @@ GPP_OPTIONS:=$(foreach fragment,$(INCLUDE_PATHS), -I$(fragment)) \
 # for details on how this trick for concatenating strings without spaces works
 _SPACE := #empty var
 SPACE := $(_SPACE) $(_SPACE)
-all: $(BUILD_DIR)/$(THESIS_PDF) $(BUILD_DIR)/$(POSTER_PDF) $(TIKZ_DEST) $(IMAGES) $(BUILD_DIR)
+all: $(BUILD_DIR)/$(THESIS).pdf $(BUILD_DIR)/$(THESIS).tex $(BUILD_DIR)/$(POSTER_PDF) $(TIKZ_DEST) $(IMAGES) $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(BUILD_DIR)/%.pdf: %.md $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
-	$(GPP) -O $(BUILD_DIR)/$<.pp\
+$(BUILD_DIR)/%.md.pp: %.md
+	$(GPP) -O "$@"\
 		$(GPP_OPTIONS) \
 		$< >/dev/null
 
+$(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
 	$(PANDOC) \
 		$(PANDOC_OPTIONS)\
-		$(BUILD_DIR)/$<.pp\
+		$<\
+		--standalone\
+		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
+		--to=latex\
+		--output=$@\
+
+$(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
+	$(PANDOC) \
+		$(PANDOC_OPTIONS)\
+		$<\
 		--standalone\
 		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
 		--to=latex\
@@ -81,7 +91,7 @@ $(BUILD_DIR)/%.png: %.tikz $(BUILD_DIR)
 		$<
 
 $(BUILD_DIR)/$(POSTER_PDF): poster.tex $(IMAGES) $(TIKZ_DEST)
-	mkdir -p "$(dir $@)"
-	$(LATEX) -halt-on-error -shell-escape "$(notdir $(basename $@)).tex"
+	$(LATEX) -halt-on-error -shell-escape "$<"
+	mv $(POSTER_PDF) "$@"
 
 .PHONY: all
