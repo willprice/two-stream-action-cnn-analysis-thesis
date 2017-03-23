@@ -261,7 +261,7 @@ decision threshold.
 
 The perceptron learns a linear classifier, which is only of use if the data is
 linearly separable, if it isn't then we have to consider alternatives. Minsky
-and Papert used the following example ([@fig:xor])in
+and Papert used the following example ([@fig:xor]) in
 Perceptrons[@minsky1969_Perceptrons] to demonstrate the limitations of a single
 perceptron, the figure shows the function XOR where the red
 points cannot be separated from the green points with a linear boundary, so a
@@ -371,13 +371,28 @@ known as *recurrent networks*).
 
 ## Convolutional neural networks (CNNs) {#sec:background:cnns}
 
-CNNs are a restricted form of ANN assuming that the inputs to the network are
-tensors allowing optimisation of the architecture to increase the tractability
-of training by decreasing the number of parameters through parameter sharing
-without decreasing the size of the network.
+CNNs, a specialised form of ANNs, were first proposed in
+[@fukushima1980_Neocognitronselforganizingneural] as a network architecture
+called the *neocognitron* inspired by the research of Hubel and Wiesel on the
+visual cortex[@hubel1959_Receptivefieldssingle]. Hubel and Wiesel found that the
+neurons in the visual cortex of a cat's brain responded to patterns in regions
+in the cats field of view, they termed the region causing an excitation of a
+neuron as the *receptive field* of that neuron. Furthermore, they discovered that
+neurons were arranged in such a way that neurons that had similar receptive
+fields were also physically co-located in the cortex. Fukushima
+\etal{} designed the connectivity of the neurons in the neocognitron to model
+the connectivity of the neurons in the visual cortex such that each neuron was
+connected to neurons in the previous layer to form a receptive field. This
+architecture is very similar to those currently in use.
 
-<##todo Rethink the wording of this, its not that clear>
-<##todo Add info origin: neocognitron, visual cortex, hubel wiesel>
+Building on the work of the neocognitron, modern CNN models introduce one
+substantial improvement: rather than learning parameters for each individual
+neuron in a layer, we instead assume that there exist neurons that fire in
+response to a class of patterns in the input for all receptive fields, this
+allows us to learn only a single set of weights to detect such patterns and
+effectively construct the neurons for each receptive field at runtime. To
+implement this, convolutional filters are learnt instead of individual neuronal
+weights which are then convolved with the input tensor to produce the output.
 
 The restricted architectures of CNNs facilitates a new view of these networks
 compared to ANNs; the overarching theme is to raise the level of abstraction
