@@ -85,11 +85,12 @@ header-includes:
 <##define todo|\textcolor{green}{TODO: #1}\newline>
 # Introduction {#sec:introduction}
 
-Action recognition refers to the task of inferring the actions of an actor or
-actors in an environment. We further constrain the definition to infer actions
+Action Recognition in Computer Vision refers approaches that aim to infer the
+action or actions of an actor or actors using visual observations, either images
+or videos. We further constrain the definition to infer actions
 from video sequences (sequences of images captured by video cameras at regular
 intervals). Action recognition from video has many
-applications[@ranasinghe2016_reviewapplicationsactivity] such as detecting
+critical applications[@ranasinghe2016_reviewapplicationsactivity] such as detecting
 suspicious behaviours of travellers in airports from CCTV footage, recognising
 the fall of an elderly person who lives alone, and ensuring the safety of the
 operator of a machine by automatically stopping the machine in case of an
@@ -110,19 +111,20 @@ we would be able to provide an explanation based on the features from the root
 of the tree to the branch, but there's no obvious analogous technique to
 understand a CNN's prediction.
 
-There have been efforts made to develop techniques to help understand the
-features learnt by CNNs to aid debugging, but most of these have been developed
-and applied to object detection networks, there has been little research to see
+There are efforts made to develop techniques to help understand the
+features learnt by CNNs to aid debugging, but most of these were developed
+and applied to object detection networks, there is little research to see
 whether the techniques generalise to networks trained for other tasks such as
 action recognition.
 
-This thesis investigates the applicability of visualisation techniques for CNNs
-trained for action recognition. A method for determining the importance of
-regions in an input frame to a network called
-Excitation Backpropagation (EBP)[@zhang2016_TopdownNeuralAttention] is utilised
-and extended to produce excitation maps (heat maps indicating the regions of
-importance to exciting a neuron in the network) across sequences of frames
-from a video sequence.
+This thesis investigates the applicability of visualisation techniques for two
+stream CNNs[@simonyan2014_TwoStreamConvolutionalNetworks] trained for action
+recognition. There are other architectures for action recognition, but they are
+out of the scope of this investigation. A method for determining the importance
+of regions in an input frame to a network called Excitation Backpropagation
+(EBP)[@zhang2016_TopdownNeuralAttention] is utilised and extended to produce
+excitation maps (heat maps indicating the regions of importance to exciting a
+neuron in the network) across sequences of frames from a video sequence.
 
 # Background {#sec:background}
 
@@ -134,9 +136,9 @@ networks.
 
 ## Artificial neural networks (ANNs) {#sec:background:ann}
 
-Biology has been a rich source of inspiration for techniques in computer
-science. Artificial neural networks (ANNs) are strand of biologically inspired
-computation models based on the learning and communication processes in the
+Biology is a rich source of inspiration for techniques in computer
+science. Artificial neural networks (ANNs) form a strand of biologically inspired
+computational models based on the learning and communication processes in the
 brain. To understand neural networks, we will take each concept from the bottom
 up step by step until we arrive at the modern model of an artificial neural network.
 First we shall examine *artificial neurons*, of which there are several models,
@@ -150,9 +152,6 @@ constrained ANN architecture encoding certain assumptions about the input to
 make training these models on modern computers a viable proposition.
 
 ### The McCulloch-Pitt's neuron
-
-<##check this doesn't really add much, probably remove it, it was just fun to
-learn about>
 
 The McCulloch-Pitt's neuron is mostly a historical curiosity, and if the
 evolution of artificial neural networks doesn't interest you skip ahead to the
@@ -187,16 +186,15 @@ classifier with a linear decision boundary. First we'll step through each term
 in this definition before presenting the perceptron:
 
 * *learning* is concerned with the problem of constructing a function $f : X
-  \rightarrow Y$, where $X$ denotes the feature space (i.e. the vector space of
-  data that we want to predict a class from), $Y$ denotes the label space (i.e.
-  the space in which the desired result resides).
-* *feature space*, the domain of the predictive function $f$. The data available
-  to be used as input to the model influences the choice of domain, e.g. an
-  image of size $W \times H$ could be analysed for edges and those used as the
-  feature vector, or every pixel could be used in $W \times H$ long vector as
-  input to the predictive function, amongst many other possibilities.
-* *label space*, the co-domain of the predictive function $f$. This is the space
-  of answers the function will output.
+  \rightarrow Y$, where $X$ denotes the feature space, $Y$ denotes the label space.
+* *feature space*, the vector space of data we want to predict a class from
+  (domain of $f$). The data available to be used as input to the model
+  influences the choice of domain, e.g. an image of size $W \times H$ could be
+  analysed for edges and those used as the feature vector, or every pixel could
+  be used in $W \times H$ long vector as input to the predictive function,
+  amongst many other possibilities.
+* *label space*, the vector space in which the desired result resides (co-domain
+  of $f$).
 * *supervised learning* uses a labelled training set $X_{\text{train}} =
   \{ (\bm{x}_0, y_0), \ldots, (\bm{x}_n, y_n) \}$ to learn $f$ where each instance
   in $X_{\text{train}}$ is used.
@@ -226,10 +224,6 @@ The perceptron learning algorithm constructs a weight vector $\bm{w}$ from a set
 of labelled training examples $\mathscr{X} = \{ (\bm{x}_0, y_0), \ldots,
 (\bm{x}_n, y_n) \}$ where $\bm{x}_i$ is the feature representation of the $i$-th
 training example, and $y_i$ is the true label of the example.
-
-<##note Perhaps add a concrete problem to motivate the example, like predicting
-whether a business will succeed or fail given the number of employees, seed
-funding etc>
 
 The following algorithm (Algorithm \ref{alg:perceptron-training}) is used to
 learn a weight vector $\bm{w}$ that correctly classifies all examples on the
@@ -266,15 +260,15 @@ product between $\bm{w}$ and $\bm{x}_i y_i$ which is more likely to pass the
 decision threshold.
 
 The perceptron learns a linear classifier, which is only of use if the data is
-linearly separable, if it isn't then we have to consider alternatives. Consider
-the training set in [@fig:xor], can the red points be separated from the green
-points with a linear boundary?
+linearly separable, if it isn't then we have to consider alternatives. Minsky
+and Papert used the following example ([@fig:xor])in
+Perceptrons[@minsky1969_Perceptrons] to demonstrate the limitations of a single
+perceptron, the figure shows the function XOR where the red
+points cannot be separated from the green points with a linear boundary, so a
+boundary like that shown in [@fig:xor-non-linear-decision-boundary] is needed to
+separate the data.
 
 ![XOR](media/images/xor.pdf){#fig:xor}
-
-The data points in [@fig:xor] are from the function XOR, and can't be linearly
-separated, a non linear decision boundary like that in
-[@fig:xor-non-linear-decision-boundary] is needed.
 
 ![XOR with non linear decision boundary](media/images/xor-boundaries.pdf){#fig:xor-non-linear-decision-boundary}
 
@@ -282,7 +276,7 @@ Perceptrons can be used to learn a non linear decision boundary in two ways. The
 first technique is to replace the dot product with a *kernel*, a function with
 properties similar to that of the dot product. Use of a kernel as a replacement
 for the dot product can be thought of as a transformation of the instances into
-a new space in which a linear decision boundary in is learnt. A kernel is chosen
+a new space in which a linear decision boundary is learnt. A kernel is chosen
 such that it is likely that the data will be linearly separable in this new space.
 Alternatively, the other technique is to stack perceptrons so that the output of
 one is used as (one of) the input(s) to another, the network formed is called a
@@ -290,28 +284,67 @@ one is used as (one of) the input(s) to another, the network formed is called a
 
 When using MLPs we have to adapt the perceptron's output to be followed by a
 non-linear transformation $\phi$; the reason for this is that if we otherwise
-stack perceptrons without modification we'd be combining linear transformations
-of linear transformations resulting in a linear transformation, i.e. MLPs
-without non linearity applied to the output of each unit are no more expressive
-than a single perceptron, the complexity of the decision boundaries learnt by
-MLPs is due to the successive application of linear transformations and non
-linearities.
+stack perceptrons without modification the network would compute nested linear
+transformations which can be represented as a single linear transformation, i.e.
+MLPs without non linearity applied to the output of each unit are no more
+expressive than a single perceptron; the complexity of the decision boundaries
+learnt by MLPs is due to the successive application of linear transformations
+and non linearities.
+
+A small multi layer perceptron network is given in [@fig:ann-example]. Each
+circle represents the body of a perceptron in which the weighted sum of its
+inputs are calculated and then passed through an activation function. Each edge
+between perceptrons indicates the connectivity and weight between them.
+For example, $\neuron{1}{0}$ has two incoming connections from $\neuron{0}{0}$
+with a weight $+1$ and $\neuron{0}{1}$ with a weight $0$, it will output the
+value ${\phi\left(1 \cdot \neuron{0}{0} + 0 \cdot \neuron{0}{1})\right)}$
+
+![Example Multilayer Perceptron with a single hidden layer](media/images/ann-example.pdf){#fig:ann-example}
+
+When producing any predictive model it is important to be able to evaluate it to
+see whether it performs sufficiently well for its use case. There are many
+measures to evaluate models including (but not limited to): accuracy, precision,
+recall, and the $F_1$ score; picking a measure depends on the class ratio of the
+data you expect to run your model on and the cost ratio that defines how costly
+it is to mistake one class for another. Let's assume we've chosen accuracy to
+evaluate a perceptron we've just trained, to evaluate it we could see how it
+performs on the training data however since we know that the perceptron
+perfectly splits the training data into two classes otherwise the algorithm
+doesn't terminate the training accuracy will always be 100%, which makes this a
+useless test, instead we need a new dataset (perhaps some data kept back from
+the training set) on which the model hasn't been trained, referred to as the
+*cross validation dataset*, on which we evaluate the performance.
+
+<##check Do you want me to add more about cross-fold validation etc?>
+
+<##todo Talk about two feed forward methods>
+
+A forward pass of the network in [@fig:ann-example] is computed using the
+activation function ${\phi(x) = \max(x, 0)}$ in [@fig:ann-forward]. We traverse
+the graph from left to right, computing the values of every perceptron in each
+layer before moving to the next layer. The edges are relabelled with the product
+of the weight and input to the edge, the diamonds below each perceptron show the
+sum of the weighted inputs (the sum of the values labelled on the edges) and the
+diamonds above show the output value of the perceptron after passing the
+weighted sum of inputs through the activation function $\phi$.
+
+![Forward propagation of the example ANN](media/images/ann-forward.pdf){#fig:ann-forward}
 
 To solve the XOR problem we can construct individual perceptrons that simulate
 Boolean functions and then use the XOR propositional decomposition ($p \oplus q
 = (p \lor q) \land \lnot (p \land q)$) to construct a network that implements
 XOR, but this solution negates the main benefit of using a learning algorithm in
-the first place: we want the machine to form a solution, not us, so how can we
-learn a network to solve the XOR problem?
+the first place: we want the machine to form a solution.
 
 Combining multiple perceptrons into a network forming a multi layer perceptron
 brings us closer to the modern artificial neural network, however we now have a
-new problem: how do we learn the weight vectors of all the perceptrons? Is
-\ref{alg:perceptron-training} still of use? Can it be generalised to handle
-multiple perceptrons that depend on each other? Since the weight vectors are not
-independent, changing one will effect inputs deeper in the network causing a
-change in the final output, this makes learning the weights of the network
-tricky.
+new problem: learning the weights of all the perceptrons. Since the weight
+vectors of the perceptrons in the network are not independent, changing one will
+effect inputs deeper in the network causing a change in the final output meaning
+we cannot use Algorithm \ref{alg:perceptron-training}. An exhaustive search over
+the weights of the perceptrons would be able to find an optimal weight
+configuration, but would be computationally intractable due to the combinatorial
+nature of the search.
 
 Training multilayer perceptrons was the main impediment to their use until the
 process of *error back propagation* (first developed by
@@ -319,7 +352,7 @@ Kelley[@kelley1960_GradientTheoryOptimal] and
 Bryson[@dreyfus1990_Artificialneuralnetworks][@schmidhuber2015_DeepLearningNeural])
 was applied to the problem by Paul Werbos[@schmidhuber2015_DeepLearningNeural].
 Back propagation gives us a tool to understand how modifying each component of
-the weight vector of each perceptron varies the output of the network. A loss
+the weight vector of each perceptron changes the output of the network. A loss
 function is defined that specifies how the output of the network differs from
 the expected output, the partial derivatives of the loss function with respect
 to each weight component $\frac{\partial a^{(n)}_i}{\partial w^{(l)}_j}$ are
@@ -328,8 +361,6 @@ descent to tweak the weights in such a way that the output of the network
 becomes closer to the desired output for each training example, thereby
 minimising the loss function.
 
-<##check Add more details of back prop?>
-
 The MLP is the foundation of modern neural networks, although
 in modern parlance it is known as a *fully connected feedforward network*. The
 network is *fully connected* since each neuron in layer $l + 1$ is connected to
@@ -337,25 +368,16 @@ every neuron in layer $l$. A *feedforward* network is one which neurons are
 connected in such a way that no cycles are present (networks with cycles are
 known as *recurrent networks*).
 
-Below, in [@fig:ann-example], is a small fully connected network using the
-activation function $\phi(x) = \max(x, 0)$. A forward pass is computed and
-labelled in [@fig:ann-forward].
-
-![Example ANN with a single hidden layer](media/images/ann-example.pdf){#fig:ann-example}
-
-![Forward propagation of the example ANN](media/images/ann-forward.pdf){#fig:ann-forward}
-
-<##check Maybe move example forward pass to appendix?>
-
 
 ## Convolutional neural networks (CNNs) {#sec:background:cnns}
 
 CNNs are a restricted form of ANN assuming that the inputs to the network are
-images allowing optimisation of the architecture to increase the tractability of
-training.
+tensors allowing optimisation of the architecture to increase the tractability
+of training by decreasing the number of parameters through parameter sharing
+without decreasing the size of the network.
 
-<##note Add info origin: neocognitron, visual cortex, hubel wiesel>
-<##check Should be image, or just an arbitrary 2D signal?>
+<##todo Rethink the wording of this, its not that clear>
+<##todo Add info origin: neocognitron, visual cortex, hubel wiesel>
 
 The restricted architectures of CNNs facilitates a new view of these networks
 compared to ANNs; the overarching theme is to raise the level of abstraction
@@ -370,17 +392,12 @@ different hyperparameters.
 Layers are constructed using this conceptual model and can be mapped down to the
 traditional ANN model of neurons and weights.
 
-### Volumes
-
-Inputs to a CNN and intermediate values computed by layers are considered as
-volumes rather than sets of disparate features encoded in a vector, this view
-is enabled the homogeneity of the input. An input volume is a 3D block, where
-width, $W$, and height, $H$, correspond to the width and height of the input
-image, and the depth, $D$, of the block corresponds to the number of channels in
-the image (e.g. 3 for RGB images, 1 for grayscale).
-
-CNNs typically start from a high and wide but shallow volume which is progressively
-processed to become deeper, less wide and less high.
+Inputs and outputs from layers are thought of as tensors rather than sets of
+disparate features encoded in a vector, this view is enabled the homogeneity of
+the input. Typically for image and video processing networks, the input is a 3D
+block, where width, $W$, and height, $H$, correspond to the width and height of
+the input image, and the depth, $D$, of the block corresponds to the number of
+channels in the image (e.g. 3 for RGB images, 1 for grayscale).
 
 ### Layers
 
@@ -390,14 +407,14 @@ volume of dimensions $W' \times H' \times D'$ where the new dimensions are a
 function of the input volume's dimensions and layer's parameters.
 
 There are many types of layers, but they mainly fit into four broad categories:
-*convolutional*, *activation*, *pooling*, *fully connected*.
+*fully connected*, *pooling*, *convolutional*, *activation*.
 
 #### Fully connected
 
 Fully connected layers are like those in a MLP where each neuron
 is connected to every neuron in the previous layer. These layers are very large in
 parameters so are usually used further in the network when the input volume size
-has been considerably reduced. In CNNs, fully connected layers draw together
+is considerably reduced. In CNNs, fully connected layers draw together
 high level features from regions that are spatially distant from each other,
 consider the task of detecting a bike in an image, if you have filters that fire
 based on wheels, there will be neurons that activate when wheels are present in
@@ -418,10 +435,6 @@ of the input yielding a single value, usually this is a rectified linear
 computation $\max(0, x)$ or something similar like logistic regression.
 
 #### Convolutional
-
-Convolutional layers are inspired by the visual cortex in which neuronal cells
-respond to a specific receptive field, convolution approximates this in a
-mathematical sense.
 
 Convolutional layers consist of one or more filters that are slid along an input
 volume and convolved at each location producing a single value which are
@@ -445,17 +458,25 @@ For a layer with 4 filters with the parameters:
 
 The layer has a total of $4 \cdot 4 \cdot 3 \cdot 1 \cdot 1 = 38$ parameters.
 
-<##todo Probably should expand on this with an example bank of filters and an
+<##todo Expand on this with an example bank of filters and an
 input volume and show to produce the output volume>
+
+#### Activation
+
+<##todo Add activation layer section>
 
 ### Architectures
 
 The architecture of a CNN refers to the choice of layers, and parameters and
 connectivity of those layers. Architectures are designed to solve a particular
-problem where the number of layers limits the complexity of the features
-learnt by the network. Networks are designed such that they have sufficient
+problem where the number of layers limits the complexity of the features learnt
+by the network. Networks are designed such that they have sufficient
 representational power (i.e. number of layers, and number of filters in those
-layers) necessary to learn the desired mapping from input to output.
+layers) necessary to learn the desired mapping from input to output, but are as
+small as possible as each new layer adds additional hyperparameters (number of
+filters, filter size, stride size) to the network which further increases the
+already considerable time spent searching for optimal hyperparameters by
+training a network per hyperparameter configuration.
 
 First we look at architectures for object detection as this task has been the
 focus of most research inspiring architectures for action recognition which we
@@ -463,14 +484,14 @@ discuss afterwards.
 
 #### Object detection {#sec:background:object-detection}
 
-CNNs have been extensively applied to the object detection problem popularised
-by the ImageNet challenge [@russakovsky2014_ImageNetLargeScale]. The challenge
-consists of two main problems *object detection* and *object localisation*,
-participants produce model capable of predicting the likelihood of object
-classes presence in a test image. Models are evaluated based on their top-1 and
-top-5 error rate where the top-$N$ error rate is defined as the proportion of
-test images whose prediction is considered an error if the ground truth label
-does not appear in the top-$N$ predictions.
+Historically CNNs were extensively applied to the object detection problem
+popularised by the ImageNet challenge [@russakovsky2014_ImageNetLargeScale]. The
+challenge consists of two main problems *object detection* and *object
+localisation*, participants produce a model capable of predicting the likelihood
+of object classes presence in a test image. Models are evaluated based on their
+top-1 and top-5 error rate where the top-$N$ error rate is defined as the
+proportion of test images whose prediction is considered an error if the ground
+truth label does not appear in the top-$N$ predictions.
 
 ##### AlexNet
 
@@ -484,25 +505,27 @@ rate of 15.3%.
 ##### VGG16
 
 The VGG16 architecture [@simonyan2014_VeryDeepConvolutional] was developed as an
-investigation into enhancements over the original
+enhancement over the original
 AlexNet[@krizhevsky2012_Imagenetclassificationdeep] architecture investigating
 the effects of using a 'very deep' architecture with many stacked convolutional
 layers. 6 similar network architectures with increasing depth were trained and
 their classification performance tested against the ImageNet dataset, the
 network configurations with more convolutional layers performed better than
 those with fewer resulting in two configuration VGG16 and VGG19 with 16 and 19
-convolutional layers respectively. These were
-
-The architecture won first place in the object classification stream of the ImageNet
-2014 challenge scoring a top-1 error rate of 24.4% and top-5 error rate of 7.0%,
-a considerable improvement over AlexNet. Another deep network architecture by
+convolutional layers respectively. The VGG architectures (used in an ensemble)
+won first place in the object classification stream of the ImageNet 2014
+challenge scoring a top-1 error rate of 24.4% and top-5 error rate of 7.0%, a
+considerable improvement over AlexNet. Another deep network architecture by
 Google[@szegedy2014_GoingDeeperConvolutions] achieved similar error rates
 (second place) with 22 layers suggesting that more layers isn't necessarily
 better, but that the architectures in 2012 were too shallow.
 
-![VGG16 Architecture](media/images/vgg16-rotated90.pdf){#fig:architecture:vgg16 height=100% width=2cm}
+![VGG16[@simonyan2014_VeryDeepConvolutional] Architecture](media/images/vgg16-rotated90.pdf){#fig:architecture:vgg16 height=100% width=2cm}
 
 #### Action recognition
+
+<##todo Start by introducing networks for action recognition from images e.g.
+"Gkioxari contextual action recognition ICCV 2015">
 
 The challenge of recognising actions from video sequences has recently seen the
 application of CNNs inspired from their performance on object detection. A
@@ -548,6 +571,11 @@ Karpathy 2014 notes
 * 4 architectures: single frame, late fusion, early fusion, slow fusion
 * motion aware networks underperform when there is camera motion
 * Slow fusion network performs best
+-->
+
+![CNN Architectures evaluated in
+[@karpathy2014_LargeScaleVideoClassification]](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+
 Investigations of different architectures for video classification were
 performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
 styles of architecture were investigated to determine optimal stages of fusing
@@ -557,9 +585,9 @@ sub-sequence of frames (see [@fig:karpath2014-fusion-architectures] for
 architectures and video sequence connectivity). Slow fusion, an architecture
 that progressively enlarges the temporal and spatial field of view as the input
 propagates deeper into the network performed best.
--->
 
-![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification]](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+<##todo expand on this>
+
 
 <!--
 Simonyan 2014
@@ -631,12 +659,17 @@ spatio-temporal stream from the fully connected layers onwards. The authors find
 that keeping the spatial stream in addition to the spatio-temporal stream and
 combining their respective predictions further increases performance over
 predictions from the spatio-temporal stream alone.
+<##todo Report performance improvements over fusing into single tower>
 
+<##todo split up the architectures discussed into those necessary for
+background, and those for future work>
+<##todo split out two stream cnn to separate section with detailed explanation>
+<##todo move Karpathy 2014 to future work>
 
 
 ## Video Datasets {#sec:background:datasets}
 
-In [@sec:background:understanding] the surveyed papers frequently make mention
+In [@sec:background:understanding] the surveyed papers frequently make use
 of datasets, rather than explaining them as they are referenced they are instead
 described and consolidated in this section.
 
@@ -648,7 +681,7 @@ clapping performed by 25 subjects in 4 scenarios: outdoors, outdoors with scale
 variation, outdoors with different clothes, and indoors. Each action class has
 100 example clips
 
-![KTH Human action samples](media/images/kth-sample.png)
+![KTH Human action[@schuldt2004_Recognizinghumanactions] samples](media/images/kth-sample.png)
 
 ### TRECVID - London Gatwick Airport Surveillance video
 
@@ -671,8 +704,8 @@ taken from [@rose2009_TRECVid2008Event]).
 Sports-1M[@karpathy2014_LargeScaleVideoClassification] is a weakly annotated
 action dataset obtained from YouTube consisting of 1 million videos over 487
 sport classes. The videos are obtained by searching for the sport class and then
-collecting videos from the search results hence the labels in the dataset aren't
-as accurate as an expert-human labelled dataset.
+collecting videos from the search results hence the labels in the dataset are
+noisy^[There exists incorrect labelled examples in the dataset].
 
 ### HMDB51 - Human motion database
 
@@ -684,7 +717,7 @@ interaction, body movements for human interaction. Examples are given
 in [@fig:dataset:hmdb51:samples]^[HMDB51 Samples image obtained from
 http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/]
 
-![HMDB51 sample actions](media/images/hmdb51-sample.png){ #fig:dataset:hmdb51:samples }
+![HMDB51[@kuehne2011_HMDBlargevideo] sample actions](media/images/hmdb51-sample.png){ #fig:dataset:hmdb51:samples }
 
 
 ### UCF101 - Action recognition
@@ -697,7 +730,7 @@ The dataset has a diverse range of camera viewpoints, camera motion, object
 appearance and pose, illumination conditions making it quite challenging
 compared to some of the earlier datasets used for action recognition like KTH.
 
-![UCF101 sample actions](media/images/ucf101-sample.png)
+![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.png)
 
 ### BEOID - Bristol Egocentric Object Interaction Dataset
 
@@ -707,25 +740,27 @@ human-object interaction dataset composed of videos shot from a head mounted
 locations: kitchen, workspace, printer, corridoor with locked door, cardiac
 gymn, and weight-lifting machine.
 
-![BEOID sample object interactions](media/images/beoid-sample.png)
+![BEOID[@_BristolEgocentricObject] sample object interactions]](media/images/beoid-sample.png)
 
 ## Understanding CNNs {#sec:background:understanding}
 
 It is typical for CNNs to have on the order of $10^7$--$10^8$ parameters, with
-this complexity comes a difficulty in understanding how the network works. Why
-does the network correctly classify some examples but not others? What
-techniques can we use to delve into the black box and gain insight into the
-decisions being made by these successful models?
+this complexity comes a difficulty in understanding how the network works. There
+is a need to understand why a network correctly classifies some examples but not
+others to aid the researcher in determining higher performing architectures and
+problems in the dataset or training process.
 
-In [@yosinski2015_UnderstandingNeuralNetworks], Yosinski \etal identify that
-there are two main types of visualisation methods developed for understanding
-the features learnt by CNNs: network-centric and image-centric. Network-centric
-methods generate a visualisation based on the trained network alone whereas
-image-centric methods use an image or intermediate values computed in a forward
-pass of the network from the image to generate a visualisation. Image-centric
-visualisations help the researcher understand aspects like which areas in the
-image contribute to the activation of a neuron. Network-centric visualisations
-provide a more holistic visualisation of a neuron or layer.
+In [@yosinski2015_UnderstandingNeuralNetworks], Yosinski \etal{} identify
+that there are two main types of visualisation methods developed for
+understanding the features learnt by CNNs: network-centric and image-centric.
+Network-centric methods generate a visualisation based on the trained network
+alone whereas image-centric methods use an image or intermediate values computed
+in a forward pass of the network from the image to generate a visualisation.
+Image-centric visualisations help the researcher understand aspects like which
+areas in the image contribute to the activation of a neuron. Network-centric
+visualisations provide a more holistic visualisation of a neuron or layer.
+
+<##todo expand on network-centric visualisations like filter visualisation>
 
 <!--
 Erhan 2009: Visualising Higher-Layer features of a deep networks
@@ -734,7 +769,7 @@ Erhan 2009: Visualising Higher-Layer features of a deep networks
 * Named technique as "Activation maximisation"
 -->
 
-In [@erhan2009_VisualizingHigherLayerFeatures], Erhan \etal introduce the
+In [@erhan2009_VisualizingHigherLayerFeatures], Erhan \etal{} introduce the
 technique named *activation maximisation* for generating an artificial image to
 maximise the activation of a chosen neuron by performing gradient ascent on an
 input image. The technique is applied to a deep belief
@@ -780,6 +815,7 @@ Zeiler 2013: Visualising and understanding convolutional networks
   different parts of the image are occluded
 -->
 
+<##todo Add figures explaining deconvolution>
 In [@zeiler2013_VisualizingUnderstandingConvolutional], Zeiler & Fergus
 introduce two image-centric visualisations: deconvolutional visualisation and
 occlusion studies. In deconvolutional visualisation, an image is propagated
@@ -789,7 +825,7 @@ the network-under-analysis' weights is attached to the layer in which the neuron
 of interest resides. All other neurons in the layer of the chosen neuron are set
 to zero to produce a one-hot CNN code which is used as input to the
 deconvolutional network that progressively inverts the operation of the original
-network until the CNN code has been fully inverted back into an image. The
+network until the CNN code is fully inverted back into an image. The
 resulting image retains aspects of the original image in areas that contribute
 to the activation of the chosen neuron. To invert a convolutional layer $l_c$, a
 corresponding convolutional layer $l_c'$ is constructed in the deconvolutional network
@@ -804,6 +840,7 @@ layer with $2 \times 2$ filters, index each location in the filter by $i$, let
 $i_{\text{max}}$ by the index of the location from which the maximum value
 originates. When inverting the network, the value to by distributed back to the
 $2 \times 2$ grid is entirely given to location $i_{\text{max}}$.
+<##todo Reword explanation of deconv with diagrams>
 
 
 <!--
@@ -831,21 +868,22 @@ expansion in the neighbourhood of $I$ yielding a linear model whose weights can
 then be interpreted as the importance of each pixel to excite each particular neuron
 -->
 
-Simonyan \etal build on the work of Erhan \etal on activation maximisation (a
-network-centric visualisation) by introducing regularisation terms to the
+Simonyan \etal{} build on the work of Erhan \etal{} on activation maximisation
+(a network-centric visualisation) by introducing regularisation terms to the
 optimisation objective to improve the interpretability of the generated image.
-The regularisation terms are designed to attempt to restrict the generated image
-to the space of natural images, since this is hard notion to express
-mathematically the regularisers simply act as proxies for 'naturalness'. In
-addition to improving the results of activation maximisation, it is shown that
-the method is equivalent to the deconvolutional network visualisation method
-proposed in [@zeiler2013_VisualizingUnderstandingConvolutional]. The authors also
-introduce a new image-centric visualisation method to determine the contribution
-of individual pixels in an input image to its classification by calculating the
-first order Taylor expansion of the partial derivative of the predicted class
-neuron with respect to the image space producing a linear function from which
-the weights of the pixels approximate their relative importance in the
-classification, these weights can then be used as a heatmap.
+The regularisation terms are designed to restrict the generated image to the
+space of natural images, since this is hard notion to express mathematically,
+the regularisation terms act as proxy measures for how natural the synthesized
+image is. In addition to improving the results of activation maximisation, it is
+shown that the method is equivalent to the deconvolutional network visualisation
+method proposed in [@zeiler2013_VisualizingUnderstandingConvolutional]. The
+authors also introduce a new image-centric visualisation method to determine the
+contribution of individual pixels in an input image to its classification by
+calculating the first order Taylor expansion of the partial derivative of the
+predicted class neuron with respect to the image space producing a linear
+function from which the weights of the pixels approximate their relative
+importance in the classification. These weights can then be visualised as a
+heatmap in the image space.
 
 
 <!--
@@ -855,13 +893,11 @@ Qualitative comparison of VGG16 and AlexNet using deconv (zeiler & fergus 2013)
 visualisation to show VGG localises objects better using
 -->
 
-In [@yu2014_VisualizingComparingConvolutional], Yu \etal make a qualitative
+In [@yu2014_VisualizingComparingConvolutional], Yu \etal{} make a qualitative
 comparison between AlexNet[@krizhevsky2012_Imagenetclassificationdeep] and
 VGG16[@simonyan2014_VeryDeepConvolutional] using Deconvolutional visualisations
 of neurons in different layers, they show that the deeper layers in VGG16 learn
 more discriminate features than those in AlexNet.
-<##check They don't prove this, but qualitatively from the visualisations you can see that the neurons
-are more discriminating>
 
 <!--
 Bach 2015: On pixel-wise explanations for non-linear classifier decisions by
@@ -890,10 +926,13 @@ Samek 2015: Evaluating the visualisation of what a deep network learned
 * Uses LVP
 -->
 
-Samek \etal introduce a new image-centric visualisation method for determining
-why a network made a classification decision, unlike activation maximisation,
-the visualisation is based on the network's decision boundary rather than a Taylor
+Samek
+\etal{}[@samek2015_Evaluatingvisualizationwhat;@samek2016_EvaluatingVisualizationWhat]
+introduce a new image-centric visualisation method for determining why a network
+made a classification decision, unlike activation maximisation, the
+visualisation is based on the network's decision boundary rather than a Taylor
 expansion about a particular image, a
+
 <##todo Need to read and understand the technique before I can explain it>
 
 
@@ -915,11 +954,11 @@ Yosinski 2015: Understanding neural networks through deep visualisation
   in the image space
 -->
 
-Yosinski \etal explore a variety of priors/regularisers for use in the
+Yosinski \etal{} explore a variety of priors/regularisers for use in the
 activation maximisation visualisation of Erhan [@erhan2009_VisualizingHigherLayerFeatures] in
 [@yosinski2015_UnderstandingNeuralNetworks]. They release a toolbox named Deep
 Visualisation Toolbox^[https://github.com/yosinski/deep-visualization-toolbox]
-to see live filter responses over arbitrary images on a user provided CNN,
+to observe live filter responses over arbitrary images on a user provided CNN,
 furthermore the tool also facilitates deconvolutional visualisation and
 activation maximisation.
 
@@ -960,11 +999,11 @@ Three methods are proposed in [@mahendran2016_VisualizingDeepConvolutional]:
 *inversion*, inverting an arbitrary CNN code back to image space, i.e.
 synthesizing an image that produces a given CNN code; *activation maximisation*,
 new priors are proposed to improve *activation maximisation* (proposed by Erhan
-\etal); *caricaturization* mutates a given image to exaggerate patterns to
+\etal{}); *caricaturization* mutates a given image to exaggerate patterns to
 further increase high activations in a layer of the network.
 
 
-Nguyen \etal explore an image-centric probabilistic visualisation method for
+Nguyen \etal{} explore an image-centric probabilistic visualisation method for
 determining the importance of regions in the input image to maximise the
 activation of the neuron to produce a heatmap in
 [@nguyen2016_Synthesizingpreferredinputs]. To generate an excitation map for an
@@ -972,19 +1011,201 @@ image, the image is first processed in a forward pass to determine the
 activations of all neurons in the network, A prior distribution is defined to
 
 Nguyen 2016: Synthesizing the preferred inputs for neurons
+<##todo Nguyen 2016>
+
+<##todo rework section into taxonomy of visualisation techniques>
+
+# EBP
+
+First a forward pass of the network is computed, this produces the intermediate
+neuron values which are used as *bottom up* salience factors, then a probability
+distribution over the output layer is used to specify *top down* salience, then a
+excitation backprop pass uses the probability distribution, intermediate neuron
+values and weights to determine the probability of each intermediate neuron
+being a winner at an arbitrary depth of the network.
+
+Contrastive top down attention uses the insight that we're not only interested
+in class we're localising, but also the absences of the other classes (as
+classes may be correlated), we EBP the class of interest one layer, then invert
+the output probability distribution, EBP one layer and compute the difference
+between the two MWPs of the second last layer, then EBP from there to the input.
+
+![Excitation Backprop winning probability aggregated from multiple parents to single child](media/images/excitation-bp-parent-sharing.png)
+
+![Excitation Backprop winning probability shared between multiple children](media/images/excitation-bp-child-sharing.png))
 
 
-<##todo Nguyen 2016: Multifaceted feature visualization>
+## Example EBP calculation
 
-<##todo Rozsa 2016: Exploring LOTS in Deep Neural networks>
+We demonstrate EBP with a simple network composed of 5 neurons over 3 layers all
+using ReLU activations.
 
-<##todo Selvaraju 2016: Grad-CAM>
+Notation:
 
-<##note As it stands this is more like a related work chapter, I think rather
-than organising these notes chronologically they should be organised
-semantically by defining a visualisation taxonomy under which all the methods
-hang, this would improve the description of activation maximisation which
-appears again and again but with different priors>
+* $\neuron{i}{j}$ denotes the neuron with index $j$ (0 indexed) in layer $i$.
+* $\weight{i}{j}{k}$ denotes the weight of the edge from neuron $j$ in layer $i$
+  to neuron $k$ in layer $i + 1$.
+* $\neuroninput{i}{j}$ denotes the weighted sum of inputs to neuron $j$ in layer $i$
+* $\neuronoutput{i}{j}$ denotes the output of neuron $j$ in layer $i$
+
+\begin{equation}
+\label{eq:neuron-input}
+\neuroninput{i + 1}{j} = \sum_{a_{k}^{(i)} \in \children{i + 1}{j}} \weight{i}{k}{j} \neuronoutput{i}{k}
+\end{equation}
+
+\begin{equation}
+\label{eq:neuron-output}
+\neuronoutput{i}{j} = \phi(\neuroninput{i}{j})
+\end{equation}
+
+Where $\phi$ is an activation, if not explicitly stated it is assumed $\phi(x) =
+\max(0, x)$ (ReLU activation).
+
+At a high level, EBP consists of the following steps:
+
+* Compute a forward pass of the network to determine the outputs of each neuron $\neuronforward{i}{j}$
+* Compute the scaling factors $\ebpscalar{i}{j}$ of each neuron used in
+  calculating the conditional winning probabilities of the children of that neuron.
+* Compute the conditional winning probabilities $\cwp{i}{j}{i + 1}{k}$ of each neuron in the network.
+* Compute the winning probabilities of each neuron $\mwp{i}{j}$ by
+  computing the probability of each neuron and it's parents being winning
+  neurons, then marginalising over the parent neurons.
+
+
+\begin{equation}
+\label{eq:ebp-cwp}
+\cwp{i}{k}{i + 1}{j} = \begin{cases}
+    \ebpscalar{i + 1}{j} \neuronforward{i}{k} \weight{i}{k}{j} & \weight{i}{k}{j} \geq 0 \\
+    0 & \text{otherwise}
+  \end{cases}
+\end{equation}
+
+\begin{equation}
+\label{eq:ebp-cwp-scalar}
+\ebpscalar{i + 1}{j} = 1 / \sum_{k:\weight{i}{k}{j} \geq 0} \neuronforward{i}{k} \weight{i}{k}{j}
+\end{equation}
+
+\begin{equation}
+\label{eq:ebp-mwp}
+\mwp{i}{k} = \sum_{\neuron{i+1}{j} \in \parents{i}{k}} \cwp{i}{k}{i + 1}{j} \mwp{i + 1}{j}
+\end{equation}
+
+Performing excitation backprop on the example network in [@fig:ann-example]. The
+forward pass is detailed in [@fig:ann-forward].
+
+First we define the input of the network (these could be any arbitrary input):
+
+\begin{align*}
+\neuronforward{0}{0} &= 2\\
+\neuronforward{0}{1} &= 1\\
+\end{align*}
+
+Now we compute the forward pass using the forward propagation rule
+
+<##todo move this to ANN section>
+$$\neuronforward{i}{k} = \phi(\sum_j \neuronforward{i - 1}{j} \cdot \weight{i - 1}{j}{k})$$
+
+\begin{align*}
+\neuronforward{1}{0} &= \max(0, \neuronforward{0}{0} \cdot \weight{0}{0}{0} +
+    \neuronforward{0}{1} \cdot \weight{0}{1}{0})
+  = max(0, (2 \cdot 1) + (1 \cdot 0)) = 2 \\
+\neuronforward{1}{1} &= \max(0, (2 \cdot -1) + (1 \cdot 1)) = \max(0, -1) = 0\\
+\neuronforward{1}{2} &= \max(0, (2 \cdot 1) + (1 \cdot 1)) = 3\\
+\\
+\neuronforward{2}{0} &= \max(0, \neuronforward{1}{0} \cdot \weight{1}{0}{0} +
+    \neuronforward{1}{1} \cdot \weight{1}{1}{0} +
+    \neuronforward{1}{2} \cdot \weight{1}{2}{0}) = 4 \\
+\neuronforward{2}{1} &= \max(0, (2 \cdot 1) + (0 \cdot 2) + (3 \cdot -1)) = 0\\
+\end{align*}
+
+The next step is to compute the conditional winning probabilities of each neuron
+given each parent neuron wins using [@eq:ebp-cwp], to compute this we need the
+scaling factors $\ebpscalar{i}{j}$ which we will compute first using
+[@eq:ebp-cwp-scalar] (in a computational implementation these would be computed
+on a per layer basis and thrown away once the layer values are
+calculated).
+
+![Flow of probabilities in EBP](media/images/ebp-example-mwp.pdf)
+
+![EBP CWP on the example network](media/images/ebp-example-mwp-concrete.pdf)
+
+<##todo change legend to have $P(a_k^{(i)})$ in diamond>
+
+\begin{align*}
+\ebpscalar{2}{0} &=
+  \frac{1}{\left(\weight{1}{1}{0}\neuronforward{1}{1}\right) +
+  \left(\weight{1}{2}{0} \neuronforward{1}{2}\right)}
+  = \frac{1}{(1 \cdot 0) + (2 \cdot 3)}
+  = \frac{1}{6}
+  \\
+\ebpscalar{2}{1} &= \frac{1}{(1\cdot 2) + (2 \cdot 0)} = \frac{1}{2}\\
+\ebpscalar{1}{0} &= \frac{1}{
+  \left(\weight{0}{0}{0} \neuronforward{0}{0}\right) +
+  \left(\weight{0}{1}{0} \neuronforward{0}{0}\right)}
+  = \frac{1}{(1 \cdot 2) + (0 \cdot 1)}
+  = \frac{1}{2}
+  \\
+\ebpscalar{1}{1} &= \frac{1}{(1 \cdot 1)} = 1\\
+\ebpscalar{1}{2} &= \frac{1}{(1 \cdot 2) + (1 \cdot 1)} = \frac{1}{3}\\
+\end{align*}
+
+Now for the conditional winning probabilities between layers 2 and 1:
+
+\begin{align*}
+\cwp{1}{0}{2}{0} &= 0 \\
+\cwp{1}{0}{2}{1} &= \ebpscalar{2}{1} \neuronforward{1}{0} \weight{1}{0}{1} =
+  \frac{1}{2} \cdot 2 \cdot 1 = 1
+  \\
+\cwp{1}{1}{2}{0} &= \ebpscalar{2}{0} \neuronforward{1}{1} \weight{1}{1}{0} =
+  \frac{1}{6} \cdot 0 \cdot 1 = 0
+  \\
+\cwp{1}{1}{2}{1} &= \ebpscalar{2}{1} \neuronforward{1}{1} \weight{1}{1}{1} =
+  \frac{1}{2} \cdot 0 \cdot 2 = 0
+  \\
+\cwp{1}{2}{2}{0} &= \ebpscalar{2}{0} \neuronforward{1}{2} \weight{1}{2}{0} =
+  \frac{1}{6} \cdot 3 \cdot 2 = 1
+  \\
+\cwp{1}{2}{2}{1} &= 0\\
+\end{align*}
+
+Now layers 1 and 0:
+
+\begin{align*}
+\cwp{0}{0}{1}{0} &= \ebpscalar{1}{0} \neuronforward{0}{0} \weight{0}{0}{0} =
+  \frac{1}{2} \cdot 2 \cdot 1 = 1\\
+\cwp{0}{0}{1}{1} &= 0 \\
+\cwp{0}{0}{1}{2} &= \frac{1}{3} \cdot 2 \cdot 1 = \frac{2}{3} \\
+\cwp{0}{1}{1}{0} &= 0 \\
+\cwp{0}{1}{1}{1} &= 1 \cdot 1 \cdot 1 = 1 \\
+\cwp{0}{1}{1}{2} &= \frac{1}{3} \cdot 1 \cdot 1 = \frac{1}{3} \\
+\end{align*}
+
+We can now marginalise over the parent neurons in the conditional winning
+probabilities if a prior distribution over the output neurons is given to obtain
+the marginal winning probabilities of each neuron using [@eq:ebp-mwp].
+
+Let's choose $\mwp{2}{0} = 0.9$ and $\mwp{2}{1} = 0.1$ for the prior
+distribution. If we were investigating the saliency of a single neuron we'd
+instead set the MWP of that neuron to 1 and the MWP of all other neurons
+would be 0.
+
+Marginalising over the parents of the hidden layer:
+
+\begin{align*}
+\mwp{1}{0} &= \sum_{\neuron{2}{j} \in \parents{1}{0}} \cwp{1}{0}{2}{j} \mwp{2}{j} \\
+           &= \cwp{1}{0}{2}{0} \mwp{2}{0} + \cwp{1}{0}{2}{1} \mwp{2}{1} \\
+           &= 0 \cdot 0.9 + 1 \cdot 0.1 = 0.1\\
+\mwp{1}{1} &= 0 \cdot 0.9 + 0 \cdot 0.1 = 0\\
+\mwp{1}{2} &= 1 \cdot 0.9 + 0 \cdot 0.1 = 0.9\\
+\end{align*}
+
+Finally to calculate the MWP of the input neurons to obtain the posterior
+distribution:
+
+\begin{align*}
+\mwp{0}{0} &= 1 \cdot 0.1 + 0 \cdot 0 + \frac{2}{3} \cdot 0.9 = 0.7\\
+\mwp{0}{1} &= 0 \cdot 0.1 + 1 \cdot 0 + \frac{1}{3} \cdot 0.9 = 0.3\\
+\end{align*}
 
 
 # Excitation backprop for temporal networks {#sec:ebp-for-temporal-networks}
