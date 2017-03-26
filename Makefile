@@ -2,6 +2,7 @@ PANDOC:=pandoc
 LATEX:=pdflatex
 GPP:=gpp
 INKSCAPE:=inkscape
+GIT_LATEXDIFF:=git-latexdiff
 
 BIBLIOGRAPHY:=$(HOME)/references.bib
 THESIS:=thesis
@@ -10,10 +11,8 @@ INCLUDE_PATHS:=fragments\
 			  diagrams
 SVG_IMAGES := $(wildcard media/images/*.svg)
 IMAGES := $(SVG_IMAGES:.svg=.png)
-TIKZ_SRC := $(shell find diagrams -type f -name '*.tikz')
 
 BUILD_DIR:=build
-TIKZ_DEST := $(patsubst %.tikz,$(BUILD_DIR)/%.png,$(TIKZ_SRC))
 
 MARKDOWN_EXTENSIONS=link_attributes footnotes definition_lists
 PANDOC_OPTIONS:=--latex-engine=xelatex\
@@ -50,7 +49,7 @@ GPP_OPTIONS:=$(foreach fragment,$(INCLUDE_PATHS), -I$(fragment)) \
 # for details on how this trick for concatenating strings without spaces works
 _SPACE := #empty var
 SPACE := $(_SPACE) $(_SPACE)
-all: $(BUILD_DIR)/$(THESIS).pdf $(BUILD_DIR)/$(THESIS).tex $(BUILD_DIR)/$(POSTER_PDF) $(TIKZ_DEST) $(IMAGES) $(BUILD_DIR)
+all: $(BUILD_DIR)/$(THESIS).pdf $(BUILD_DIR)/$(THESIS).tex $(BUILD_DIR)/$(POSTER_PDF) $(IMAGES) $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p "$@"
@@ -60,7 +59,7 @@ $(BUILD_DIR)/%.md.pp: %.md
 		$(GPP_OPTIONS) \
 		$< >/dev/null
 
-$(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
+$(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 	$(PANDOC) \
 		$(PANDOC_OPTIONS)\
 		$<\
@@ -69,7 +68,7 @@ $(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
 		--to=latex\
 		--output=$@\
 
-$(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
+$(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 	$(PANDOC) \
 		$(PANDOC_OPTIONS)\
 		$<\
@@ -77,11 +76,6 @@ $(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(BUILD_DIR) $(IMAGES) $(TIKZ_DEST)
 		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
 		--to=latex\
 		--output=$@\
-
-$(BUILD_DIR)/%.png: %.tikz $(BUILD_DIR)
-	mkdir -p "$(dir $@)"
-	$(GPP) $(GPP_OPTIONS) -O $(basename $@).tex -D"FILE=$<" diagrams/tikz-document-template.tex
-	cd "$(dir $@)" && $(LATEX) -halt-on-error -shell-escape "$(notdir $(basename $@)).tex"
 
 %.png: %.svg
 	$(INKSCAPE) \
@@ -90,7 +84,7 @@ $(BUILD_DIR)/%.png: %.tikz $(BUILD_DIR)
 		--export-width=1024 \
 		$<
 
-$(BUILD_DIR)/$(POSTER_PDF): poster.tex $(IMAGES) $(TIKZ_DEST)
+$(BUILD_DIR)/$(POSTER_PDF): poster.tex $(IMAGES)
 	$(LATEX) -halt-on-error -shell-escape "$<"
 	mv $(POSTER_PDF) "$@"
 
