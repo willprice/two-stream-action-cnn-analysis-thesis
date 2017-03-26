@@ -1045,9 +1045,11 @@ classes may be correlated), we EBP the class of interest one layer, then invert
 the output probability distribution, EBP one layer and compute the difference
 between the two MWPs of the second last layer, then EBP from there to the input.
 
+<!--
 ![Excitation Backprop winning probability aggregated from multiple parents to single child](media/images/excitation-bp-parent-sharing.png)
 
 ![Excitation Backprop winning probability shared between multiple children](media/images/excitation-bp-child-sharing.png))
+-->
 
 
 ## Example EBP calculation
