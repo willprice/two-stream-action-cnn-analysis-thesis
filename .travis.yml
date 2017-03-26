@@ -11,7 +11,7 @@ before_script:
     git clone https://gitlab.com/git-latexdiff/git-latexdiff.git
     cd git-latexdiff
     sudo make install
-    popd .
+    popd
 script:
   - |
     mkdir build
