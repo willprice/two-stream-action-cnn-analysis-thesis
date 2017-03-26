@@ -14,7 +14,7 @@ IMAGES := $(SVG_IMAGES:.svg=.png)
 
 BUILD_DIR:=build
 
-MARKDOWN_EXTENSIONS=link_attributes footnotes definition_lists
+MARKDOWN_EXTENSIONS=link_attributes footnotes definition_lists inline_notes
 PANDOC_OPTIONS:=--latex-engine=xelatex\
 			   --filter=pandoc-crossref\
 			   --filter=pandoc-citeproc --csl computer.csl\
