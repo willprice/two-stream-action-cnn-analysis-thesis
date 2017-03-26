@@ -25,7 +25,6 @@ link-citations: true
 header-includes:
   - \usepackage{bm} # For \bm instead of \mathbf
   - \usepackage[mathscr]{eucal} # For \mathscr
-  - \usepackage{tikz} # For diagrams in tikz
   - \usepackage{caption} # For captions
   - \usepackage{subfig} # For side by side figures
   - \usepackage{xcolor} # For colouring text like the macro `note`
@@ -154,8 +153,6 @@ make training these models on modern computers a viable proposition.
 
 ### The McCulloch-Pitt's neuron
 
-asdfasdf asdfasf
-
 The McCulloch-Pitt's neuron is mostly a historical curiosity, and if the
 evolution of artificial neural networks doesn't interest you skip ahead to the
 perceptron.
@@ -174,8 +171,6 @@ output is completely inhibited regardless of the firing of the other incoming si
 
 Networks of MCP neurons were investigated to implement more complicated
 propositions.
-
-asdfasdf asdfasf
 
 ### The Perceptron
 
