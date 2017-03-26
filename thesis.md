@@ -446,8 +446,9 @@ spatial relationship that wheels on bikes do.
 Pooling layers exist to increase the receptive field of deeper layers enabling
 them to learn features than span larger spatial extents, this is accomplished by
 reducing the size of the input volume by computing some function over a region
-of the input yielding a single value, usually this is a rectified linear
-computation $\max(0, x)$ or something similar like logistic regression.
+of the input yielding a single value, usually this is a max pooling where the
+maximum value in an input region is selected to be propagated forward discarding
+the rest of the values in the region.
 
 #### Convolutional
 
