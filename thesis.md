@@ -38,6 +38,7 @@ header-includes:
     \SetWatermarkAngle{90}
     \SetWatermarkHorCenter{.06\paperwidth}
   # End watermark
+  - \graphicspath{{../}{./}}
   - \newcommand{\etal}{\textit{et al}.}
   - \newcommand{\learningrate}{\eta}
   - \newcommand{\neuron}[2]{a_{#2}^{(#1)}}
