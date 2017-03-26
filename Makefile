@@ -2,6 +2,7 @@ PANDOC:=pandoc
 LATEX:=pdflatex
 GPP:=gpp
 INKSCAPE:=inkscape
+PDFCROP:=pdfcrop
 GIT_LATEXDIFF:=git-latexdiff
 
 BIBLIOGRAPHY:=$(HOME)/references.bib
@@ -10,7 +11,7 @@ POSTER_PDF:=poster.pdf
 INCLUDE_PATHS:=fragments\
 			  diagrams
 SVG_IMAGES := $(wildcard media/images/*.svg)
-IMAGES := $(SVG_IMAGES:.svg=.png)
+IMAGES     := $(SVG_IMAGES:.svg=.pdf)
 
 BUILD_DIR:=build
 
@@ -77,12 +78,12 @@ $(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 		--to=latex\
 		--output=$@\
 
-%.png: %.svg
+%.pdf: %.svg
 	$(INKSCAPE) \
 		--without-gui \
-		--export-png="$@" \
-		--export-width=1024 \
+		--export-pdf=$@ \
 		$<
+	$(PDFCROP) $@ $@
 
 $(BUILD_DIR)/$(POSTER_PDF): poster.tex $(IMAGES)
 	$(LATEX) -halt-on-error -shell-escape "$<"
