@@ -15,20 +15,15 @@ before_cache:
  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/01-index*
  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/*.json
 
-before_install:
-# Download and unpack the stack executable
- - mkdir -p ~/.local/bin
- - export PATH=$HOME/.local/bin:$PATH
- - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-
 install:
   - sudo apt-get update -q
   - sudo apt-get install -y texlive-full
   - sudo apt-get install -y gpp inkscape
   - sudo apt-get install -y asciidoc
-  - stack install pandoc
-  - stack install pandoc-citeproc
-  - stack install pandoc-crossref
+  - sudo apt-get install -y cabal-install
+  - cabal install pandoc
+  - cabal install pandoc-citeproc
+  - cabal install pandoc-crossref
   - |
     pushd .
     echo $PATH
