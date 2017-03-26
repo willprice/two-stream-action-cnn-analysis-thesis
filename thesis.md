@@ -446,9 +446,31 @@ spatial relationship that wheels on bikes do.
 Pooling layers exist to increase the receptive field of deeper layers enabling
 them to learn features than span larger spatial extents, this is accomplished by
 reducing the size of the input volume by computing some function over a region
-of the input yielding a single value, usually this is a max pooling where the
-maximum value in an input region is selected to be propagated forward discarding
-the rest of the values in the region.
+of the input yielding a single value, this operation is computed by a *pooling
+filter*. Max pooling is a common pooling filter where the maximum value in an
+input region is selected to be propagated forward discarding the rest of the
+values in the region.
+
+Pooling layers typically have *size*, *pad* and *stride* parameters. The *size*
+determines the region over which pooling takes place, *padding* specifies the
+whether to zero pad the input along it's the borders of each axis and if so, how
+wide/deep the padding is, *stride* specifies how many elements to slide the
+filter along the input between each application of the pooling filter.
+For example, a 2D^[3D pooling is possible and used in some action recognition
+architectures] max pooling layer with size $2 \times 2$, padding $1 \times 1$
+and stride $2 \times 2$ will first pad it's input with a border of zeroes 1
+element deep, then apply a $2 \times 2$ max pooling filter propagating the max
+value over that region to its output, it will shift by 2 elements right along
+the row and repeatedly be applied until reaching the end of the row then will be
+shifted 2 down, this process repeats until the filter reaches the bottom right
+most position. For an input tensor of size $224 \times 224 \times 10$ the padded
+input will be of size $226 \times 226 \times 10$, since the pooling region is $2
+\times 2$ there are $(226 - 2) \times (226 - 2)$ locations it could be applied
+at, but our stride isn't $1 \times 1$, but $2 \times 2$ hence the output tensor
+will have dimensions ${(226 - 2) / 2 \times (226 - 2) / 2 = 112 \times 112}$
+
+<##check Dima, could you double check I haven't messed this up!>
+
 
 #### Convolutional
 
@@ -479,7 +501,12 @@ input volume and show to produce the output volume>
 
 #### Activation
 
-<##todo Add activation layer section>
+Activation layers are much the same as in traditional ANNs, an activation
+function is chosen and applied element wise.
+
+ rectified linear units
+* Logistic regression
+
 
 ### Architectures
 
