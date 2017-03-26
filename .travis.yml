@@ -21,6 +21,7 @@ install:
   - sudo apt-get install -y gpp inkscape
   - sudo apt-get install -y asciidoc
   - sudo apt-get install -y cabal-install
+  - cabal update
   - cabal install pandoc
   - cabal install pandoc-citeproc
   - cabal install pandoc-crossref
