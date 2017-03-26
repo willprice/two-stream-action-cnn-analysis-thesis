@@ -1,7 +1,6 @@
 ---
 title: Feature analysis of dual stream convolutional neural networks for egocentric action recognition
 author: Will Price
-institute: University of Bristol
 abstract: |
   Abstract contents
 bibliography: ~/references.bib
@@ -428,7 +427,7 @@ There are many types of layers, but they mainly fit into four broad categories:
 #### Fully connected
 
 Fully connected layers are like those in a MLP where each neuron
-is connected to every neuron in the previous layer. These layers are very large in
+is connected to every neuron in the previous layer, see [@fig:layers:fully-connected]. These layers are very large in
 parameters so are usually used further in the network when the input volume size
 is considerably reduced. In CNNs, fully connected layers draw together
 high level features from regions that are spatially distant from each other,
@@ -441,6 +440,8 @@ spatial relationship that wheels on bikes do.
 
 <##check Dima, are the bike wheels a sensible example?>
 
+![Fully Connected layer](media/images/layer-fully-connected.pdf){#fig:layers:fully-connected}
+
 
 #### Pooling
 
@@ -448,7 +449,7 @@ Pooling layers exist to increase the receptive field of deeper layers enabling
 them to learn features than span larger spatial extents, this is accomplished by
 reducing the size of the input volume by computing some function over a region
 of the input yielding a single value, this operation is computed by a *pooling
-filter*. Max pooling is a common pooling filter where the maximum value in an
+filter*, see [@fig:layers:pooling]. Max pooling is a common pooling filter where the maximum value in an
 input region is selected to be propagated forward discarding the rest of the
 values in the region.
 
@@ -456,9 +457,10 @@ Pooling layers typically have *size*, *pad* and *stride* parameters. The *size*
 determines the region over which pooling takes place, *padding* specifies the
 whether to zero pad the input along it's the borders of each axis and if so, how
 wide/deep the padding is, *stride* specifies how many elements to slide the
-filter along the input between each application of the pooling filter.
-For example, a 2D^[3D pooling is possible and used in some action recognition
-architectures] max pooling layer with size $2 \times 2$, padding $1 \times 1$
+filter along the input between each application of the pooling filter. For
+example, a 2D ^[3D pooling is possible and used in some action recognition
+architectures]
+max pooling layer with size $2 \times 2$, padding $1 \times 1$
 and stride $2 \times 2$ will first pad it's input with a border of zeroes 1
 element deep, then apply a $2 \times 2$ max pooling filter propagating the max
 value over that region to its output, it will shift by 2 elements right along
@@ -470,14 +472,17 @@ input will be of size $226 \times 226 \times 10$, since the pooling region is $2
 at, but our stride isn't $1 \times 1$, but $2 \times 2$ hence the output tensor
 will have dimensions ${(226 - 2) / 2 \times (226 - 2) / 2 = 112 \times 112}$
 
+
 <##check Dima, could you double check I haven't messed this up!>
+
+![Pooling layer](media/images/layer-pooling.pdf){#fig:layers:pooling}
 
 
 #### Convolutional
 
 Convolutional layers consist of one or more filters that are slid along an input
 volume and convolved at each location producing a single value which are
-aggregated in an output volume. The filter parameters are learnt and are
+aggregated in an output volume, see [@fig:layers:convolution]. The filter parameters are learnt and are
 constant across different locations in the input volume, this massively reduces
 the number of parameters of the model compared to a fully connected layer
 handling similar volumes sizes making them much more space efficient than fully
@@ -497,17 +502,21 @@ For a layer with 4 filters with the parameters:
 
 The layer has a total of $4 \cdot 4 \cdot 3 \cdot 1 \cdot 1 = 38$ parameters.
 
-<##todo Expand on this with an example bank of filters and an
-input volume and show to produce the output volume>
 
+![Convolutional layer](media/images/layer-convolution.pdf){#fig:layers:convolution}
+
+<##todo Go through the computation of a single or few cells in the above example>
 #### Activation
 
 Activation layers are much the same as in traditional ANNs, an activation
-function is chosen and applied element wise.
+function is chosen and applied element wise to the input tensor to produce an
+output tensor of the same dimensions, see [@fig:layers:activation]. Activation functions take the form
+$\phi(x)$, common functions used include the
+rectified linear unit (ReLU), $\phi(x) = \max(x, 0)$, sigmoid
+$\phi(x) = \frac{1}{1 + e^{-x}}$ and hyperbolic tangent ${\phi(x) =
+\frac{e^{2x} - 1}{e^{2x} + 1}}$
 
- rectified linear units
-* Logistic regression
-
+![Activation layer](media/images/layer-activation.pdf){#fig:layers:activation}
 
 ### Architectures
 
@@ -568,14 +577,38 @@ better, but that the architectures in 2012 were too shallow.
 
 #### Action recognition
 
-<##todo Start by introducing networks for action recognition from images e.g.
-"Gkioxari contextual action recognition ICCV 2015">
-
 The challenge of recognising actions from video sequences has recently seen the
 application of CNNs inspired from their performance on object detection. A
 variety of architectures for tackling the problem have emerged which we shall
 explore in chronological order to see how architectures have evolved over time
 ending with the current state of the art.
+
+![Which way is the tap turning? (BEOID)](media/images/beoid-turn-tap.jpg){#fig:tap-turn height=2in}
+
+Action recognition can be performed from single images or video sequences, both
+approaches have been investigated and we will outline prior work in this
+section. Some actions (or combinations of actions) cannot be reliable predicted
+by single images alone, this is because the motion in the action is the only
+distinguishing factor from other actions. For example, take the example in
+[@fig:tap-turn] of someone turning a water tap in a kitchen sink on and off. We
+cannot reliably determine whether the tap is being turned on or off from a
+single image alone, instead it is necessary to examine multiple video frames
+over time to determine the direction of turning (and flow of water) and hence
+distinguish the two actions: turning the tap on and turning the tap off.
+
+![Contextual clues from the surrounding environment can aid action recognition
+from single frames](media/images/action-recognition-contextual-clues.pdf){#fig:contextual-clues height=2.5in}
+
+In contrast to the observation above, single images alone can perform well based
+on *cues* in the image. Consider the two images in [@fig:contextual-clues], the
+actions being performed can be determined from appearance alone, we can infer
+that the man is writing on the board because he is facing the board, the board
+has writing on it, and he is holding a pen close to where there is writing.
+Similarly, the head massage image
+Gkioxari \etal have investigated the use of these contextual clues in action
+recognition[@gkioxari2015_ContextualActionRecognition]
+
+
 
 The first investigation of CNNs for action recognition operating on raw frame
 data (i.e. without explicit feature extraction) was conducted in
@@ -617,8 +650,10 @@ Karpathy 2014 notes
 * Slow fusion network performs best
 -->
 
-![CNN Architectures evaluated in
-[@karpathy2014_LargeScaleVideoClassification]](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
+layer colours indicate function: red--convolutional, green--normalization,
+blue--pooling. The bottom white boxes indicate a series of frames that are used
+as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
 
 Investigations of different architectures for video classification were
 performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
@@ -693,17 +728,6 @@ Tran 2014
 * Still see an improvement when combining the new network with IDT features
 -->
 
-In [@feichtenhofer2016_ConvolutionalTwoStreamNetwork], the authors extend the
-architecture presented in [@simonyan2014_TwoStreamConvolutionalNetworks] by
-observing that the previous architecture is incapable of matching appearance in
-one sub-region to motion in another sub-region since each stream is separate, to
-remedy this, the introduce a modified architecture in which the two streams are
-combined after the last convolutional layers resulting in a single
-spatio-temporal stream from the fully connected layers onwards. The authors find
-that keeping the spatial stream in addition to the spatio-temporal stream and
-combining their respective predictions further increases performance over
-predictions from the spatio-temporal stream alone.
-<##todo Report performance improvements over fusing into single tower>
 
 <##todo split up the architectures discussed into those necessary for
 background, and those for future work>
@@ -774,7 +798,7 @@ The dataset has a diverse range of camera viewpoints, camera motion, object
 appearance and pose, illumination conditions making it quite challenging
 compared to some of the earlier datasets used for action recognition like KTH.
 
-![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.png)
+![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.pdf)
 
 ### BEOID - Bristol Egocentric Object Interaction Dataset
 
@@ -1264,6 +1288,18 @@ distribution:
   over the multiple frames to generate videos.
 * Train DGN to invert temporal network to generate videos (like in [@nguyen2016_Synthesizingpreferredinputs])
 * Use deepdraw a la TSN paper to visualise actions of my networks
+
+In [@feichtenhofer2016_ConvolutionalTwoStreamNetwork], the authors extend the
+architecture presented in [@simonyan2014_TwoStreamConvolutionalNetworks] by
+observing that the previous architecture is incapable of matching appearance in
+one sub-region to motion in another sub-region since each stream is separate, to
+remedy this, the introduce a modified architecture in which the two streams are
+combined after the last convolutional layers resulting in a single
+spatio-temporal stream from the fully connected layers onwards. The authors find
+that keeping the spatial stream in addition to the spatio-temporal stream and
+combining their respective predictions further increases performance over
+predictions from the spatio-temporal stream alone.
+<##todo Report performance improvements over fusing into single tower>
 
 # Glossary
 
