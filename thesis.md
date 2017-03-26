@@ -317,7 +317,8 @@ the training set) on which the model hasn't been trained, referred to as the
 
 <##check Do you want me to add more about cross-fold validation etc?>
 
-<##todo Talk about two feed forward methods>
+<##todo Talk about how two-stream NNs are tested using forward  propagation and
+how the decisions are fused before training and tuning>
 
 A forward pass of the network in [@fig:ann-example] is computed using the
 activation function ${\phi(x) = \max(x, 0)}$ in [@fig:ann-forward]. We traverse
