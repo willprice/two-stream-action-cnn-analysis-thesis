@@ -1,0 +1,15 @@
+sudo: yes
+dist: trusty
+before_script:
+  - sudo apt-get update -q
+  - |
+    sudo apt-get install -y texlive-full pandoc pandoc-data gpp inkscape
+  - |
+    echo $PATH
+    git clone https://gitlab.com/git-latexdiff/git-latexdiff.git
+    cd git-latexdiff
+    sudo make install
+script:
+  - |
+    mkdir build
+    make
