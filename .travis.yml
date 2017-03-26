@@ -1,8 +1,6 @@
 sudo: yes
 language: haskell
 dist: trusty
-ghc:
-  - 7.8
 cache:
   - $HOME/.cabal/packages
   - $HOME/.cabal/store
@@ -17,7 +15,7 @@ before_cache:
  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/01-index*
  - rm -fv $HOME/.cabal/packages/hackage.haskell.org/*.json
 
-before_script:
+install:
   - sudo apt-get update -q
   - sudo apt-get install -y texlive-full
   - sudo apt-get install -y gpp inkscape
