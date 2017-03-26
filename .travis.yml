@@ -1,9 +1,26 @@
 sudo: yes
+language: haskell
 dist: trusty
+ghc:
+  - 7.8
+cache:
+  - $HOME/.cabal/packages
+  - $HOME/.cabal/store
+  - $HOME/.cabal/bin
+
+# We remove the index because it churns quite a bit and we don't want
+# to pay the cost of repeatedly caching it even though we don't care
+# about most changing packages.
+before_cache:
+ - rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
+ - rm -fv $HOME/.cabal/packages/hackage.haskell.org/00-index*
+ - rm -fv $HOME/.cabal/packages/hackage.haskell.org/01-index*
+ - rm -fv $HOME/.cabal/packages/hackage.haskell.org/*.json
+
 before_script:
   - sudo apt-get update -q
   - sudo apt-get install -y texlive-full
-  - sudo apt-get install -y pandoc pandoc-data gpp inkscape
+  - sudo apt-get install -y gpp inkscape
   - sudo apt-get install -y asciidoc
   - |
     pushd .
@@ -12,6 +29,10 @@ before_script:
     cd git-latexdiff
     sudo make install
     popd
+  - |
+    cabal update
+    cabal install pandoc pandoc-crossref pandoc-citeproc
+
 script:
   - |
     mkdir build
