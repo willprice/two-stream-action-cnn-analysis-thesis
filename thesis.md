@@ -15,6 +15,8 @@ keywords:
   - action recognition
 colorlinks: true
 toc: yes
+lot: yes # list of tables
+lof: yes # list of figures
 link-citations: true
 papersize: A4
 classoption: draft
