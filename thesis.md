@@ -1,7 +1,6 @@
 ---
 title: Feature analysis of dual stream convolutional neural networks for egocentric action recognition
 author: Will Price
-institute: University of Bristol
 abstract: |
   Abstract contents
 bibliography: ~/references.bib
