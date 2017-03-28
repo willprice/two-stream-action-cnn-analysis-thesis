@@ -38,6 +38,8 @@ header-includes:
   # End watermark
   - \graphicspath{{../}{./}}
   - \newcommand{\etal}{\textit{et al}.}
+  - \DeclareMathOperator*{\argmin}{arg\,min}
+  - \DeclareMathOperator*{\argmax}{arg\,max}
   - \newcommand{\learningrate}{\eta}
   - \newcommand{\neuron}[2]{a_{#2}^{(#1)}}
     # 1: layer index
@@ -72,7 +74,6 @@ header-includes:
   - \newcommand{\neuronoutput}[2]{\hat{a}^{(#1)}_{#2}}
     # 1: layer index
     # 2: neuron index
-  - \DeclareMathOperator{\argmax}{argmax}
 ---
 
 <!--- Draft options -->
@@ -581,7 +582,7 @@ The challenge of recognising actions from video sequences has recently seen the
 application of CNNs inspired from their performance on object detection. A
 variety of architectures for tackling the problem have emerged which we shall
 explore in chronological order to see how architectures have evolved over time
-ending with the current state of the art.
+concluding with the architecture used in our experiments.
 
 ![Which way is the tap turning? (BEOID)](media/images/beoid-turn-tap.jpg){#fig:tap-turn height=2in}
 
@@ -608,8 +609,6 @@ Similarly, the head massage image
 Gkioxari \etal have investigated the use of these contextual clues in action
 recognition[@gkioxari2015_ContextualActionRecognition]
 
-
-
 The first investigation of CNNs for action recognition operating on raw frame
 data (i.e. without explicit feature extraction) was conducted in
 [@baccouche2011_SequentialDeepLearning]. They introduced an architecture with an
@@ -632,108 +631,86 @@ frames. The network was evaluated on both the KTH dataset with competitive
 performance to other methods developed at the time and TRECVID[@_TRECVIDData]
 dataset improving over the state of the art.
 
-
-<!--
-Karpathy 2014 notes
-
-* Introduction of Sports-1M collected from YouTube with 487 classes
-* Comparison of single frame to multiple frame networks
-* Only slightly better performance for multiframe models
-* Low res context stream with high res fovea stream inspired by the eye to
-  improve training speeds
-* Transfer learning from networks trained on Sports-1M to UCF101
-* 178x178 input, down sampled to 89x89 for context stream and center cropped to
-  89x89 for fovea stream obtaining similar accuracy to full 178x178 stream but
-  with quicker training times
-* 4 architectures: single frame, late fusion, early fusion, slow fusion
-* motion aware networks underperform when there is camera motion
-* Slow fusion network performs best
--->
-
-![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
-layer colours indicate function: red--convolutional, green--normalization,
-blue--pooling. The bottom white boxes indicate a series of frames that are used
-as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
-
-Investigations of different architectures for video classification were
-performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
-styles of architecture were investigated to determine optimal stages of fusing
-temporal and spatial information. Each architecture had a different connectivity
-to the video sequence stack, from using a single frame as input to a dense
-sub-sequence of frames (see [@fig:karpath2014-fusion-architectures] for
-architectures and video sequence connectivity). Slow fusion, an architecture
-that progressively enlarges the temporal and spatial field of view as the input
-propagates deeper into the network performed best.
-
-<##todo expand on this>
-
-
-<!--
-Simonyan 2014
-
-* References Ji 2013, and Karpathy 2014
-* Ventral and dorsal streams influenced by the two stream hypothesis of human vision
-  * ventral
-    * object recognition
-    * form representation
-    * 'what stream'
-  * dorsal
-    * 'how stream'
-    * spatial awareness
-    * guidance of actions
-    * good at detecting and analysing movements
-* Two stream CNN with ventral (spatial) and dorsal (temporal) streams
--->
+##### Two stream
 
 A biologically inspired architecture based on the two-stream visual processing
 hypothesis is introduced in [@simonyan2014_TwoStreamConvolutionalNetworks]. The
 two stream hypothesis states that two processing streams are used in the brain
-for processing visual input: the dorsal stream for motion, good at
-detecting and recognising movements; and the ventral stream recognising form,
-good at detecting objects. An architecture with two streams based on the
-biological hypothesis is given, it has two streams, the spatial for handling the
+for processing visual input: the dorsal stream for motion, good at detecting and
+recognising movements; and the ventral stream recognising form, good at
+detecting objects. An architecture with two streams based on the biological
+hypothesis is given, it has two streams, the spatial for handling the
 appearance(analog of the ventral stream) and the temporal for handling the
-motion(analog of the dorsal stream). A video sequence is processed to obtain
-optical flow frames which are used as input to the temporal stream, and a single
-frame is used as input to the spatial stream. The two streams process the inputs
-in parallel each of which produces an action prediction, the results are then
-combined using a linear classifier.
+motion(analog of the dorsal stream). A video sequence is processed to obtain the
+optical flow frames using the TVL1[@zach2007_DualityBasedApproach] algorithm
+which are used as input to the temporal stream, and a single frame is used as
+input to the spatial stream. The two streams process the inputs in parallel each
+of which produces an action prediction, the results are then combined using a
+linear classifier, see [@fig:architecture:two-stream].
 
-<!--
-Tran 2014
+The spatial stream takes in a single input frame $\tau$, size $W \times H \times
+3$ (using RGB images). The corresponding input to the temporal stream is $W
+\times H \times 2L$ where $L$ is the temporal duration, a hyperparameter of the
+network determining over how a long period to compute optical flow from,
+In [@simonyan2014_TwoStreamConvolutionalNetworks] use $L = 10$ and both our
+networks are also trained with $L = 10$. The temporal input is computed from the
+frames $\tau - L/2$ to $\tau + L/2$ yielding $L$ frames from which $2L$ optical
+flow frames are obtained, twice as many as the input due to computing both
+flow in $u$ and $v$ directions. The flow frames are then combined by
+alternating $u$ and $v$ frames, all even frames in the optical flow stack are in
+$u$ direction and odd, the $v$ direction.
 
-* 3D CNN better than 2D CNN
-* 3x3x3 kernels in all layers obtains best results in all architectures tested
-  in paper
-* Says Karpathy 2014 used 2D Convolutions in all architectures but slow fusion
-  which they hypothesis is why it performed best
-* Investigate varying depth of 3D convolution whilst holding other
-  hyperparameters constant
-* *visualisation* deconvolution of network
-* Call their architecture C3D
--->
+Raw optical flow frames stored as floats can take up a large amount of space so
+instead they are converted to greyscale images in the range $[0, 255]$ and
+compressed using JPEG to reduce storage requirements. On input to the network
+the frames are mean-centred around $(127, 127, 127)$.
 
-<!--
-* Extension of Simonyan 2014 architecture
-* Investigation of fusion of networks
-* Fusing at last convolutional layer gives best performance
-* Improve performance further by keeping both streams and fusing at the end too
-* State that  Wang 2015 and Tran 2014 have current SoA methods for UCF101 and HMDB51
-* Identifies deficiency of basic two stream network in that it can't see what is
-  happening where (caused by the late fusion)
-* By fusing earlier, the network can correlate movement with appearance and thus
-  rectify the deficiency of not being able to see what is moving where in the
-  basic two stream network
-* New architecture beats SoA (i.e. better than Wang 2015 and Tran 2014)
-* Still see an improvement when combining the new network with IDT features
--->
+The networks are trained concurrently using mini-batch stochastic gradient
+descent. 256 video sequences are selected from the training dataset uniformly
+across the classes from which a single frame $\tau$ is sampled from each of
+these videos and the corresponding optical flow stack from $\tau - L/2$ to
+$\tau + L/2$ is computed forming the input of the spatial and temporal network
+respectively. Stochastic gradient descent with momentum is used to train the
+networks against the ground truth actions of the sample video. A common strategy
+in training CNNs is to initialise the weights of the network to those of the
+same network architecture trained on ImageNet, this helps avoid overfitting on
+small datasets. The weights of the UCF101 trained network was initialised with
+ImageNet trained weights, and the BEOID trained network was initialised on the
+weights of the UCF101 trained network.
 
+The
 
-<##todo split up the architectures discussed into those necessary for
-background, and those for future work>
-<##todo split out two stream cnn to separate section with detailed explanation>
-<##todo move Karpathy 2014 to future work>
+<##check Dima, this is not entirely true, the UCF101 trained network was from a
+separate source, not the one that Mike/Davide trained, but I'm hesitant to state
+this as it muddies the explanation>
 
+Classification of a video using the two stream network is accomplished by
+sampling a fixed number of frames with equal temporal distance between each
+pair of consecutively sampled frames. For each sampled frame $F$, a new set of
+frames are computed by flipping and cropping $F$. The corresponding input to the
+temporal network is computed from the frames post-transformation. The overall
+class scores for the whole video is computed as the average of the class scores
+for each individual sample. For example sampling 20 frames from a 60 second long
+clip (at 24 FPS) will yield frames with indices $k \cdot 24 \cdot \frac{60}{20}$
+for $k \in [0 .. 19]$, each frame $F_k$ at index $k$ in the video will then be
+cropped and flipped to produce a set of derived frames $\mathscr{F_k}$, each
+frame in the set will have its class score computed by a forward pass through
+the spatial network, a corresponding input for the temporal network is also
+computed, the scores are then combined (*fused*) by a linear combination.
+
+| Dataset | Stream                  | Accuracy |
+|---------|-------------------------|----------|
+| BEOID   | Spatial                 |    83.9% |
+|         | Temporal                |    92.9% |
+|         | Post convolution fusion |    94.8% |
+| UCF101  | Spatial                 |    78.4% |
+|         | Temporal                |    87.0% |
+|         | Late fusion             |    91.4% |
+
+<##todo Add SGD, mini batch, momentum explanation>
+
+![Two stream CNN
+architecture[@simonyan2014_TwoStreamConvolutionalNetworks]](media/images/two-stream-cnn.pdf){#fig:architecture:two-stream}
 
 ## Video Datasets {#sec:background:datasets}
 
@@ -812,92 +789,205 @@ gymn, and weight-lifting machine.
 
 ## Understanding CNNs {#sec:background:understanding}
 
-It is typical for CNNs to have on the order of $10^7$--$10^8$ parameters, with
+It is typical for CNNs to have on the order of $10^7$--$10^9$ parameters, with
 this complexity comes a difficulty in understanding how the network works. There
 is a need to understand why a network correctly classifies some examples but not
-others to aid the researcher in determining higher performing architectures and
+others to aid the researcher in determining higher performing architectures, and
 problems in the dataset or training process.
 
-In [@yosinski2015_UnderstandingNeuralNetworks], Yosinski \etal{} identify
-that there are two main types of visualisation methods developed for
-understanding the features learnt by CNNs: network-centric and image-centric.
-Network-centric methods generate a visualisation based on the trained network
-alone whereas image-centric methods use an image or intermediate values computed
-in a forward pass of the network from the image to generate a visualisation.
-Image-centric visualisations help the researcher understand aspects like which
-areas in the image contribute to the activation of a neuron. Network-centric
-visualisations provide a more holistic visualisation of a neuron or layer.
+There is a substantial body of work CNN visualisation techniques and at first
+glance it can seem there are many different methods, however most methods fit
+into one of the following four main categories of visualisation:
 
-<##todo expand on network-centric visualisations like filter visualisation>
+* **Attention mapping**, generating a heatmap over the input indicating which
+  regions contribute to activation of a certain neuron or set of neurons.
+* **Layer code analysis**, given a layer code, the output values computed at
+  specific layer, what is an input to the network that results in this layer code.
+* **Activation optimisation**, given a neuron, or set of neurons, determine the
+  input to the network that maximally or minimally excites the neurons.
+* **Filter analysis**, visualisation techniques based at the filter level: e.g.
+  filter response and filter visualisation.
 
-<!--
-Erhan 2009: Visualising Higher-Layer features of a deep networks
+<##todo Read over whole section and think about whether using input or image
+makes more sense for each case and try and be consistent throughout>
 
-* Gradient ascent in image space wrt to neuron to find local optimum
-* Named technique as "Activation maximisation"
--->
+### Filter analysis
 
-In [@erhan2009_VisualizingHigherLayerFeatures], Erhan \etal{} introduce the
-technique named *activation maximisation* for generating an artificial image to
-maximise the activation of a chosen neuron by performing gradient ascent on an
-input image. The technique is applied to a deep belief
-network[@hinton2009_Deepbeliefnetworks] (DBN) and a stacked denoising
+<##todo Think of a better name than Filter analysis>
+
+**Filter visualisation** is the process of taking a filter and visualising it as
+an image. Typically this is most useful at the first layer in the network where
+the input to the filters are the raw input to the CNN (e.g. images), this allows
+us to draw direct comparisons with other filters used on similar inputs like
+edge detection filters for images thus giving us some insights to what the first
+layer is doing. [@zeiler2013_VisualizingUnderstandingConvolutional] visualises
+the first layer filters of AlexNet[@krizhevsky2012_Imagenetclassificationdeep]
+demonstrating that there are a number of 'dead' filters, uniform filters that
+don't compute any useful transform. Zeiler \etal{} empirically establish a new
+architecture which learns fewer dead filters in the first layer using first
+layer filter visualisation to check this.
+
+**Filter response** involves visualising the response of a filter after
+application to a specific input, similar to *filter visualisation* this gives us
+insight as to what transformation the filters are computing: edge detection,
+contrast encoding etc. This tends to be most useful at lower layers in the
+network where the outputs from each layer are still recognisable as some
+transformation of the input image. Yosinski \etal{} introduce a tool called Deep
+Visualisation Toolbox ^[https://github.com/yosinski/deep-visualization-toolbox]
+in [@yosinski2015_UnderstandingNeuralNetworks] capable of showing filter
+responses for arbitrary networks and input images in realtime (futhermore the
+tool can also compute the deconvolution and gradient attention maps). Yosinski
+\etal{} emphasise the importance of analysing all filters simultaneously as
+individual filters shouldn't be considered on their own but in the context of
+all the filters of the layer as this is the way the next layer uses them.
+
+### Activation optimisation
+
+Activation optimisation covers a broad range of visualisation techniques used to
+optimise the activation of a neuron, usually we want to maximally activate a
+neuron to determine what features it recognises. Formally, to find an image that
+maximally activates a single neuron. Let $h_j^{(i)}(\bm{x})$ define the
+activation of neuron $j$ in layer $i$ when the network forward propagates the
+input $\bm{x}$. Now we want to find $\bm{x}^{*} = \argmax_x h_j^{(i)}(\bm{x})$,
+this is not necessarily unique as many different inputs can cause maximal
+activation of a neuron. Whilst this may seem like a fairly simple optimisation
+problem the main challenge is to produce a 'natural' looking image, without any
+form of regularisation this optimisation produces extremely noisy unrecognisable
+images. Most of the prior work on this technique involves the proposal of
+different priors used to constrain the optimisation to produce interpretable images.
+
+Erhan \etal{} were the first to introduce *activation maximisation* for
+generating an artificial image to maximise the activation of a chosen neuron by
+performing gradient ascent on an input
+image[@erhan2009_VisualizingHigherLayerFeatures]. The authors only constrict the
+optimisation problem by ensuring that $||\bm{x}|| = \rho$, where $\rho$ is used
+to bound the magnitude of the generated image. To evaluate the method, they
+apply the technique to a deep belief network[@hinton2009_Deepbeliefnetworks]
+(DBN) and a stacked denoising
 autoencoder[@vincent2010_StackedDenoisingAutoencoders] (SDAE) trained on the
-MNIST dataset of 60,000 hand written digits. They found that neurons in the
-lower layers were activated by blobs and patterns, and neurons in higher layers
-by actual images indicating that the neurons have learnt higher level features
-from the combinations of lower ones.
+MNIST dataset of 60,000 hand written digits. Images generated for neurons in
+lower levels showed blobs and simple patterns whereas neurons deeper in the
+network produced recognisable digit images indicating that the neurons have
+learnt higher level features from the combinations of lower ones.
 
+Simonyan
+\etal{} investigated activation maximisation using L2 regularisation for object
+detection CNNs[@simonyan2013_DeepConvolutionalNetworks] producing images with
+interpretable outlines but inaccurate colouring.
 
-<!--
-Zeiler 2013: Visualising and understanding convolutional networks
+Mahendran \etal{} investigate
+the use of priors to restrict the generated image to look 'natural' (i.e. not
+computer generated) for layer code inversion (see [@sec:vis:code-inversion]).
+They use the L_n norm and total variation of the generated
+image[@mahendran2014_UnderstandingDeepImagea] producing images with more
+accurate colouring than Simonyan \etal{}'s method. They later expand on their
+previous work in [@mahendran2016_VisualizingDeepConvolutional] recognising the
+general applicability of natural image priors to layer code inversion,
+activation maximisation and caricaturization. They note that pixels in a
+generated image should be constrained within a certain range, so propose a
+*bounded range* regularisation term to ensure the pixels are limited to be no
+greater than a chosen threshold. The also use jittering as proposed in
+[@2015_InceptionismGoingDeeper] which shifts the generated image between steps
+of the gradient ascent optimisation based on the assumption that the image
+should still produce a strong activation of the neuron if the edges are
+occluded.
 
-* Ablation study to find discover performance contribution of the different layers
-* Introduce a visualisation technique based on deconvolutional networks
-* Uses visualisation as a diagnostic to help improve architecture resulting in
-  architecture that outperforms AlexNet.
-* Map activities in intermediate layers back to input space
-* Deconvnet: Reverse all layers
-* Process:
-  * An image is propagated through the CNN resulting in feature maps at each layer
-  * Attach deconvnet layers to all layers of CNN
-  * A activation is chosen for visualisation in a layer $l$, all other
-    activations are set to 0 in layer $l$
-  * reconstruct activity in layer below according to this feature map we've just
-    created
-  * Repeat process of reconstructing activity in previous layer until we're back
-    in image space
-* Reversing pooling (unpooling): Record the locations of the maxima in the
-  forward pass, when backward propagating, use the locations to distribute the
-  values through the maximum filter to the original max input location
-* Reverse rectification: Rectification (not sure why)
-* Reverse filtering: Transpose the filter and apply it to the rectified maps,
-  not the input of the layer
-* Since switch locations are particular to a specific image the resulting
-  visualisation in image space looks similar to the input image
+Nguyen \etal{} propose an innovative method to encode the prior that the image
+should be 'natural' by use of a deep generative network (DGN) trained to invert
+a deep feature map back to image space[@nguyen2016_Synthesizingpreferredinputs].
+A DGN $G$ for a network $N$ is trained to produce an input $\bm{x}$ to $N$ from
+a feature map $\bm{m}$ from layer $l$ in $N$ such that forward propagating
+$\bm{x}$ in network $N$ will produce $\bm{m}$ at layer $l$, i.e. the goal of a
+DGN is to invert a feature map back to input space for a given network. Instead
+of performing gradient ascent in the input space to generate an input $\bm{x}^*$
+to maximally activate $h_j^{(j)}(\bm{x})$ we instead perform it in the layer
+code space and connect the output of the $G$ to $N$ forming a chain of these two
+networks. The use of the DGN acts as a strong prior for producing natural
+inputs since the DGN has in effect learnt what makes an image 'natural' or not.
 
-* In addition to the deconv visualisation, the authors propose an occlusion
-  study where a grey square (ideally coloured by the mean of the dataset)  is
-  slid across the image, for each position the activation of a specific class
-  neuron is recorded this is repeated to determine the change in activation as
-  different parts of the image are occluded
--->
+Nguyen \etal{} also make an interesting discovery of multi-faceted
+neurons[@nguyen2016_MultifacetedFeatureVisualization], neurons which are
+activated from multiple features and introduce a method to search for the
+different features that activate the neuron.
 
-<##todo Add figures explaining deconvolution>
+An interesting take on the idea of activation maximisation is to try and fool
+the network by generating inputs that are classified incorrectly with almost
+perfect confidence that to the human eye are completely incorrect, In
+[@nguyen2014_DeepNeuralNetworksa] Nguyen \etal{} generate a series of images of
+abstract patterns that are classified with almost perfect confidence on ImageNet
+trained object detection networks.
+
+<##todo Add visual comparison of different activation maximisation techniques>
+
+A simple technique for gauging what features a neuron might have learnt is to
+generate a set of inputs by searching through the examples used to train the
+network and collecting the top-$n$ example that minimally and maximally excite a
+chosen neuron. The variety of images in the top-$n$ excitation example set give
+clues to the invariants of the neuron.
+
+### Feature map inversion {#sec:vis:feature-map-inversion}
+
+Feature maps (a.k.a CNN codes) are the outputs produced by a layer for use by
+the next layer. In feature map inversion we try to determine an input $\bm{x}$
+to the network to produce a given feature map $\bm{m}$ at layer $l$. This can be
+seen as a generalisation of activation maximisation where activation
+maximisation is feature map inversion for a one hot feature maps.
+
+Mahendran \etal{} were the first to investigate the inversion of feature maps in
+object detection CNNs[@mahendran2014_UnderstandingDeepImagea] using gradient
+descent to solve the following minimisation problem: given an input $\bm{x}$,
+which forward propagated to through the network to layer $l$ produces a feature
+map $\bm{m}$, find an input $\bm{x}^*$ from inverting $\bm{m}$ minimising the
+loss $\ell(\bm{x}, \bm{x}^*)$. Similar to activation maximisation they also make
+use of priors to ensure the inversion looks like a 'natural' image. The authors
+elaborate on their approach in [@mahendran2016_VisualizingDeepConvolutional]
+with the same approach but with new priors (the same as those discussed in the
+activation optimisation section) to produce more natural looking images.
+
+Dosovitskiy \etal{} use up-convolutional networks to invert feature maps
+[@dosovitskiy2015_InvertingVisualRepresentationsa]. The authors train a decoder
+network on ImageNet images and feature maps from
+AlexNet[@krizhevsky2012_Imagenetclassificationdeep] producing an up
+convolutional network. In [@nguyen2016_Synthesizingpreferredinputs] Nguyen
+\etal{} propose a DGN for use as a natural image prior in activation
+maximisation, however there is no reason that this couldn't also be used in the
+same manner as the up-convolutional decoder network for feature map inversion.
+
+### Attention mapping
+
+An *attention map* for a given input $\bm{x}$ and trained CNN is a heatmap
+indicating the regions in the input that contribute to its classification.
+
+An occlusion study[@zeiler2013_VisualizingUnderstandingConvolutional] is a
+simple but computationally expensive method for determining the regions of an
+input that contribute to its classification. For a specific input $\bm{w}$ a
+region is occluded by a mask smaller than the input size, a forward pass is
+computed, and the confidence in the ground truth class is recorded, the
+occluding region is then slid along the input into a new position and the
+process repeated over the whole input producing a tensor recording the class
+confidences at each location which can then be used as a heatmap.
+
+Simonyan \etal{}[@simonyan2013_DeepConvolutionalNetworks] observe that the
+weights of a linear classifier can be interpreted as the relative importance of
+the components feature vector. Since CNNs compute a non-linear transform of
+their input so the same technique cannot be used, however a linear approximation
+$\hat{\bm{w}} \cdot \bm{x}$ to the network about a specific input $\bm{x}$ can
+be computed using a first order Taylor expansion whose weights $\hat{\bm{w}}$
+can be interpreted as the importance of the corresponding input elements.
+
 In [@zeiler2013_VisualizingUnderstandingConvolutional], Zeiler & Fergus
-introduce two image-centric visualisations: deconvolutional visualisation and
-occlusion studies. In deconvolutional visualisation, an image is propagated
-through the network, the neuron for visualisation is chosen and a
-deconvolutional network[@zeiler2010_Deconvolutionalnetworks] constructed from
-the network-under-analysis' weights is attached to the layer in which the neuron
-of interest resides. All other neurons in the layer of the chosen neuron are set
-to zero to produce a one-hot CNN code which is used as input to the
-deconvolutional network that progressively inverts the operation of the original
-network until the CNN code is fully inverted back into an image. The
-resulting image retains aspects of the original image in areas that contribute
-to the activation of the chosen neuron. To invert a convolutional layer $l_c$, a
-corresponding convolutional layer $l_c'$ is constructed in the deconvolutional network
-where the filters from $l$ are transposed in $l_c'$ and the input to $l_c'$ is the
+introduce deconvolutional visualisation in which an input is propagated through
+the network, the neuron for visualisation is chosen and a deconvolutional
+network[@zeiler2010_Deconvolutionalnetworks] constructed from the
+network-under-analysis' weights is attached to the layer in which the neuron of
+interest resides. All other neurons in the layer of the chosen neuron are set to
+zero to produce a one-hot CNN code which is used as input to the deconvolutional
+network that progressively inverts the operation of the original network until
+the CNN code is fully inverted back into an image. The resulting image retains
+aspects of the original image in areas that contribute to the activation of the
+chosen neuron. To invert a convolutional layer $l_c$, a corresponding
+convolutional layer $l_c'$ is constructed in the deconvolutional network where
+the filters from $l$ are transposed in $l_c'$ and the input to $l_c'$ is the
 output of $l_c$. Rectified linear unit (ReLU) layers are inverted by also
 applying ReLU, the idea being that a ReLU layer ensures that the output of the
 layer is non negative, to preserve this property that the output of a layer is
@@ -907,74 +997,21 @@ the max activation originated from, consider the following example: in a pooling
 layer with $2 \times 2$ filters, index each location in the filter by $i$, let
 $i_{\text{max}}$ by the index of the location from which the maximum value
 originates. When inverting the network, the value to by distributed back to the
-$2 \times 2$ grid is entirely given to location $i_{\text{max}}$.
-<##todo Reword explanation of deconv with diagrams>
-
-
-<!--
-Simonyan 2013: Deep inside convolutional networks
-
-* 2 visualisations: class model, and image specific class saliency
-* Link between gradient based convnet visualisation methods and deconvolutional
-  networks
-* Apply Erhan 09 gradient ascent method to CNNs
-* Propose method for computing spatial support (relevant pixels in input) using
-  a single backprop pass yielding a saliency map
-
-Generating a class model visualisation:
-Goal: Generate an image representative of the class of interest
-Method: Find $\argmax_i S_c(I) - \lambda ||I||_2^2$, this is done by back prop
-wrt to input image, image initialised with zero image
-
-Image specific class saliency visualisation:
-Goal: rank pixels in input image $I$ according to their influence on the score
-$S_c (I)$. Take a linear classifier for example $S_c(I) = w_c^T I + b_C$, the
-components of the weight vector $w_c$ indicate the importance of each pixel in
-$I$ to the classification, for deep convnets it is more difficult as the
-function $S_c(I)$ is highly non linear, $S_c(I)$ can be approximated by a taylor
-expansion in the neighbourhood of $I$ yielding a linear model whose weights can
-then be interpreted as the importance of each pixel to excite each particular neuron
--->
-
-Simonyan \etal{} build on the work of Erhan \etal{} on activation maximisation
-(a network-centric visualisation) by introducing regularisation terms to the
-optimisation objective to improve the interpretability of the generated image.
-The regularisation terms are designed to restrict the generated image to the
-space of natural images, since this is hard notion to express mathematically,
-the regularisation terms act as proxy measures for how natural the synthesized
-image is. In addition to improving the results of activation maximisation, it is
-shown that the method is equivalent to the deconvolutional network visualisation
-method proposed in [@zeiler2013_VisualizingUnderstandingConvolutional]. The
-authors also introduce a new image-centric visualisation method to determine the
-contribution of individual pixels in an input image to its classification by
-calculating the first order Taylor expansion of the partial derivative of the
-predicted class neuron with respect to the image space producing a linear
-function from which the weights of the pixels approximate their relative
-importance in the classification. These weights can then be visualised as a
-heatmap in the image space.
-
-
-<!--
-Yu 2014: Visualising and comparing convolutional neural networks
-
-Qualitative comparison of VGG16 and AlexNet using deconv (zeiler & fergus 2013)
-visualisation to show VGG localises objects better using
--->
-
-In [@yu2014_VisualizingComparingConvolutional], Yu \etal{} make a qualitative
-comparison between AlexNet[@krizhevsky2012_Imagenetclassificationdeep] and
+$2 \times 2$ grid is entirely given to location $i_{\text{max}}$. Yu \etal{}
+make a qualitative comparison in [@yu2014_VisualizingComparingConvolutional]
+between AlexNet[@krizhevsky2012_Imagenetclassificationdeep] and
 VGG16[@simonyan2014_VeryDeepConvolutional] using Deconvolutional visualisations
-of neurons in different layers, they show that the deeper layers in VGG16 learn
+of neurons in different layers showing that the deeper layers in VGG16 learn
 more discriminate features than those in AlexNet.
 
-<!--
-Bach 2015: On pixel-wise explanations for non-linear classifier decisions by
-layer-wise relevance propagation
 
-Introduces
--->
-<##check Possibly include Bach 2015?>
+<##todo Reword
+explanation of deconv with diagrams>
 
+<##todo Add figures explaining deconvolution>
+
+Excitation backprop[@zhang2016_TopdownNeuralAttention] is addressed in the
+following section ([@sec:ebp]).
 
 <!--
 Samek 2015: Evaluating the visualisation of what a deep network learned
@@ -993,97 +1030,10 @@ Samek 2015: Evaluating the visualisation of what a deep network learned
   car" and not "what speaks for the presence of a car in the image"
 * Uses LVP
 -->
-
-Samek
-\etal{}[@samek2015_Evaluatingvisualizationwhat;@samek2016_EvaluatingVisualizationWhat]
-introduce a new image-centric visualisation method for determining why a network
-made a classification decision, unlike activation maximisation, the
-visualisation is based on the network's decision boundary rather than a Taylor
-expansion about a particular image, a
-
-<##todo Need to read and understand the technique before I can explain it>
+Layerwise relevance propagation[@bach2015_PixelWiseExplanationsNonLinear;@samek2015_Evaluatingvisualizationwhat;@lapuschkin2016_LRPToolboxArtificial]
 
 
-<!--
-Yosinski 2015: Understanding neural networks through deep visualisation
-
-* 2 tools for visualisation
-  * Live filter responses to build intuitions
-  * Visualising features via regularised optimisation in image space
-    * New methods of regularisation introduced to improve visualisation quality
-* Built DeepVisToolbox
-* Mentions Mahendran 2014 and Yosinski 2014 as looking into understanding what
-  layers are learning as individual filters don't make sense alone, only in
-  context of the whole
-* Distinguishes between data-centric approaches (e.g. deconvolution) and
-  network-centric approaches (e.g. Ehran 2009)
-* Propose a variety of priors used to guide the optimisation in image space to
-  produce more realistic looking images than previous attempts at optimisation
-  in the image space
--->
-
-Yosinski \etal{} explore a variety of priors/regularisers for use in the
-activation maximisation visualisation of Erhan [@erhan2009_VisualizingHigherLayerFeatures] in
-[@yosinski2015_UnderstandingNeuralNetworks]. They release a toolbox named Deep
-Visualisation Toolbox^[https://github.com/yosinski/deep-visualization-toolbox]
-to observe live filter responses over arbitrary images on a user provided CNN,
-furthermore the tool also facilitates deconvolutional visualisation and
-activation maximisation.
-
-<!--
-Google 2015: Inceptionism
-
-* Gradient ascent to maximise L2 norm activations of a layer in image space with
-  priors
-* priors:
-  * offset image by random jitter produces sharper results
-  * apply ascent across multiple scales (octaves)
--->
-
-<!--
-Mahendran 2016: Visualising deep convolutional neural networks
-
-3 visualisation types:
-
-* inversion: invert a CNN code to produce an input image that produces that CNN code
-* activation maximization: Find an image that maximally excites a neuron (deep
-  dream like)
-* caricaturization: modify an initial image to exaggerate any pattern that
-  excites the activate (i.e. high activation) neurons in a layer
-
-All three techniques use the same energy minimisation equation, just different
-aspects of it are tweaked to produce
-
-Introduces a variety of regularises for the optimisation problem finding an
-image to produce a given CNN code:
-Inversion:
-* Encourage intensity of pixels to stay bounded: $||x||_\alpha^\alpha$ typically
-  L2 norm is used
-* Total variation (TV) regularisation,
-* Jitter: randomly shift input image before feeding it to the representation
--->
-
-Three methods are proposed in [@mahendran2016_VisualizingDeepConvolutional]:
-*inversion*, inverting an arbitrary CNN code back to image space, i.e.
-synthesizing an image that produces a given CNN code; *activation maximisation*,
-new priors are proposed to improve *activation maximisation* (proposed by Erhan
-\etal{}); *caricaturization* mutates a given image to exaggerate patterns to
-further increase high activations in a layer of the network.
-
-
-Nguyen \etal{} explore an image-centric probabilistic visualisation method for
-determining the importance of regions in the input image to maximise the
-activation of the neuron to produce a heatmap in
-[@nguyen2016_Synthesizingpreferredinputs]. To generate an excitation map for an
-image, the image is first processed in a forward pass to determine the
-activations of all neurons in the network, A prior distribution is defined to
-
-Nguyen 2016: Synthesizing the preferred inputs for neurons
-<##todo Nguyen 2016>
-
-<##todo rework section into taxonomy of visualisation techniques>
-
-# EBP
+# EBP {#sec:ebp}
 
 First a forward pass of the network is computed, this produces the intermediate
 neuron values which are used as *bottom up* salience factors, then a probability
@@ -1288,6 +1238,71 @@ distribution:
   over the multiple frames to generate videos.
 * Train DGN to invert temporal network to generate videos (like in [@nguyen2016_Synthesizingpreferredinputs])
 * Use deepdraw a la TSN paper to visualise actions of my networks
+
+<!--
+Karpathy 2014 notes
+
+* Introduction of Sports-1M collected from YouTube with 487 classes
+* Comparison of single frame to multiple frame networks
+* Only slightly better performance for multiframe models
+* Low res context stream with high res fovea stream inspired by the eye to
+  improve training speeds
+* Transfer learning from networks trained on Sports-1M to UCF101
+* 178x178 input, down sampled to 89x89 for context stream and center cropped to
+  89x89 for fovea stream obtaining similar accuracy to full 178x178 stream but
+  with quicker training times
+* 4 architectures: single frame, late fusion, early fusion, slow fusion
+* motion aware networks underperform when there is camera motion
+* Slow fusion network performs best
+-->
+
+![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
+layer colours indicate function: red--convolutional, green--normalization,
+blue--pooling. The bottom white boxes indicate a series of frames that are used
+as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+
+Investigations of different architectures for video classification were
+performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
+styles of architecture were investigated to determine optimal stages of fusing
+temporal and spatial information. Each architecture had a different connectivity
+to the video sequence stack, from using a single frame as input to a dense
+sub-sequence of frames (see [@fig:karpath2014-fusion-architectures] for
+architectures and video sequence connectivity). Slow fusion, an architecture
+that progressively enlarges the temporal and spatial field of view as the input
+propagates deeper into the network performed best.
+
+<##todo expand on this>
+
+
+<!--
+Tran 2014
+
+* 3D CNN better than 2D CNN
+* 3x3x3 kernels in all layers obtains best results in all architectures tested
+  in paper
+* Says Karpathy 2014 used 2D Convolutions in all architectures but slow fusion
+  which they hypothesis is why it performed best
+* Investigate varying depth of 3D convolution whilst holding other
+  hyperparameters constant
+* *visualisation* deconvolution of network
+* Call their architecture C3D
+-->
+
+<!--
+Feichtenhofer 2016
+* Extension of Simonyan 2014 architecture
+* Investigation of fusion of networks
+* Fusing at last convolutional layer gives best performance
+* Improve performance further by keeping both streams and fusing at the end too
+* State that  Wang 2015 and Tran 2014 have current SoA methods for UCF101 and HMDB51
+* Identifies deficiency of basic two stream network in that it can't see what is
+  happening where (caused by the late fusion)
+* By fusing earlier, the network can correlate movement with appearance and thus
+  rectify the deficiency of not being able to see what is moving where in the
+  basic two stream network
+* New architecture beats SoA (i.e. better than Wang 2015 and Tran 2014)
+* Still see an improvement when combining the new network with IDT features
+-->
 
 In [@feichtenhofer2016_ConvolutionalTwoStreamNetwork], the authors extend the
 architecture presented in [@simonyan2014_TwoStreamConvolutionalNetworks] by
