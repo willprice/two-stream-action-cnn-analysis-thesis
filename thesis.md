@@ -636,19 +636,20 @@ dataset improving over the state of the art.
 ##### Two stream
 
 A biologically inspired architecture based on the two-stream visual processing
-hypothesis is introduced in [@simonyan2014_TwoStreamConvolutionalNetworks]. The
-two stream hypothesis states that two processing streams are used in the brain
-for processing visual input: the dorsal stream for motion, good at detecting and
-recognising movements; and the ventral stream recognising form, good at
-detecting objects. An architecture with two streams based on the biological
-hypothesis is given, it has two streams, the spatial for handling the
-appearance(analog of the ventral stream) and the temporal for handling the
-motion(analog of the dorsal stream). A video sequence is processed to obtain the
-optical flow frames using the TVL1[@zach2007_DualityBasedApproach] algorithm
-which are used as input to the temporal stream, and a single frame is used as
-input to the spatial stream. The two streams process the inputs in parallel each
-of which produces an action prediction, the results are then combined using a
-linear classifier, see [@fig:architecture:two-stream].
+hypothesis for action recognition is introduced in
+[@simonyan2014_TwoStreamConvolutionalNetworks]. The two stream hypothesis states
+that two processing streams are used in the brain for processing visual input:
+the dorsal stream for motion, good at detecting and recognising movements; and
+the ventral stream recognising form, good at detecting objects. The proposed
+model uses two separate CNNs each taking a different input based on the two
+stream hypothesis: the spatial for handling the appearance (analog of the
+ventral stream) and the temporal for handling the motion (analog of the dorsal
+stream). A video sequence is processed to obtain the optical flow frames using
+the TVL1[@zach2007_DualityBasedApproach] algorithm which are used as input to
+the temporal stream, and a single frame is used as input to the spatial stream.
+The two streams process the inputs in parallel each of which produces an action
+prediction, the results are then combined using a linear classifier, see
+[@fig:architecture:two-stream].
 
 The spatial stream takes in a single input frame $\tau$, size $W \times H \times
 3$ (using RGB images). The corresponding input to the temporal stream is $W
@@ -680,8 +681,6 @@ small datasets. The weights of the UCF101 trained network was initialised with
 ImageNet trained weights, and the BEOID trained network was initialised on the
 weights of the UCF101 trained network.
 
-The
-
 <##check Dima, this is not entirely true, the UCF101 trained network was from a
 separate source, not the one that Mike/Davide trained, but I'm hesitant to state
 this as it muddies the explanation>
@@ -700,6 +699,8 @@ frame in the set will have its class score computed by a forward pass through
 the spatial network, a corresponding input for the temporal network is also
 computed, the scores are then combined (*fused*) by a linear combination.
 
+: Two stream network tower accuracies on BEOID and UCF101
+
 | Dataset | Stream                  | Accuracy |
 |---------|-------------------------|----------|
 | BEOID   | Spatial                 |    83.9% |
@@ -709,7 +710,7 @@ computed, the scores are then combined (*fused*) by a linear combination.
 |         | Temporal                |    87.0% |
 |         | Late fusion             |    91.4% |
 
-<##todo Add SGD, mini batch, momentum explanation>
+<##check Maybe add SGD, mini batch, momentum explanation?>
 
 ![Two stream CNN
 architecture[@simonyan2014_TwoStreamConvolutionalNetworks]](media/images/two-stream-cnn.pdf){#fig:architecture:two-stream}
@@ -777,7 +778,7 @@ The dataset has a diverse range of camera viewpoints, camera motion, object
 appearance and pose, illumination conditions making it quite challenging
 compared to some of the earlier datasets used for action recognition like KTH.
 
-![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.pdf)
+![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.pdf){#fig:dataset:ucf101:samples width=6in}
 
 ### BEOID - Bristol Egocentric Object Interaction Dataset
 
@@ -829,6 +830,11 @@ don't compute any useful transform. Zeiler \etal{} empirically establish a new
 architecture which learns fewer dead filters in the first layer using first
 layer filter visualisation to check this.
 
+<##todo add filters from BEOID spatial network>
+<##todo add filters from UCF101 spatial network>
+<##todo add filters from BEOID temporal network>
+<##todo add filters from UCF101 temporal network>
+
 **Filter response** involves visualising the response of a filter after
 application to a specific input, similar to *filter visualisation* this gives us
 insight as to what transformation the filters are computing: edge detection,
@@ -842,6 +848,9 @@ tool can also compute the deconvolution and gradient attention maps). Yosinski
 \etal{} emphasise the importance of analysing all filters simultaneously as
 individual filters shouldn't be considered on their own but in the context of
 all the filters of the layer as this is the way the next layer uses them.
+
+<##todo add filter responses from BEOID spatial network>
+<##todo add filter responses from UCF101 spatial network>
 
 ### Activation optimisation
 
@@ -879,7 +888,7 @@ interpretable outlines but inaccurate colouring.
 
 Mahendran \etal{} investigate
 the use of priors to restrict the generated image to look 'natural' (i.e. not
-computer generated) for layer code inversion (see [@sec:vis:code-inversion]).
+computer generated) for layer code inversion (see [@sec:vis:feature-map-inversion]).
 They use the L_n norm and total variation of the generated
 image[@mahendran2014_UnderstandingDeepImagea] producing images with more
 accurate colouring than Simonyan \etal{}'s method. They later expand on their
@@ -892,7 +901,10 @@ greater than a chosen threshold. The also use jittering as proposed in
 [@2015_InceptionismGoingDeeper] which shifts the generated image between steps
 of the gradient ascent optimisation based on the assumption that the image
 should still produce a strong activation of the neuron if the edges are
-occluded.
+occluded. The effects of jittering and total variation regularisation can be seen
+in [@fig:am:regularisation-comparison].
+
+![Demonstrating the effects of different regulariser in activation maximisation (images from [@mahendran2016_VisualizingDeepConvolutional])](media/images/am-regularisation.pdf){#fig:am:regularisation-comparison}
 
 Nguyen \etal{} propose an innovative method to encode the prior that the image
 should be 'natural' by use of a deep generative network (DGN) trained to invert
@@ -919,13 +931,17 @@ perfect confidence that to the human eye are completely incorrect, In
 abstract patterns that are classified with almost perfect confidence on ImageNet
 trained object detection networks.
 
-<##todo Add visual comparison of different activation maximisation techniques>
-
 A simple technique for gauging what features a neuron might have learnt is to
 generate a set of inputs by searching through the examples used to train the
 network and collecting the top-$n$ example that minimally and maximally excite a
 chosen neuron. The variety of images in the top-$n$ excitation example set give
 clues to the invariants of the neuron.
+
+A visual comparison of results of the main methods for activation maximisation
+is presented in [@fig:am:method-comparison]
+
+
+![A comparison of the results of different methods for activation maximisation, the generated images come from the authors respective papers[@simonyan2013_DeepConvolutionalNetworks;@mahendran2016_VisualizingDeepConvolutional;@nguyen2016_Synthesizingpreferredinputs]](media/images/activation-maximisation-comparison.pdf){#fig:am:method-comparison}
 
 ### Feature map inversion {#sec:vis:feature-map-inversion}
 
@@ -950,10 +966,21 @@ Dosovitskiy \etal{} use up-convolutional networks to invert feature maps
 [@dosovitskiy2015_InvertingVisualRepresentationsa]. The authors train a decoder
 network on ImageNet images and feature maps from
 AlexNet[@krizhevsky2012_Imagenetclassificationdeep] producing an up
-convolutional network. In [@nguyen2016_Synthesizingpreferredinputs] Nguyen
-\etal{} propose a DGN for use as a natural image prior in activation
-maximisation, however there is no reason that this couldn't also be used in the
-same manner as the up-convolutional decoder network for feature map inversion.
+convolutional network. They contrast their results with Mahendran \etal{}'s
+method and decoders (as part of an autoencoder network where the encoder,
+AlexNet, is fixed) are trained for each layer in the network. Their results are
+presented in [@fig:fm-inversion:method-comparison]
+
+In [@nguyen2016_Synthesizingpreferredinputs] Nguyen \etal{} propose a DGN for
+use as a natural image prior in activation maximisation, however there is no
+reason that this couldn't also be used in the same manner as the
+up-convolutional decoder network for feature map inversion, however, this would
+be pointless in the case that the feature map to invert comes from the same
+layer as the one that the DGN is trained to invert, in that case the DGN would
+be used directly to invert the feature map.
+
+![A comparison of different approaches for feature map inversion, the generated
+images all come from [@dosovitskiy2015_InvertingVisualRepresentationsa]](media/images/fm-inversion-comparison.pdf){#fig:fm-inversion:method-comparison}
 
 ### Attention mapping
 
@@ -969,7 +996,7 @@ occluding region is then slid along the input into a new position and the
 process repeated over the whole input producing a tensor recording the class
 confidences at each location which can then be used as a heatmap.
 
-Simonyan \etal{}[@simonyan2013_DeepConvolutionalNetworks] observe that the
+**Sensitivity analysis**, Simonyan \etal{}[@simonyan2013_DeepConvolutionalNetworks] observe that the
 weights of a linear classifier can be interpreted as the relative importance of
 the components feature vector. Since CNNs compute a non-linear transform of
 their input so the same technique cannot be used, however a linear approximation
@@ -977,7 +1004,7 @@ $\hat{\bm{w}} \cdot \bm{x}$ to the network about a specific input $\bm{x}$ can
 be computed using a first order Taylor expansion whose weights $\hat{\bm{w}}$
 can be interpreted as the importance of the corresponding input elements.
 
-In [@zeiler2013_VisualizingUnderstandingConvolutional], Zeiler & Fergus
+**Deconvolution**, In [@zeiler2013_VisualizingUnderstandingConvolutional], Zeiler & Fergus
 introduce deconvolutional visualisation in which an input is propagated through
 the network, the neuron for visualisation is chosen and a deconvolutional
 network[@zeiler2010_Deconvolutionalnetworks] constructed from the
@@ -1005,15 +1032,9 @@ between AlexNet[@krizhevsky2012_Imagenetclassificationdeep] and
 VGG16[@simonyan2014_VeryDeepConvolutional] using Deconvolutional visualisations
 of neurons in different layers showing that the deeper layers in VGG16 learn
 more discriminate features than those in AlexNet.
+<##todo Reword explanation of deconv with diagrams>
 
-
-<##todo Reword
-explanation of deconv with diagrams>
-
-<##todo Add figures explaining deconvolution>
-
-Excitation backprop[@zhang2016_TopdownNeuralAttention] is addressed in the
-following section ([@sec:ebp]).
+**Layerwise relevance propagation**[@bach2015_PixelWiseExplanationsNonLinear]
 
 <!--
 Samek 2015: Evaluating the visualisation of what a deep network learned
@@ -1032,10 +1053,21 @@ Samek 2015: Evaluating the visualisation of what a deep network learned
   car" and not "what speaks for the presence of a car in the image"
 * Uses LVP
 -->
-Layerwise relevance propagation[@bach2015_PixelWiseExplanationsNonLinear;@samek2015_Evaluatingvisualizationwhat;@lapuschkin2016_LRPToolboxArtificial]
 
+In [@samek2015_Evaluatingvisualizationwhat;@lapuschkin2016_LRPToolboxArtificial],
+Samek \etal{} compare sensitivity analysis, deconvolution and LRP for object
+detection networks. One of their comparisons is reproduced in [@fig:vis:attention-mapping:method-comparison]
 
-# EBP {#sec:ebp}
+![Samek \etal{}'s comparison of attention mapping methods from [@samek2015_Evaluatingvisualizationwhat]](media/images/attention-map-comparison.pdf){#fig:vis:attention-mapping:method-comparison}
+
+**Excitation backprop**[@zhang2016_TopdownNeuralAttention] is addressed in the
+following section ([@sec:ebp]).
+
+# Excitation backpropagation {#sec:ebp}
+
+Excitation backpropagation[@zhang2016_TopdownNeuralAttention] is an attention
+mapping method. <##todo Add introduction about EBP, its routes in the human
+visual system and top down signals>
 
 First a forward pass of the network is computed, this produces the intermediate
 neuron values which are used as *bottom up* salience factors, then a probability
@@ -1268,7 +1300,7 @@ performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
 styles of architecture were investigated to determine optimal stages of fusing
 temporal and spatial information. Each architecture had a different connectivity
 to the video sequence stack, from using a single frame as input to a dense
-sub-sequence of frames (see [@fig:karpath2014-fusion-architectures] for
+sub-sequence of frames (see [@fig:karpathy2014-fusion-architectures] for
 architectures and video sequence connectivity). Slow fusion, an architecture
 that progressively enlarges the temporal and spatial field of view as the input
 propagates deeper into the network performed best.
