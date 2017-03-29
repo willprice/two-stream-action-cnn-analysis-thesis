@@ -87,12 +87,12 @@ header-includes:
 <##define todo|\textcolor{green}{TODO: #1}\newline>
 # Introduction {#sec:introduction}
 
-Action Recognition in Computer Vision refers approaches that aim to infer the
-action or actions of an actor or actors using visual observations, either images
-or videos. We further constrain the definition to infer actions
-from video sequences (sequences of images captured by video cameras at regular
-intervals). Action recognition from video has many
-critical applications[@ranasinghe2016_reviewapplicationsactivity] such as detecting
+Action Recognition in Computer Vision refers to approaches that aim to infer the
+action or actions of an actor or actors using visual observations, in the form
+of images or videos. In this thesis we further constrain the definition to only
+infer actions from video sequences (sequences of images captured by video
+cameras at regular intervals). Action recognition from video has many critical
+applications[@ranasinghe2016_reviewapplicationsactivity] such as detecting
 suspicious behaviours of travellers in airports from CCTV footage, recognising
 the fall of an elderly person who lives alone, and ensuring the safety of the
 operator of a machine by automatically stopping the machine in case of an
@@ -114,8 +114,8 @@ of the tree to the branch, but there's no obvious analogous technique to
 understand a CNN's prediction.
 
 There are efforts made to develop techniques to help understand the
-features learnt by CNNs to aid debugging, but most of these were developed
-and applied to object detection networks, there is little research to see
+features learnt by CNNs to aid debugging, but most of these have been developed
+and tested on object detection networks; there is little research to see
 whether the techniques generalise to networks trained for other tasks such as
 action recognition.
 
@@ -123,10 +123,11 @@ This thesis investigates the applicability of visualisation techniques for two
 stream CNNs[@simonyan2014_TwoStreamConvolutionalNetworks] trained for action
 recognition. There are other architectures for action recognition, but they are
 out of the scope of this investigation. A method for determining the importance
-of regions in an input frame to a network called Excitation Backpropagation
-(EBP)[@zhang2016_TopdownNeuralAttention] is utilised and extended to produce
-excitation maps (heat maps indicating the regions of importance to exciting a
-neuron in the network) across sequences of frames from a video sequence.
+of regions in a network input in producing a given classification called
+Excitation Backpropagation (EBP)[@zhang2016_TopdownNeuralAttention] is utilised
+and extended to produce attention maps (heatmaps indicating the regions of
+importance in activating a given neuron in the network) across sequences of
+frames from a video sequence.
 
 # Background {#sec:background}
 
