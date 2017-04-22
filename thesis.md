@@ -128,14 +128,13 @@ whether the techniques generalise to networks trained for other tasks such as
 action recognition.
 
 This thesis investigates the applicability of visualisation techniques for two
-stream CNNs[@simonyan2014_TwoStreamConvolutionalNetworks] trained for action
-recognition. There are other architectures for action recognition, but they are
-out of the scope of this investigation. A method for determining the importance
-of regions in a network input in producing a given classification called
-Excitation Backpropagation (EBP)[@zhang2016_TopdownNeuralAttention] is utilised
-and extended to produce attention maps (heatmaps indicating the regions of
-importance in activating a given neuron in the network) across sequences of
-frames from a video sequence.
+stream CNNs (2SCNN)[@simonyan2014_TwoStreamConvolutionalNetworks] trained for
+action recognition^[There are other architectures for action recognition, but
+they are out of the scope of this investigation]. A method called Excitation
+Backpropagation (EBP)[@zhang2016_TopdownNeuralAttention] is used and extended to
+produce attention maps (heatmaps indicating the regions of importance in
+activating a given neuron in the network) across sequences of frames from a
+video sequence classified by a 2SCNN.
 
 # Background {#sec:background}
 
