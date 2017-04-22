@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg baseProfile="full" height="1024" version="1.1" width="3860" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g>
+    <image height="256" width="340" x="800" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000001.jpg" y="0"/>
+    <image height="256" width="340" x="1140" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000002.jpg" y="0"/>
+    <image height="256" width="340" x="1480" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000003.jpg" y="0"/>
+    <image height="256" width="340" x="1820" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000004.jpg" y="0"/>
+    <image height="256" width="340" x="2160" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000005.jpg" y="0"/>
+    <image height="256" width="340" x="2500" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000006.jpg" y="0"/>
+    <image height="256" width="340" x="2840" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000007.jpg" y="0"/>
+    <image height="256" width="340" x="3180" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000008.jpg" y="0"/>
+    <image height="256" width="340" x="3520" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000009.jpg" y="0"/>
+  </g>
+  <g>
+    <image height="256" width="340" x="800" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000001.jpg" y="256"/>
+    <image height="256" width="340" x="1140" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000002.jpg" y="256"/>
+    <image height="256" width="340" x="1480" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000003.jpg" y="256"/>
+    <image height="256" width="340" x="1820" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000004.jpg" y="256"/>
+    <image height="256" width="340" x="2160" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000005.jpg" y="256"/>
+    <image height="256" width="340" x="2500" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000006.jpg" y="256"/>
+    <image height="256" width="340" x="2840" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000007.jpg" y="256"/>
+    <image height="256" width="340" x="3180" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000008.jpg" y="256"/>
+    <image height="256" width="340" x="3520" xlink:href="file:///home/will/thesis/generated/beoid/test-1/spatial_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000009.jpg" y="256"/>
+  </g>
+  <g>
+    <image height="256" width="340" x="800" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000001-000011.jpg" y="512"/>
+    <image height="256" width="340" x="1140" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000002-000012.jpg" y="512"/>
+    <image height="256" width="340" x="1480" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000003-000013.jpg" y="512"/>
+    <image height="256" width="340" x="1820" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000004-000014.jpg" y="512"/>
+    <image height="256" width="340" x="2160" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000005-000015.jpg" y="512"/>
+    <image height="256" width="340" x="2500" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000006-000016.jpg" y="512"/>
+    <image height="256" width="340" x="2840" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000007-000017.jpg" y="512"/>
+    <image height="256" width="340" x="3180" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000008-000018.jpg" y="512"/>
+    <image height="256" width="340" x="3520" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000009-000019.jpg" y="512"/>
+  </g>
+  <g>
+    <image height="256" width="340" x="800" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000001-000011.jpg" y="768"/>
+    <image height="256" width="340" x="1140" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000002-000012.jpg" y="768"/>
+    <image height="256" width="340" x="1480" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000003-000013.jpg" y="768"/>
+    <image height="256" width="340" x="1820" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000004-000014.jpg" y="768"/>
+    <image height="256" width="340" x="2160" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000005-000015.jpg" y="768"/>
+    <image height="256" width="340" x="2500" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000006-000016.jpg" y="768"/>
+    <image height="256" width="340" x="2840" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000007-000017.jpg" y="768"/>
+    <image height="256" width="340" x="3180" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000008-000018.jpg" y="768"/>
+    <image height="256" width="340" x="3520" xlink:href="file:///home/will/thesis/generated/beoid/test-1/temporal_non_contrastive/05_Row1_pull_rowing-machine_2751-2784/frame000009-000019.jpg" y="768"/>
+  </g>
+  <text style="font-size: 40pt; font-family: Latin Modern Roman; text-anchor: end" x="766.0" y="128.0">Spatial Non-Contrastive</text>
+  <text style="font-size: 40pt; font-family: Latin Modern Roman; text-anchor: end" x="766.0" y="384.0">Spatial Contrastive</text>
+  <text style="font-size: 40pt; font-family: Latin Modern Roman; text-anchor: end" x="766.0" y="640.0">Temporal Non-Contrastive</text>
+  <text style="font-size: 40pt; font-family: Latin Modern Roman; text-anchor: end" x="766.0" y="896.0">Temporal Contrastive</text>
+</svg>

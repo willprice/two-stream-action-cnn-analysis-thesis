@@ -715,7 +715,6 @@ frame in the set will have its class score computed by a forward pass through
 the spatial network, a corresponding input for the temporal network is also
 computed, the scores are then combined (*fused*) by a linear combination.
 
-: Two stream network tower accuracy on BEOID and UCF101.
 
 | Dataset | Stream                  | Accuracy |
 |---------|-------------------------|----------|
@@ -725,6 +724,7 @@ computed, the scores are then combined (*fused*) by a linear combination.
 | UCF101  | Spatial                 |    78.4% |
 |         | Temporal                |    87.0% |
 |         | Late fusion             |    91.4% |
+: Two stream network tower accuracy on BEOID and UCF101. {#tbl:network-accuracy-results}
 
 <##check Maybe add SGD, mini batch, momentum explanation?>
 
@@ -1575,7 +1575,6 @@ to evaluate the accuracy of the network
 |---------|------|------------|---------------------|
 | UCF101  |    1 |        100 |                 186 |
 | BEOID   |    1 |        155 |                  47 |
-
 : Dataset statistics {#tbl:dataset-statistics}
 
 <##todo Add davide/mike reference for BEOID network>
@@ -1627,7 +1626,7 @@ the different EBP methods over both network towers.
 
 <##todo Get Michael Land reference from Dima>
 
-#### Smoothness
+#### Jitter
 
 The attention maps for contrastive EBP varied drastically between frames as can
 be seen in [@fig:contrastive-attention-map-non-smooth], whereas for
@@ -1636,16 +1635,98 @@ quantify this relative difference in video smoothness we compared consecutive
 pairs of frames using the L2 distance, to summarise the smoothness of the
 sequence of attention maps for a specific videos we computed the sample mean and
 variance. The smoothness for the contrastive/non-contrastive EBP for both
-networks is presented in [@plot:smoothness-analysis-ucf101-summary] for UCF101,
-and [@plot:smoothness-analysis-beoid-summary]. As the plots show, contrastive EBP
-is considerably less smooth than non-contrastive EBP validating our observation.
+networks is presented in [@plot:jitter-analysis-ucf101-summary] for UCF101,
+and [@plot:jitter-analysis-beoid-summary]. As the plots show, contrastive EBP
+produces more jitter than non-contrastive EBP validating our observation.
 
-![BEOID Smoothness analysis (violin plots)](media/plots/beoid-l2-smoothness.pdf){#plot:smoothness-analysis-ucf101-summary}
+![BEOID Jitter analysis (violin plots)](media/plots/beoid-l2-jitter.pdf){#plot:jitter-analysis-ucf101-summary}
 
-![UCF101 Smoothness analysis (violin plots)](media/plots/ucf101-l2-smoothness.pdf){#plot:smoothness-analysis-beoid-summary}
+![UCF101 Jitter analysis (violin plots)](media/plots/ucf101-l2-jitter.pdf){#plot:jitter-analysis-beoid-summary}
 
 <##todo write something about overlapping classes and how this might make
 contrastive inferior>
+
+| Network  | EBP Type        | Extrema | Clip                      | Jitter |
+|----------|-----------------|---------|---------------------------|--------|
+| Spatial  | Non-contrastive | Min     | `v_PlayingTabla_g07_c01`  |    2.9 |
+|          |                 | Max     | `v_Mixing_g05_c04`        |   52.7 |
+|          | Contrastive     | Min     | `v_PlayingGuitar_g05_c01` |   31.0 |
+|          |                 | Max     | `v_Swing_g06_c07`         |  126.8 |
+| Temporal | Non-contrastive | Min     | `v_Hammering_g07_c05`     |    9.4 |
+|          |                 | Max     | `v_Knitting_g07_c05`      |   38.6 |
+|          | Contrastive     | Min     | `v_RopeClimbing_g05_c07`  |    8.1 |
+|          |                 | Max     | `v_Haircut_g06_c01`       |   44.6 |
+: Jitter extrema (UCF101) {#tbl:ucf101-jitter}
+
+
+<div id="fig:jitter-results:spatial:ucf101">
+![Non-contrastive *min* jitter `v_PlayingTabla_g07_c01`](media/results/extrema/ucf101/v_PlayingTabla_g07_c01.pdf)
+
+![Non-contrastive *max* jitter `v_Mixing_g05_c04`](media/results/extrema/ucf101/v_Mixing_g05_c04.pdf)
+
+![Contrastive *min* jitter `v_PlayingGuitar_g05_c01`](media/results/extrema/ucf101/v_PlayingGuitar_g05_c01.pdf)
+
+![Contrastive *max* jitter `v_Swing_g06_c07`](media/results/extrema/ucf101/v_Swing_g06_c07.pdf)
+
+Attention maps for the clips with the max/min jitter for the **spatial** tower
+and EBP type (contrastive/non-contrastive) (network trained on UCF101)
+
+</div>
+
+<div id="fig:jitter-results:temporal:ucf101">
+![Non-contrastive *min* jitter `v_Hammering_g07_c05`](media/results/extrema/ucf101/v_Hammering_g07_c05.pdf)
+
+![Non-contrastive *max* jitter `v_Knitting_g07_c05`](media/results/extrema/ucf101/v_Knitting_g07_c05.pdf)
+
+![Contrastive *min* jitter `v_RopeClimbing_g05_c07`](media/results/extrema/ucf101/v_RopeClimbing_g05_c07.pdf)
+
+![Contrastive *max* jitter `v_Haircut_g06_c01`](media/results/extrema/ucf101/v_Haircut_g06_c01.pdf)
+
+Attention maps for the clips with the max/min jitter for the **temporal** tower
+and EBP type (contrastive/non-contrastive) (network trained on UCF101)
+
+</div>
+
+
+| Network  | EBP Type        | Extrema | Clip                                    | Jitter |
+|----------|-----------------|---------|-----------------------------------------|--------|
+| Spatial  | Non-contrastive | Min     | `03_Sink2_stir_spoon_1793-1887`         |    9.7 |
+|          |                 | Max     | `02_Sink2_pick-up_jar_1003-1027`        |   52.7 |
+|          | Contrastive     | Min     | `06_Treadmill1_press_button_4469-4493`  |    5.7 |
+|          |                 | Max     | `05_Row1_pull_rowing-machine_2751-2784` |   46.4 |
+| Temporal | Non-contrastive | Min     | `01_Sink2_press_button_527-561`         |    4.2 |
+|          |                 | Max     | `01_Sink1_turn_tap_406-441`             |   39.7 |
+|          | Contrastive     | Min     | `04_Sink1_press_button_800-835`         |    3.6 |
+|          |                 | Max     | `02_Sink1_scoop_spoon_1294-1332`        |   53.8 |
+: Jitter extrema (BEOID) {#tbl:beoid-jitter}
+
+<div id="fig:jitter-results:spatial:beoid">
+![Non-contrastive *min* jitter `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
+
+![Non-contrastive *max* jitter `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
+
+![Contrastive *min* jitter `06_Treadmill1_press_button_4469-4493`](media/results/extrema/beoid/06_Treadmill1_press_button_4469-4493.pdf)
+
+![Contrastive *max* jitter `05_Row1_pull_rowing-machine_2751-2784`](media/results/extrema/beoid/05_Row1_pull_rowing-machine_2751-2784.pdf)
+
+Attention maps for the clips with the max/min jitter for the **spatial** tower
+and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+
+</div>
+
+<div id="fig:jitter-results:temporal:beoid">
+![Non-contrastive *min* jitter `01_Sink2_press_button_527-561`](media/results/extrema/beoid/01_Sink2_press_button_527-561.pdf)
+
+![Non-contrastive *max* jitter `01_Sink1_turn_tap_406-441`](media/results/extrema/beoid/01_Sink1_turn_tap_406-441.pdf)
+
+![Contrastive *min* jitter `04_Sink1_press_button_800-835`](media/results/extrema/beoid/04_Sink1_press_button_800-835.pdf)
+
+![Contrastive *max* jitter `02_Sink1_scoop_spoon_1294-1332`](media/results/extrema/beoid/02_Sink1_scoop_spoon_1294-1332.pdf)
+
+Attention maps for the clips with the max/min jitter for the **temporal** tower
+and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+
+</div>
 
 #### BEOID gaze comparison
 
@@ -1664,7 +1745,6 @@ Methods:
 * Find top-N peaks and compare them to the center of gaze, pick the one closest,
   then plot cumulative frequency at 10%, 20% etc
 * As above but instead threshold correctness at X% distance
-
 
 
 
