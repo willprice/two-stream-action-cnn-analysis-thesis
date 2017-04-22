@@ -1615,6 +1615,7 @@ Methods:
 # Conclusion
 
 Contributions:
+
 * Survey of visualisation methods for CNNs organised into hierarchy
 * Validation of the use of EBP on temporal network towers to understand features
   learnt by the 2SCNN.
@@ -1625,7 +1626,7 @@ Contributions:
 
 Future work focused on further the investigations set out in this thesis.
 
-* **Model attention as 2D Gaussian about the centre of gaze and investigate the use
+Model attention as 2D Gaussian about the centre of gaze and investigate the use
 of the Wasserstein (a.k.a. Earth Mover's) metric in calculating the difference
 between the attention maps and the
 
