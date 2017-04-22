@@ -883,7 +883,6 @@ all the filters of the layer as this is the way the next layer uses them.
 
 ### Activation optimisation
 
-
 Activation optimisation covers a broad range of visualisation techniques used to
 optimise the activation of a neuron, usually we want to maximally activate a
 neuron to determine what features it recognises. Formally, to find an image that
@@ -1115,6 +1114,23 @@ propagations have to be computed.
 
 **Excitation backprop**[@zhang2016_TopdownNeuralAttention] is addressed in depth
 in the following section ([@sec:ebp]).
+
+**Evaluating attention maps** The following methods for evaluating attention
+maps apply to object detection networks.
+[@simonyan2013_DeepConvolutionalNetworks] evaluate attention maps
+by using them to initialise an object
+segmentation algorithm from which they compute an object's bounding box which is
+evaluated against the ground truth bounding boxes indicating the network's
+ability to localise objects (a prerequisite for learning to recognise the object).
+[@zhang2016_TopdownNeuralAttention] evaluate attention maps for object detection
+networks in 3 ways: *the pointing game* where the a complex visual scene is used
+as input and the attention maps for each object (with corresponding class
+neuron) in the image is computed, the maximum from the attention map is
+extracted and compared against the bounding box of the object of interest and
+the number of hits and misses are counted; *object localisation* similar to
+[@simonyan2013_DeepConvolutionalNetworks], but instead of using an object
+segmentation to produce a bounding box they simply threshold the attention map
+and compute the smallest bounding box around the remaining thresholded points.
 
 # Excitation backpropagation {#sec:ebp}
 
@@ -1481,9 +1497,9 @@ Two stream CNNs (2SCNN) were introduced in
 [@sec:background:cnn:architectures:2scnn], they are composed of two network
 towers concurrently processing the network input: the spatial tower takes a
 single video frame as input, and the temporal tower takes a stack of $T$ optical
-flow (u, v) pairs. We wanted to produce attention maps from both the spatial and
-temporal tower on a per frame basis, the spatial tower posed no complications in
-producing attention maps as only a single frame is used as input to the tower.
+flow (u, v) pairs. We produce attention maps from both the spatial and
+temporal tower on a per frame basis, the spatial tower poses no complications in
+producing attention maps as only a single frame is input to the tower.
 The temporal tower is not quite as simple as the spatial tower since it
 convolves the entire optical flow input in the first layer marginalising time;
 the input/output dimensions of the first layer in the temporal tower are: $224
@@ -1542,37 +1558,76 @@ video. The videos illustrate the impact of the frame choice:
 We chose frame $\tau + T/2$ as the underlay as it provides both information on
 what was salient, and what is to be salient.
 
-## Evaluation {#sec:ebp-evaluation}
-### Qualitative
+## Results
 
-We performed EBP on two pretrained late fusion two stream CNNs
+We perform EBP on two pretrained late fusion 2SCNNs:
 
-<##todo Add davide/mike reference for BEOID network>
-
-* BEOID trained network: evaluated on BEOID split 1
-* UCF101 trained network: evaluated on UCF101 split 1, trained according to the
-  techniques in [@wang2015_GoodPracticesVery] ^[See
+* VGG16 2SCNN (BEOID), provided by UoB
+* VGG16 2SCNN (UCF101), provided by Wang \etal{}, trained according to their
+  paper on best practices in training[@wang2015_GoodPracticesVery] ^[See
   https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
   for detailed Caffe training parameters]
+
+The attention maps we generate are those for the videos from the test set used
+to evaluate the accuracy of the network
+
+
+| Dataset | Fold | Clip Count | Average frame count |
+|---------|------|------------|---------------------|
+| UCF101  |    1 |        100 |                 186 |
+| BEOID   |    1 |        155 |                  47 |
+
+: Dataset statistics {#tbl:dataset-statistics}
+
+<##todo Add davide/mike reference for BEOID network>
 
 <##check Is the way I've attributed the UCF101 trained network sufficient, is it
 clear I didn't train it?>
 
-Since the late fusion two stream architecture is composed of two separate
-network *towers* that process the spatial and temporal streams in tandem, we
-performed EBP on each tower separately generating an attention map per tower. We
-also investigated contrastive vs non-contrastive EBP on the networks.
 
-#### UCF101
+More results are available on YouTube^[UCF101 EBP
+videos: [https://goo.gl/QBYZLJ](https://goo.gl/QBYZLJ)]
 
-More results are available on YouTube^[UCF101 EBP videos: https://goo.gl/QBYZLJ]
+More BEOID videos are available on YouTube^[BEOID EBP
+videos: [https://goo.gl/PazivH](https://goo.gl/PazivH)]
 
+## Attention map evaluation {#sec:ebp-evaluation}
 
-#### BEOID
+A good attention map will have maxima in the regions of the input that the
+network uses to discriminate between classes, it helps us determine why the
+network has classified the input as it has giving us insight into the salient
+features of the input with respect to a specific neuron (in this case a class
+neuron). For example, consider an object detection network with a 'person'
+neuron that detects people in images, if we produce an attention map for the
+'person' class neuron over an input image of a person, and the attention map
+highlights the person but not the surrounding background then we can conclude
+that the network has learnt how to recognise a person, at least in relation to
+the other classes the it is trained on. In contrast, if the attention map
+has no meaningful correlation with the regions in which the person lies, then
+there is little information we can derive from the attention map other than the
+network can't distinguish the person from its surrounding context.
 
-More BEOID videos are available on YouTube^[BEOID EBP videos: https://goo.gl/PazivH]
+**Action recognition attention maps evaluation methods**
 
-### Quantitive
+**Temporal jitter analysis** To our surprise, on visual inspection the
+contrastive attention maps (those produced with contrastive EBP) demonstrate
+large variances between consecutive frames where there is little in the
+corresponding video frames, to quantify this *jitter* we compute the L2 distance
+between consecutive pairs of attention maps
+
+**Egocentric gaze analysis** We expect the attention map to peak at the location
+an action is being performed as it is necessary for the network to implicitly
+localise the action for it to be able to recognise the action. BEOID, nor UCF101
+have bounding box annotations of the actions as what does and doesn't constitute
+part of an action is debatable, instead we use the gaze data of the operator in
+the BEOID dataset as a proxy variable for the action location, as the two are
+correlated; a person's gaze when performing an action is directed towards the
+action. We compare the location of the attention map maximum (i.e. the most
+salient region) to the location of the operator's gaze to comparatively assess
+the different EBP methods over both network towers.
+
+<##todo Get Michael Land reference from Dima>
+
 #### Smoothness
 
 The attention maps for contrastive EBP varied drastically between frames as can
@@ -1610,6 +1665,8 @@ Methods:
 * Find top-N peaks and compare them to the center of gaze, pick the one closest,
   then plot cumulative frequency at 10%, 20% etc
 * As above but instead threshold correctness at X% distance
+
+
 
 
 # Conclusion
@@ -1776,6 +1833,9 @@ Bottom up attention
 Attention Map
 : A heat map over an image denoting the regions contributing to excitation of a
 chosen neuron.
+
+Clip
+: A short sequence of a video in which an action is performed
 
 # Notation
 
