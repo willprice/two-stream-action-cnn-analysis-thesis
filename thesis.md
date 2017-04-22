@@ -1657,7 +1657,7 @@ Future work that diverges from the work carried out in this thesis.
 **Activation maximisation for temporal networks**, To our knowledge very few
 researchers have used activation maximisation to visualise features learnt by
 temporal networks. Wang \etal{} use
-DeepDraw[^https://github.com/auduno/deepdraw] (an implementation of activation
+DeepDraw^[https://github.com/auduno/deepdraw] (an implementation of activation
 maximisation) to visualise temporal segment
 networks[@wang2016_TemporalSegmentNetworks], however they only generate single
 frames in optical flow space.
