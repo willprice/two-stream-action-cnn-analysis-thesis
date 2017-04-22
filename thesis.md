@@ -805,7 +805,7 @@ human-object interaction dataset composed of videos shot from a head mounted
 locations: kitchen, workspace, printer, corridoor with locked door, cardiac
 gymn, and weight-lifting machine.
 
-![BEOID[@_BristolEgocentricObject] sample object interactions]](media/images/beoid-sample.png)
+![BEOID[@_BristolEgocentricObject] sample object interactions](media/images/beoid-sample.pdf)
 
 ## Understanding CNNs {#sec:background:understanding}
 
