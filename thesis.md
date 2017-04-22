@@ -143,7 +143,7 @@ We introduce the basic concepts of artificial neural networks and convolutional
 neural networks, then we go on to look at visualisation techniques developed to
 understand the different aspects of trained CNNs with a particular focus on
 excitation back propagation which is studied at depth in
-[@sec:ebp-for-temporal-networks] and extended for use on temporal networks.
+[@sec:ebp-for-2scnn] and extended for use on temporal networks.
 
 ## Artificial neural networks (ANNs) {#sec:background:ann}
 
@@ -1583,8 +1583,6 @@ variance. The smoothness for the contrastive/non-contrastive EBP for both
 networks is presented in [@plot:smoothness-analysis-ucf101-summary] for UCF101,
 and [@plot:smoothness-analysis-beoid-summary]. As the plots show, contrastive EBP
 is considerably less smooth than non-contrastive EBP validating our observation.
-
-![Contrastive attention map sequence demonstrating significant variation between consecutive frames](media/images/contrastive-attention-map-non-smooth.png){#fig:contrastive-attention-map-non-smooth}
 
 ![BEOID Smoothness analysis (violin plots)](media/plots/beoid-l2-smoothness.pdf){#plot:smoothness-analysis-ucf101-summary}
 
