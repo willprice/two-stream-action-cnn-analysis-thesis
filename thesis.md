@@ -795,7 +795,8 @@ The dataset has a diverse range of camera viewpoints, camera motion, object
 appearance and pose, illumination conditions making it quite challenging
 compared to some of the earlier datasets used for action recognition like KTH.
 
-![UCF101[@soomro2012_UCF101Dataset101] sample actions](media/images/ucf101-sample.pdf){#fig:dataset:ucf101:samples width=6in}
+![UCF101[@soomro2012_UCF101Dataset101] sample
+actions](media/images/ucf101-sample.pdf){ width=6in #fig:dataset:ucf101:samples }
 
 ### BEOID - Bristol Egocentric Object Interaction Dataset
 
@@ -803,9 +804,10 @@ BEOID[@_BristolEgocentricObject,@damen2014_DiscoveringTaskRelevant] is an
 human-object interaction dataset composed of videos shot from a head mounted
 (egocentric) camera where the operator performs actions in one of 6 different
 locations: kitchen, workspace, printer, corridoor with locked door, cardiac
-gymn, and weight-lifting machine.
+gym, and weight-lifting machine.
 
-![BEOID[@_BristolEgocentricObject] sample object interactions](media/images/beoid-sample.pdf)
+
+![BEOID[@_BristolEgocentricObject] sample object interactions](media/images/beoid-sample.pdf){ #fig:dataset:beoid:samples width=6in }
 
 ## Understanding CNNs {#sec:background:understanding}
 

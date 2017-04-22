@@ -22,6 +22,7 @@ PANDOC_OPTIONS:=\
 			   --filter=pandoc-crossref\
 			   --filter=pandoc-citeproc --csl computer.csl\
 			   --number-sections\
+				 --latex-engine=xelatex\
 			   --bibliography=$(BIBLIOGRAPHY)
 # Macros are defined in a style like HTML mode for GPP
 # e.g. `<##define note|\textcolor{red}{#1}>`
@@ -67,10 +68,9 @@ $(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 	$(PANDOC) \
 		$(PANDOC_OPTIONS)\
 		$<\
-		--latex-engine=xelatex\
 		--standalone\
 		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
-		--to=latex\
+		--to=context\
 		--output=$@\
 
 $(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
