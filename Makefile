@@ -16,9 +16,12 @@ IMAGES     := $(SVG_IMAGES:.svg=.pdf)
 BUILD_DIR:=build
 
 MARKDOWN_EXTENSIONS=link_attributes footnotes definition_lists inline_notes
-PANDOC_OPTIONS:=--latex-engine=xelatex\
+# --number-sections is necessary to enable section crossreferencing in
+# --pandoc-crossref when using latex output.
+PANDOC_OPTIONS:=\
 			   --filter=pandoc-crossref\
 			   --filter=pandoc-citeproc --csl computer.csl\
+			   --number-sections\
 			   --bibliography=$(BIBLIOGRAPHY)
 # Macros are defined in a style like HTML mode for GPP
 # e.g. `<##define note|\textcolor{red}{#1}>`
@@ -64,6 +67,7 @@ $(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 	$(PANDOC) \
 		$(PANDOC_OPTIONS)\
 		$<\
+		--latex-engine=xelatex\
 		--standalone\
 		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
 		--to=latex\

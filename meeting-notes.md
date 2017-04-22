@@ -112,3 +112,37 @@ INFO:two_stream_excitation_backprop:Generating spatial excitation map from '/hom
 * [x] Add labels to two stream ebp diagram for spatial and temporal 
 * [x] Add example of ebp for object detection networks
 * [x] Change EBP FC example to 1 and 0 from 0.9 and 0.1
+
+# 2016-03-29
+
+## Pre-meeting notes
+
+* I disagree with introducing forward propagation with examples before using
+  XOR to motivate the need for more complex models
+* Discuss method to explain CNNs
+* Tensors vs volumes, I like volumes. Quite a few papers (e.g. Karpathy 2014)
+  use the notion of volumes, why should I instead talk about tensors? What
+  benefit does that give? It just makes things sound more inpenetrable
+* Yellow boxes without notes
+
+## Post-meeting notes
+
+
+
+## Actions
+
+* Add table summarising visualisation methods
+* In activation maximisation introduction, make it clear how this differs from attention mapping (i.e. uses input image)
+* Change ordering of introduciton of visualisation techniques
+* Explicitly state I have not trained the models, but use them
+* Remember to talk about contrastive vs non contrastive results and why non contrastive is superior
+
+
+* Introduce EBP
+* Introduce contrastive vs non contrastive
+* Guideline on how to use EBP
+* Sliding window for temporal
+* Smoothness analysis
+* Explain examples that work well
+* Explain examples that don't work well
+* Compare and contrast contrastive and non-contrastive results -> lead into future work

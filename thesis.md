@@ -1,5 +1,5 @@
 ---
-title: Feature analysis of dual stream convolutional neural networks for egocentric action recognition
+title: Feature analysis of two stream convolutional neural networks
 author: Will Price
 abstract: |
   Abstract contents
@@ -8,27 +8,31 @@ keywords:
   - cnn
   - ann
   - convnet
-  - excitation backprop
+  - action recognition
+  - two stream cnn
   - visualisation
   - feature analysis
-  - two stream cnn
-  - action recognition
+  - activation maximisation
+  - attention map
+  - excitation backprop
 colorlinks: true
 toc: yes
 lot: yes # list of tables
 lof: yes # list of figures
 link-citations: true
 papersize: A4
-classoption: draft
 geometry: margin=1in
 documentclass: scrreprt
+# Maximum number of depths in cross reference (pandoc-crossref)
+chaptersDepth: 3
+sectionsDepth: 0
+# Make citations clickable
 link-citations: true
 header-includes:
   - \usepackage{bm} # For \bm instead of \mathbf
   - \usepackage[mathscr]{eucal} # For \mathscr
   - \usepackage{caption} # For captions
   - \usepackage{subfig} # For side by side figures
-  - \usepackage{xcolor} # For colouring text like the macro `note`
   - \usepackage{algorithm2e} # For typesetting algorithms
   # Watermark
   - \hypersetup{bookmarks}
@@ -76,15 +80,19 @@ header-includes:
   - \newcommand{\neuronoutput}[2]{\hat{a}^{(#1)}_{#2}}
     # 1: layer index
     # 2: neuron index
+  - \newcommand{\coloredtext}[2]{\color{#1}{#2}\color{black}}
 ---
 
 <!--- Draft options -->
 \SetWatermarkScale{0.3}
 \SetWatermarkText{\textbf{Draft: \today}}
 
-<##define note|\textcolor{red}{NOTE: #1}\newline>
-<##define check|\textcolor{blue}{CHECK: #1}\newline>
-<##define todo|\textcolor{green}{TODO: #1}\newline>
+<!--- Macros -->
+<##define note|\coloredtext{red}{NOTE: #1}\newline>
+<##define check|\coloredtext{blue}{CHECK: #1}\newline>
+<##define todo|\coloredtext{green}{TODO: #1}\newline>
+
+
 # Introduction {#sec:introduction}
 
 Action Recognition in Computer Vision refers to approaches that aim to infer the
@@ -132,27 +140,28 @@ frames from a video sequence.
 # Background {#sec:background}
 
 We introduce the basic concepts of artificial neural networks and convolutional
-neural networks, then we go on to look at techniques developed to understand the
-features learnt by CNNs with a particular focus on excitation back propagation
-which is extended in [@sec:ebp-for-temporal-networks] for use on temporal
-networks.
+neural networks, then we go on to look at visualisation techniques developed to
+understand the different aspects of trained CNNs with a particular focus on
+excitation back propagation which is studied at depth in
+[@sec:ebp-for-temporal-networks] and extended for use on temporal networks.
 
 ## Artificial neural networks (ANNs) {#sec:background:ann}
 
-Biology is a rich source of inspiration for techniques in computer
-science. Artificial neural networks (ANNs) form a strand of biologically inspired
+Biology is a rich source of inspiration for techniques in computer science.
+Artificial neural networks (ANNs) form a strand of biologically inspired
 computational models based on the learning and communication processes in the
 brain. To understand neural networks, we will take each concept from the bottom
-up step by step until we arrive at the modern model of an artificial neural network.
-First we shall examine *artificial neurons*, of which there are several models,
-the earliest being the McCulloch-Pitts
+up step by step until we arrive at the modern model of an artificial neural
+network. First we shall examine *artificial neurons*, of which there are several
+models, the earliest being the McCulloch-Pitts
 neuron[@mcculloch1943_logicalcalculusideas], followed by the
 perceptron[@rosenblatt1957_Perceptronperceivingrecognising]. We will then see
 how one can form a network made up of artificial neurons using perceptrons, then
-briefly discuss the challenges scaling these networks up to process images or
-videos leading into the introduction to convolutional neural networks, a
-constrained ANN architecture encoding certain assumptions about the input to
-make training these models on modern computers a viable proposition.
+briefly discuss the computational challenges scaling these networks up to
+process images or videos leading onto the introduction to convolutional neural
+networks, a constrained form ANN architecture encoding certain assumptions about
+the input to make training these models on modern computers a viable
+proposition.
 
 ### The McCulloch-Pitt's neuron
 
@@ -164,29 +173,28 @@ Warren McCulloch and Walter Pitts were arguably the first to provide a
 mathematical model of neuron inspired by biology, they developed a logical
 calculus describing neuron behaviour[@mcculloch1943_logicalcalculusideas]. Their
 model neuron, known as McCulloch-Pitt's neuron (MCP), was shown to be
-computationally universal. Every network of MCP neurons encoded an equivalent
+computationally universal; every network of MCP neurons encoded an equivalent
 logical proposition.
 
 MCP neurons have a set of inputs, the sum of which is compared to a threshold
 which determines whether the neuron fires or not. Both excitatory and inhibitory
 signals were modelled, if an incoming inhibitory connection is firing, then the
-output is completely inhibited regardless of the firing of the other incoming signals.
+output is completely inhibited regardless of the firing of the other incoming
+signals.
 
-Networks of MCP neurons were investigated to implement more complicated
-propositions.
 
 ### The Perceptron
 
-The next major contribution to the realisation of artificial neural networks
-following McCulloch and Pitt's work was the
-Perceptron[@rosenblatt1957_Perceptronperceivingrecognising], initially conceived
-as a physical device for learning to recognise patterns in images or sounds
-(each of these using the same principles, but with different inputs) by Frank
-Rosenblatt, it was later formulated as an algorithm.
+The next major contribution to the realisation of ANNs following McCulloch and
+Pitt's work was the Perceptron[@rosenblatt1957_Perceptronperceivingrecognising]
+developed by Frank Rosenblatt, initially conceived as a physical device for
+learning to recognise patterns in images or sounds (each of these using the same
+principles, but with different inputs) by Frank Rosenblatt, it was later
+formulated as an algorithm.
 
-The modern perceptron is a supervised learning algorithm that produces a binary
-classifier with a linear decision boundary. First we'll step through each term
-in this definition before presenting the perceptron:
+The perceptron in modern machine learning terms is a supervised learning
+algorithm that produces a binary linear classifier. First we'll step through
+each term in this definition before presenting the perceptron:
 
 * *learning* is concerned with the problem of constructing a function $f : X
   \rightarrow Y$, where $X$ denotes the feature space, $Y$ denotes the label space.
@@ -199,38 +207,42 @@ in this definition before presenting the perceptron:
 * *label space*, the vector space in which the desired result resides (co-domain
   of $f$).
 * *supervised learning* uses a labelled training set $X_{\text{train}} =
-  \{ (\bm{x}_0, y_0), \ldots, (\bm{x}_n, y_n) \}$ to learn $f$ where each instance
-  in $X_{\text{train}}$ is used.
+  \{ (\bm{x}_0, y_0), \ldots, (\bm{x}_n, y_n) \}$ to learn $f$ where
+  $X_{\text{train}}$ is used as a set of examples by the learning algorithm used
+  to construct $f$.
 * *classification* further refines the function $f$ to be learnt, classification
   is about learning a function that predicts one of a finite number of labels
   hence the label space will be a finite set of labels/classes.
-* *binary classification* specifies that $f$ is to predict 2 labels, usually
-  referred to as the *positive* and *negative* classes.
-* a *decision boundary* is a term used in classification problems in reference
-  to the surfaces separating the different areas of uniform class in the feature
-  space.
+* *binary classification* specifies that the *label space* consists of a set of
+  2 labels/classes, usually referred to as the *positive* and *negative* classes.
+* a *linear classifier* implies that the learnt model is of the form $\bm{w}
+  \cdot \bm{x} > 0$ where $\bm{w}$ is a vector of weights and $\bm{x}$ is the
+  instance in feature space to be classified. The classifier predicts the
+  positive class if $\bm{w} \cdot \bm{x} > 0$, and the negative class if $\bm{w}
+  \cdot \bm{x} < 0$, if $\bm{w} \cdot \bm{x} = 0$ the instance lies on the
+  decision boundary and we have to make a decision as to which class to predict
+  (e.g. randomly choose positive class 50% of the time)
 
-The perceptron learns a linear classifier which takes the form $\bm{w} \cdot
-\bm{x} > 0$, where $\bm{w}$ is the learnt weight vector, and $\bm{x}$ a the
-feature vector. If the dot product of the weight vector with the feature vector
-is greater than zero the test instance is labelled with the positive class,
-otherwise the negative class. A graphical representation of this is given in
-[@fig:perceptron], each element $x_i$ of the feature vector forms an input node
-on a graph, elements of the weight vector $w_i$ form edges from the
-corresponding input ($x_i$) to the perceptron body. As inputs flow along the
-edges they are multiplied by the weight on the edge and then summed in the
-perceptron.
+A graphical representation of the perceptron is given in [@fig:perceptron], each
+element $x_i$ of the feature vector forms an input node on a graph, elements of
+the weight vector $w_i$ form edges from the corresponding input ($x_i$) to the
+perceptron body which computes the weighted sum of all the inputs. One can think
+of inputs flowing along the edges into the perceptron body, as they flow along
+the edge they are multiplied by the edge's weight, finally the perceptron body
+sums its inputs producing the perceptron output $\bm{w} \cdot \bm{x}$.
 
 ![Graphical representation of the perceptron](media/images/perceptron.pdf){#fig:perceptron}
 
-The perceptron learning algorithm constructs a weight vector $\bm{w}$ from a set
+The perceptron learning algorithm constructs $\bm{w}$ from a set
 of labelled training examples $\mathscr{X} = \{ (\bm{x}_0, y_0), \ldots,
 (\bm{x}_n, y_n) \}$ where $\bm{x}_i$ is the feature representation of the $i$-th
-training example, and $y_i$ is the true label of the example.
+training example, and $y_i$ is the true label of the example (a numerical
+encoding of its class, usually 1 represents the positive class, and -1 the
+negative class).
 
-The following algorithm (Algorithm \ref{alg:perceptron-training}) is used to
-learn a weight vector $\bm{w}$ that correctly classifies all examples on the
-training set (if possible, otherwise the algorithm fails to terminate).
+Algorithm \ref{alg:perceptron-training} learns a $\bm{w}$ such that the
+resulting linear classifier correctly classifies all examples on the training set (if
+possible, otherwise the algorithm fails to terminate).
 
 \begin{algorithm}[H]
 \label{alg:perceptron-training}
@@ -254,11 +266,13 @@ $\bm{w} \leftarrow \bm{0}$\;
 The idea is to iteratively build up a weight vector $\bm{w}$ that correctly
 classifies all training data. Initially starting with the zero vector will
 result in the misclassification of all training examples as they will all lie on
-the decision boundary, $\bm{w} \cdot x = 0$. The core of the algorithm depends
-on interpreting the dot product as a measure of similarity. By adding weighted
+the decision boundary, $\bm{w} \cdot \bm{x} = 0$. The core of the algorithm depends
+on interpreting the dot product as a measure of similarity: the dot product
+produces a more positive result if $\bm{w}$ and $\bm{x}$ are similar, and a
+negative result if $\bm{w}$ and $\bm{x}$ are dissimilar. By adding weighted
 training feature vectors and factoring in the correct sign of $y_i$, $\eta
 \bm{x}_i y_i$ to the weight vector $\bm{w}$, we increase the similarity of the
-updated weight vector with the training example resulting in a more positive dot
+new weight vector with the training example resulting in a more positive dot
 product between $\bm{w}$ and $\bm{x}_i y_i$ which is more likely to pass the
 decision threshold.
 
@@ -275,6 +289,12 @@ separate the data.
 
 ![XOR with non linear decision boundary](media/images/xor-boundaries.pdf){#fig:xor-non-linear-decision-boundary}
 
+To solve the XOR problem we can construct individual perceptrons that simulate
+Boolean functions and then use the XOR propositional decomposition ($p \oplus q
+= (p \lor q) \land \lnot (p \land q)$) to construct a network that implements
+XOR, but this solution negates the main benefit of using a learning algorithm in
+the first place: we want the machine to form a solution.
+
 Perceptrons can be used to learn a non linear decision boundary in two ways. The
 first technique is to replace the dot product with a *kernel*, a function with
 properties similar to that of the dot product. Use of a kernel as a replacement
@@ -287,41 +307,24 @@ one is used as (one of) the input(s) to another, the network formed is called a
 
 When using MLPs we have to adapt the perceptron's output to be followed by a
 non-linear transformation $\phi$; the reason for this is that if we otherwise
-stack perceptrons without modification the network would compute nested linear
-transformations which can be represented as a single linear transformation, i.e.
+stack perceptrons without modification the network would compute a combination
+of linear transformations and any combination of linear transformations can be
+represented by a single linear transformation i.e.
 MLPs without non linearity applied to the output of each unit are no more
 expressive than a single perceptron; the complexity of the decision boundaries
 learnt by MLPs is due to the successive application of linear transformations
 and non linearities.
 
-A small multi layer perceptron network is given in [@fig:ann-example]. Each
+A small multilayer perceptron network is given in [@fig:ann-example]. Each
 circle represents the body of a perceptron in which the weighted sum of its
-inputs are calculated and then passed through an activation function. Each edge
-between perceptrons indicates the connectivity and weight between them.
-For example, $\neuron{1}{0}$ has two incoming connections from $\neuron{0}{0}$
-with a weight $+1$ and $\neuron{0}{1}$ with a weight $0$, it will output the
-value ${\phi\left(1 \cdot \neuron{0}{0} + 0 \cdot \neuron{0}{1})\right)}$
+inputs are calculated and then passed through an activation function $\phi$.
+Each edge between perceptrons indicates the connectivity and weight between
+them. For example, $\neuron{1}{0}$ has two incoming connections: one from
+$\neuron{0}{0}$ with a weight $+1$ and another from $\neuron{0}{1}$ with a
+weight $0$, it will output the value ${\phi\left(1 \cdot \neuron{0}{0} + 0 \cdot
+\neuron{0}{1}\right)}$
 
 ![Example Multilayer Perceptron with a single hidden layer](media/images/ann-example.pdf){#fig:ann-example}
-
-When producing any predictive model it is important to be able to evaluate it to
-see whether it performs sufficiently well for its use case. There are many
-measures to evaluate models including (but not limited to): accuracy, precision,
-recall, and the $F_1$ score; picking a measure depends on the class ratio of the
-data you expect to run your model on and the cost ratio that defines how costly
-it is to mistake one class for another. Let's assume we've chosen accuracy to
-evaluate a perceptron we've just trained, to evaluate it we could see how it
-performs on the training data however since we know that the perceptron
-perfectly splits the training data into two classes otherwise the algorithm
-doesn't terminate the training accuracy will always be 100%, which makes this a
-useless test, instead we need a new dataset (perhaps some data kept back from
-the training set) on which the model hasn't been trained, referred to as the
-*cross validation dataset*, on which we evaluate the performance.
-
-<##check Do you want me to add more about cross-fold validation etc?>
-
-<##todo Talk about how two-stream NNs are tested using forward  propagation and
-how the decisions are fused before training and tuning>
 
 A forward pass of the network in [@fig:ann-example] is computed using the
 activation function ${\phi(x) = \max(x, 0)}$ in [@fig:ann-forward]. We traverse
@@ -334,13 +337,7 @@ weighted sum of inputs through the activation function $\phi$.
 
 ![Forward propagation of the example ANN](media/images/ann-forward.pdf){#fig:ann-forward}
 
-To solve the XOR problem we can construct individual perceptrons that simulate
-Boolean functions and then use the XOR propositional decomposition ($p \oplus q
-= (p \lor q) \land \lnot (p \land q)$) to construct a network that implements
-XOR, but this solution negates the main benefit of using a learning algorithm in
-the first place: we want the machine to form a solution.
-
-Combining multiple perceptrons into a network forming a multi layer perceptron
+Combining multiple perceptrons into a network forming a multilayer perceptron
 brings us closer to the modern artificial neural network, however we now have a
 new problem: learning the weights of all the perceptrons. Since the weight
 vectors of the perceptrons in the network are not independent, changing one will
@@ -349,6 +346,24 @@ we cannot use Algorithm \ref{alg:perceptron-training}. An exhaustive search over
 the weights of the perceptrons would be able to find an optimal weight
 configuration, but would be computationally intractable due to the combinatorial
 nature of the search.
+
+When producing any predictive model it is important to be able to evaluate it to
+determine whether it performs sufficiently well for its use case. There are many
+measures to evaluate models including (but not limited to): accuracy, precision,
+recall, and the $F_1$ score; picking a measure depends on the class ratio of the
+data you expect to run your model on and the cost ratio that defines how costly
+it is to mistake one class for another. Let's assume we've chosen accuracy to
+evaluate a perceptron we've just trained, to evaluate it we could see how it
+performs on the training data however since we know that the perceptron
+perfectly splits the training data into two classes otherwise the algorithm
+doesn't terminate the training accuracy will always be 100%, which makes this a
+useless test, instead we need a new dataset (perhaps some data kept back from
+the training set) on which the model hasn't been trained, referred to as the
+*validation dataset*, on which we evaluate the performance.
+
+<##todo Talk about how two-stream NNs are tested using forward  propagation and
+how the decisions are fused before training and tuning>
+
 
 Training multilayer perceptrons was the main impediment to their use until the
 process of *error back propagation* (first developed by
@@ -373,7 +388,9 @@ connected in such a way that no cycles are present (networks with cycles are
 known as *recurrent networks*).
 
 
-## Convolutional neural networks (CNNs) {#sec:background:cnns}
+## Convolutional neural networks (CNNs) {#sec:background:cnn}
+
+<##todo This introduction is insufficient, the explanation needs to be expanded>
 
 CNNs, a specialised form of ANNs, were first proposed in
 [@fukushima1980_Neocognitronselforganizingneural] as a network architecture
@@ -442,10 +459,7 @@ together the wheel-neuron activations that are spatially separate and help
 discriminate images of bikes from images with wheels that don't share the same
 spatial relationship that wheels on bikes do.
 
-<##check Dima, are the bike wheels a sensible example?>
-
 ![Fully Connected layer](media/images/layer-fully-connected.pdf){#fig:layers:fully-connected}
-
 
 #### Pooling
 
@@ -510,6 +524,7 @@ The layer has a total of $4 \cdot 4 \cdot 3 \cdot 1 \cdot 1 = 38$ parameters.
 ![Convolutional layer](media/images/layer-convolution.pdf){#fig:layers:convolution}
 
 <##todo Go through the computation of a single or few cells in the above example>
+
 #### Activation
 
 Activation layers are much the same as in traditional ANNs, an activation
@@ -539,7 +554,7 @@ First we look at architectures for object detection as this task has been the
 focus of most research inspiring architectures for action recognition which we
 discuss afterwards.
 
-#### Object detection {#sec:background:object-detection}
+#### Object detection {#sec:background:cnn:architectures:object-detection}
 
 Historically CNNs were extensively applied to the object detection problem
 popularised by the ImageNet challenge [@russakovsky2014_ImageNetLargeScale]. The
@@ -577,7 +592,8 @@ Google[@szegedy2014_GoingDeeperConvolutions] achieved similar error rates
 (second place) with 22 layers suggesting that more layers isn't necessarily
 better, but that the architectures in 2012 were too shallow.
 
-![VGG16[@simonyan2014_VeryDeepConvolutional] Architecture](media/images/vgg16-rotated90.pdf){#fig:architecture:vgg16 height=100% width=2cm}
+![VGG16[@simonyan2014_VeryDeepConvolutional]
+Architecture](media/images/vgg16.pdf){#fig:architecture:vgg16 width=80%}
 
 #### Action recognition
 
@@ -634,7 +650,7 @@ frames. The network was evaluated on both the KTH dataset with competitive
 performance to other methods developed at the time and TRECVID[@_TRECVIDData]
 dataset improving over the state of the art.
 
-##### Two stream
+##### Two stream {#sec:background:cnn:architectures:2scnn}
 
 A biologically inspired architecture based on the two-stream visual processing
 hypothesis for action recognition is introduced in
@@ -700,7 +716,7 @@ frame in the set will have its class score computed by a forward pass through
 the spatial network, a corresponding input for the temporal network is also
 computed, the scores are then combined (*fused*) by a linear combination.
 
-: Two stream network tower accuracies on BEOID and UCF101
+: Two stream network tower accuracy on BEOID and UCF101.
 
 | Dataset | Stream                  | Accuracy |
 |---------|-------------------------|----------|
@@ -805,7 +821,7 @@ into one of the following four main categories of visualisation:
 
 * **Attention mapping**, generating a heatmap over the input indicating which
   regions contribute to activation of a certain neuron or set of neurons.
-* **Layer code analysis**, given a layer code, the output values computed at
+* **Feature map inversion**, given a feature map, the output values computed at
   specific layer, what is an input to the network that results in this layer code.
 * **Activation optimisation**, given a neuron, or set of neurons, determine the
   input to the network that maximally or minimally excites the neurons.
@@ -831,10 +847,22 @@ don't compute any useful transform. Zeiler \etal{} empirically establish a new
 architecture which learns fewer dead filters in the first layer using first
 layer filter visualisation to check this.
 
-<##todo add filters from BEOID spatial network>
-<##todo add filters from UCF101 spatial network>
-<##todo add filters from BEOID temporal network>
-<##todo add filters from UCF101 temporal network>
+We present the filters for both network towers in a 2SCNN trained on UCF101 in
+[@fig:spatial-network-filters:ucf101;@fig:temporal-network-filters:ucf101]. We
+also visualised the filters for a 2SCNN trained on BEOID where the weights
+where initialised as the UCF101 weights, but the differences were imperceptible
+to the us, so we omitted them for brevity.
+
+![Filters of the first convolutional layer from the spatial tower
+in the 2SCNN trained for action recognition on UCF101
+](media/images/vgg16-spatial-ucf101-filters.pdf){#fig:spatial-network-filters:ucf101}
+
+![Filters from the first convolutional layer from the temporal tower
+in the 2SCNN trained on UCF101. Since the filters are 3D ($20 \times 3 \times 3$) we
+flatten the 3D tensor into a 2D image by slicing it into $1 \times 3 \times 3$
+parts and joining them horizontally (so each filter spans a row).
+](media/images/vgg16-temporal-ucf101-filters.pdf){#fig:temporal-network-filters:ucf101}
+
 
 **Filter response** involves visualising the response of a filter after
 application to a specific input, similar to *filter visualisation* this gives us
@@ -850,10 +878,9 @@ tool can also compute the deconvolution and gradient attention maps). Yosinski
 individual filters shouldn't be considered on their own but in the context of
 all the filters of the layer as this is the way the next layer uses them.
 
-<##todo add filter responses from BEOID spatial network>
-<##todo add filter responses from UCF101 spatial network>
 
 ### Activation optimisation
+
 
 Activation optimisation covers a broad range of visualisation techniques used to
 optimise the activation of a neuron, usually we want to maximally activate a
@@ -941,11 +968,17 @@ clues to the invariants of the neuron.
 A visual comparison of results of the main methods for activation maximisation
 is presented in [@fig:am:method-comparison]
 
+<##todo caricaturing>
+
+**Caricaturing** (aka. Deep Dreaming)
+
+**Dataset activation optimisation**
 
 ![A comparison of the results of different methods for activation maximisation, the generated images come from the authors respective papers[@simonyan2013_DeepConvolutionalNetworks;@mahendran2016_VisualizingDeepConvolutional;@nguyen2016_Synthesizingpreferredinputs]](media/images/activation-maximisation-comparison.pdf){#fig:am:method-comparison}
 
 ### Feature map inversion {#sec:vis:feature-map-inversion}
 
+**Feature map inversion**
 Feature maps (a.k.a CNN codes) are the outputs produced by a layer for use by
 the next layer. In feature map inversion we try to determine an input $\bm{x}$
 to the network to produce a given feature map $\bm{m}$ at layer $l$. This can be
@@ -979,6 +1012,9 @@ up-convolutional decoder network for feature map inversion, however, this would
 be pointless in the case that the feature map to invert comes from the same
 layer as the one that the DGN is trained to invert, in that case the DGN would
 be used directly to invert the feature map.
+
+<##todo t-SNE>
+**Dataset clustering through dimensionality reduction** T-SNE, add example of ImageNet
 
 ![A comparison of different approaches for feature map inversion, the generated
 images all come from [@dosovitskiy2015_InvertingVisualRepresentationsa]](media/images/fm-inversion-comparison.pdf){#fig:fm-inversion:method-comparison}
@@ -1061,14 +1097,226 @@ detection networks. One of their comparisons is reproduced in [@fig:vis:attentio
 
 ![Samek \etal{}'s comparison of attention mapping methods from [@samek2015_Evaluatingvisualizationwhat]](media/images/attention-map-comparison.pdf){#fig:vis:attention-mapping:method-comparison}
 
-**Excitation backprop**[@zhang2016_TopdownNeuralAttention] is addressed in the
-following section ([@sec:ebp]).
+**Occlusion study** were first proposed by Zeiler and
+Fergus[@zeiler2013_VisualizingUnderstandingConvolutional], they describe a
+method to generate an attention map indicating the relative importance of
+difference regions in the input image by overlaying a rectangle with the colour
+set as the mean colour value of the data corpus it was trained upon and sliding
+the occluding rectangle over the image, for each position they perform a forward
+propagation measuring the response of a neuron of interest. Once neuron
+responses for each location in the image have been recorded they produce an
+attention map where each value in the attention map corresponds to the neuron's
+response when the occluding rectangle was centred at that location. A big
+downside with this method is the number of forward propagations is linear in
+resolution, e.g. to compute a $28 \times 28$ attention map, then 784 forward
+propagations have to be computed.
+
+**Excitation backprop**[@zhang2016_TopdownNeuralAttention] is addressed in depth
+in the following section ([@sec:ebp]).
 
 # Excitation backpropagation {#sec:ebp}
 
-Excitation backpropagation[@zhang2016_TopdownNeuralAttention] is an attention
-mapping method. <##todo Add introduction about EBP, its routes in the human
-visual system and top down signals>
+Excitation backpropagation[@zhang2016_TopdownNeuralAttention] (EBP) is an
+attention mapping method based on selective tuning model of
+attention[@tsotsos1995_ModelingVisualAttention] inspired by the visual
+processing pyramid of primates. *Visual attention* is the mechanism through
+which information from the visual field is selected. Attention can be split up
+into two distinct processes: *top down attention* and *bottom up
+attention*[@connor2004_VisualAttentionBottomUp]. Bottom up attention is driven
+by raw sensory input shifting attention to potential regions of interests;
+regions that 'pop out' from the visual field, e.g. a shiny gold coin on the
+floor; whereas top down attention refines the input based on high level goals ;
+regions satisfying the actor's search criteria e.g. spotting a friend in a crowd
+of people. Tsotos \etal{} propose a binary winner-takes-all (WTA) model of
+visual attention inspired by the primate visual cortex and the top-down
+bottom-up model of visual attention called the selective tuning
+model[@tsotsos1995_ModelingVisualAttention]. Zhang \etal{} adapted the model of
+Tsotos \etal{} into a probabilistic formulation called Excitation
+Backpropagation capable of producing probabilistic attention maps instead of
+binary attention maps.
+
+Like the top-down bottom-up model of human attention, EBP decomposes attention
+into two parts: bottom-up and top-down. The model makes the following
+assumptions:
+
+* The activation of neuron is positively correlated with the detection a visual
+  feature.
+* The response of a neuron is non negative
+
+The bottom-up component of attention is composed of the intermediate
+computations in the network modelling the intrinsic salience of the input. The
+top-down component, modelling the high-level search goal, is specified as a
+prior distribution over the neurons in the top layer. The prior distribution
+encodes the search goal as probabilities over the task relevant neurons, e.g.
+finding the discriminative regions in a video frame that cause the frame to be
+classified as 'put down plug' can be encoded as a one-hot probability
+distribution over the classification layer of an action recognition network
+where all but the 'put down plug' class neuron probabilities are zero and the
+'put down plug' class neuron is one.
+
+
+**Explanation** EBP computes attention maps using a probabilistic
+winner-takes-all approach. A neuron is a winner neuron if it has the highest
+activation in the layer. *Winner-takes-all* refers to the winner neuron
+consuming all the attention from its children (neurons in the previous layer
+connected to the winner neuron with non negative weights), attention isn't
+distributed from the neurons in the layer below across the neurons to the layer
+above, but only to the winner neuron. At a high level, the idea is to consider
+each neuron in the top layer in turn, we assume that the neuron 'wins' and
+compute the conditional winning probabilities of each child neuron (neurons in
+the layer below connected to our winner neuron). The conditional winning
+probability describes the likelihood of a child neuron being a winner neuron in
+its layer conditioned on the knowledge that its parent is a winner neuron. Once
+we have computed the conditional winning probabilities of the children for each
+neuron in the layer, we then compute the marginal winning probability of each
+child neuron by marginalising the conditional winning probabilities of each
+neuron over its parents. We repeat the process by looking at the next pair of
+layers down; the previous bottom layer becomes the new top layer. This process
+is repeated until the marginal winning probabilities at the target layer are
+obtained. See [@fig:ebp-in-a-nutshell] for a graphical explanation.
+
+We now give a detailed explanation of EBP, interspersing the mathematical
+treatise with examples to aid exposition of the concept. The running examples
+are based on the following scenario: an image of a car is processed by an object
+detection CNN trained on ImageNet that correctly classifies the image as the
+class 'car', and we want to determine which regions of the input image
+contribute to its correct classification, i.e. what makes the image car-like?
+
+For a given network, an input $I$ is forward propagated thus computing the
+neuron activations $\neuronoutput{i}{j}$ throughout the network. A layer
+$L_{\text{start}}$ is chosen and a probability distribution $P(L_{\text{start}})$ is
+defined encoding the relative interest in each neuron in the layer and hence the
+features recognised by those neurons of interest. The probability distribution
+is defined:
+
+$$ P(L) = (P(\neuron{l}{0}), \ldots, P(\neuron{l}{n})) $$
+
+$L$ is a layer with index $l$^[Layers are labelled bottom up, from input layer
+to output layer, starting at 0 (in contrast to Zhang \etal{}'s
+explanation[@zhang2016_TopdownNeuralAttention]).], and $\neuron{l}{i}$ is neuron
+with index $i$ at layer $l$. $P(\neuron{l}{i})$ is the marginal winning
+probability of a neuron, the probability that this neuron has the highest
+activation in the layer. In our example we define a probability distribution
+over the classification layer in which each neurons recognises a single class of
+image, the probability distribution is 'one-hot'; we set $P(a_{\text{car}}) = 1$
+and ${\forall a \in (L_{\text{start}} \setminus \{a_{\text{car}\}}) : (P(a) =
+0)}$ as we have no interest in any other image class.
+
+The next steps are repeated for each layer in the network starting at the top
+and proceeding until the target layer $L_{\text{stop}}$ is reached. At each step
+we consider two adjacent layers, the top layer (closer to the output of the
+network) $L_{\text{top}}$ and the layer below $L_{\text{bottom}}$ (closer to the
+input of the network). The probability distribution for $P(L_{\text{top}})$ will
+always be defined during each step, and we will compute $P(L_{\text{bottom}})$
+using the rules of EBP. For each neuron $\neuron{l}{j} \in L_{\text{top}}$ we
+compute the marginal winning probability of all child neurons $\children{l}{j}$
+where
+
+\begin{equation}
+\label{eq:ebp-children}
+\children{l}{j} = \{ \neuron{l - 1}{k} | \weight{l - 1}{k}{j} \ne 0 \}
+\end{equation}
+
+The conditional winning probability of a neuron $\neuron{l - 1}{k}$ given
+$\neuron{l}{j}$ is a winning neuron is computed by
+
+\begin{equation}
+\label{eq:ebp-cwp}
+\cwp{l - 1}{k}{l}{j} =
+  \begin{cases}
+      \ebpscalar{l}{j} \neuronforward{l - 1}{k} \weight{l - 1}{k}{j} & \weight{l - 1}{k}{j} \geq 0 \\
+      0 & \text{otherwise}
+  \end{cases}
+\end{equation}
+
+This formulation integrates the bottom up attention in the form of
+$\neuronforward{l - 1}{k}$ which we assumed to be positively correlated with
+features present in the input $I$. The sum of the CWP for the children of
+$\neuron{l}{j}$ isn't necessarily going to sum to one, so to make it a valid
+probability distribution we normalise by a factor $\ebpscalar{l}{j}$ to ensure
+that $\sum_{\neuron{l - 1}{k} \in \children{l}{j}} \cwp{l - 1}{k}{l}{j} = 0$
+
+\begin{equation}
+\label{eq:ebp-cwp-scalar}
+\ebpscalar{l}{j} = 1 / \sum_{k:\weight{l - 1}{k}{j} \geq 0} \neuronforward{l
+- 1}{k} \weight{l - 1}{k}{j}
+\end{equation}
+
+
+having computed the CWPs for all parent/child pairs in $L_{\text{top}}$ and
+$L_{\text{bottom}}$ we then compute the MWP for each neuron $\neuron{l - 1}{k}
+\in L_{\text{bottom}}$ by marginalising \eqref{eq:ebp-mwp} over its parents
+\eqref{eq:ebp-parents}
+
+\begin{equation}
+\label{eq:ebp-parents}
+\parents{l - 1}{k} = \{\neuron{l}{j} | \weight{l - 1}{k}{j} \ne 0 \}
+\end{equation}
+
+\begin{equation}
+\label{eq:ebp-mwp}
+\mwp{i}{k} = \sum_{\neuron{i+1}{j} \in \parents{i}{k}} \cwp{i}{k}{i + 1}{j} \mwp{i + 1}{j}
+\end{equation}
+
+The process is then repeated by treating $L_{\text{bottom}}$ as the new
+$L_{\text{top}}$ since we have computed the marginal winning probabilities for
+the layer and hence can compute the conditional winning probabilities for the
+next layer down. Once the target layer is reached the process is completed.
+
+In summary:
+
+* Compute a forward pass of the network to determine the outputs of each neuron $\neuronforward{l}{j}$
+* Iterating over pairs of layers top down until the lower layer becomes the
+  target layer
+  * Compute the scaling factors $\ebpscalar{l}{j}$ of each neuron in the upper layer.
+  * Compute the conditional winning probabilities $\cwp{l - 1}{k}{l}{j}$ of each
+    neuron in the lower layer.
+  * Compute the marginal winning probabilities $\mwp{l - 1}{j}$ of each neuron in the lower
+    layer by marginalising over the parent neurons.
+
+
+<##check I like explaining things using 'we' (the inclusive we) as when I read
+explanations I am more engaged if they are phrased like this, does it sound
+like I'm trying to claim the method as my own, or is it OK?>
+
+
+<##todo Redo all graphics with neurons so layer indices use $l$>
+
+![EBP in a nuteshell](media/images/ebp-in-a-nutshell.pdf){#fig:ebp-in-a-nutshell
+width=7.5in}
+
+
+**Contrastive EBP** In networks trained for classification, each class is
+represented by a different neuron in the final layer of the network, to
+determine the regions in the input that contribute to the activation of the
+class neuron we can model the top-down attention as a one-hot probability
+distribution where all probabilities are 0 apart from at the class of interest
+where the probability is 1. We can determine the regions of interest by using
+EBP and this prior distribution encoding the top-down attention yielding an
+attention map, however this has one main caveat: regions that increase the
+activation of one neuron may well increase the activations of other neurons
+(regions in which there are features common to the two classes). Depending on
+the goal of the user, this may be desired, or distracting, the user might wish
+to understand "why is this image of a cat classified as a cat and not something
+else?" in this case we want to encode the question "why is this classified as
+*cat* and not *non-cat*", this is a question of finding the discriminative
+features in the input. We have already created a distribution modelling *cat*,
+but to model a *non-cat* distribution we have to modify the network; we
+construct a new network where all the weights are the same apart from those in
+the last layer in which we invert all the weights to the class neurons
+transforming positively discriminative neurons into negatively discriminative
+neurons (i.e. the *cat* neuron becomes *non-cat* in the new network). We can
+then compute the attention maps from both network forming an attention map that
+indicates the regions contributing to the *cat* classification and another the
+regions contributing to the *non-cat* classification, by subtracting the
+*non-cat* attention map from the *cat* attention map we end up with an attention
+map describing the features in the input that contribute to the *cat*
+classification but not to anything else, Zhang \etal{} call this a *contrastive
+attention map*, and the method to produce the attention map *contrastive EBP*.
+
+\newpage
+
+## Example
 
 First a forward pass of the network is computed, this produces the intermediate
 neuron values which are used as *bottom up* salience factors, then a probability
@@ -1090,18 +1338,9 @@ between the two MWPs of the second last layer, then EBP from there to the input.
 -->
 
 
-## Example EBP calculation
 
 We demonstrate EBP with a simple network composed of 5 neurons over 3 layers all
 using ReLU activations.
-
-Notation:
-
-* $\neuron{i}{j}$ denotes the neuron with index $j$ (0 indexed) in layer $i$.
-* $\weight{i}{j}{k}$ denotes the weight of the edge from neuron $j$ in layer $i$
-  to neuron $k$ in layer $i + 1$.
-* $\neuroninput{i}{j}$ denotes the weighted sum of inputs to neuron $j$ in layer $i$
-* $\neuronoutput{i}{j}$ denotes the output of neuron $j$ in layer $i$
 
 \begin{equation}
 \label{eq:neuron-input}
@@ -1115,35 +1354,6 @@ Notation:
 
 Where $\phi$ is an activation, if not explicitly stated it is assumed $\phi(x) =
 \max(0, x)$ (ReLU activation).
-
-At a high level, EBP consists of the following steps:
-
-* Compute a forward pass of the network to determine the outputs of each neuron $\neuronforward{i}{j}$
-* Compute the scaling factors $\ebpscalar{i}{j}$ of each neuron used in
-  calculating the conditional winning probabilities of the children of that neuron.
-* Compute the conditional winning probabilities $\cwp{i}{j}{i + 1}{k}$ of each neuron in the network.
-* Compute the winning probabilities of each neuron $\mwp{i}{j}$ by
-  computing the probability of each neuron and it's parents being winning
-  neurons, then marginalising over the parent neurons.
-
-
-\begin{equation}
-\label{eq:ebp-cwp}
-\cwp{i}{k}{i + 1}{j} = \begin{cases}
-    \ebpscalar{i + 1}{j} \neuronforward{i}{k} \weight{i}{k}{j} & \weight{i}{k}{j} \geq 0 \\
-    0 & \text{otherwise}
-  \end{cases}
-\end{equation}
-
-\begin{equation}
-\label{eq:ebp-cwp-scalar}
-\ebpscalar{i + 1}{j} = 1 / \sum_{k:\weight{i}{k}{j} \geq 0} \neuronforward{i}{k} \weight{i}{k}{j}
-\end{equation}
-
-\begin{equation}
-\label{eq:ebp-mwp}
-\mwp{i}{k} = \sum_{\neuron{i+1}{j} \in \parents{i}{k}} \cwp{i}{k}{i + 1}{j} \mwp{i + 1}{j}
-\end{equation}
 
 Performing excitation backprop on the example network in [@fig:ann-example]. The
 forward pass is detailed in [@fig:ann-forward].
@@ -1227,7 +1437,7 @@ Now layers 1 and 0:
 
 \begin{align*}
 \cwp{0}{0}{1}{0} &= \ebpscalar{1}{0} \neuronforward{0}{0} \weight{0}{0}{0} =
-  \frac{1}{2} \cdot 2 \cdot 1 = 1\\
+\frac{1}{2} \cdot 2 \cdot 1 = 1\\
 \cwp{0}{0}{1}{1} &= 0 \\
 \cwp{0}{0}{1}{2} &= \frac{1}{3} \cdot 2 \cdot 1 = \frac{2}{3} \\
 \cwp{0}{1}{1}{0} &= 0 \\
@@ -1263,65 +1473,197 @@ distribution:
 \end{align*}
 
 
-# Excitation backprop for temporal networks {#sec:ebp-for-temporal-networks}
+# EBP for two stream CNNs {#sec:ebp-for-2scnn}
 
-<##todo Results from EBP on TSCNN trained on UCF101 and BEOID>
+Two stream CNNs (2SCNN) were introduced in
+[@sec:background:cnn:architectures:2scnn], they are composed of two network
+towers concurrently processing the network input: the spatial tower takes a
+single video frame as input, and the temporal tower takes a stack of $T$ optical
+flow (u, v) pairs. We wanted to produce attention maps from both the spatial and
+temporal tower on a per frame basis, the spatial tower posed no complications in
+producing attention maps as only a single frame is used as input to the tower.
+The temporal tower is not quite as simple as the spatial tower since it
+convolves the entire optical flow input in the first layer marginalising time;
+the input/output dimensions of the first layer in the temporal tower are: $224
+\times 224 \times 2T \rightarrow 224 \times 224 \times 64$, where $T$ is the
+temporal extent of the network (10 for our networks), the layer contains
+$64 \times 3 \times 3$ filters, so each filter convolves over a tensor of
+dimension $3 \times 3 \times 20$ producing a single scalar output. If we could
+use EBP back to the first layer then we would be able to generate attention maps
+on a per frame basis for the temporal network tower, however the marginal
+winning probabilities become increasingly small and sparse as the stopping layer
+gets closer to the first layer in the network to the point that when visualised
+the attention maps visually provide little information. Stopping at any
+other layer above the input provides only a single attention map.
+
+Selecting the stopping layer for EBP was an exercise in trial and error, we
+computed attention maps by stopping at various layers in the network and found
+that the third pooling layer provided a good compromise between visual
+interpretability and resolution of attention (i.e. the size of the area of which
+the marginal winning probability applies), a comparison of attention maps
+generated by stopping at progressively lower layers is presented in
+[@fig:ebp-pooling-layer-sizes]. At the third pooling layer of VGG16, the
+dimensionality of the attention map is $28 \times 28$ and so each marginal
+winning probability is constant over a $224/28 \times 224/28 = 8 \times 8$ patch
+of pixels in input space giving acceptable spatial resolution.
+
+![The affect of stopping EBP at different layers (UCF101 boxing)](media/images/ebp-pooling-layer-sizes.pdf){#fig:ebp-pooling-layer-sizes width=6in}
+
+Generating attention maps at the third pooling layer still results in a single
+attention map for the entire input, to mitigate this and generate attention maps
+on a frame by frame basis from the temporal tower we utilised using a sliding
+window with the same temporal extent as the network computing attention maps for
+each window and then sliding the window along by a single frame repeatedly until
+there are no longer any frames remaining in the video sequence. Let $\tau$ be
+the frame index of the first frame in the sliding window $W_\tau$ and $T$ the length
+of the window, then frames $\tau$ to $\tau + T$ make up the window. We compute a
+forward pass using the optical flow derived from the frames in $W_\tau$ and
+then a backward pass using EBP to generate an attention map $A_\tau$.
+
+The method produces attention maps for windows of frames but can't give us a
+frame level resolution since the attention map applies equally to all frames in
+the window and so it is an arbitrary choice which frame we associate with
+$A_\tau$ providing it is between $\tau$ and $\tau + T$ (in the associated
+window). Several obvious choices come to mind: the first frame $\tau$, the
+middle frame $\tau + T/2$ and the final frame $\tau + T$. To evaluate which
+of these makes the most sense we overlaid the attention map $A_\tau$ on the
+chosen frame $\tau_{\text{underlay}}$ and recombined the overlaid frames into a
+video. The videos illustrate the impact of the frame choice:
+
+* $\tau_{\text{underlay}} = \tau$: The attention map indicates the salient
+  regions in the next $T$ frames.
+* $\tau_{\text{underlay}} = \tau + T/2$: The attention map indicates the salient
+  regions of the last $T/2$ and future $T/2$ frames.
+* $\tau_{\text{underlay}} = \tau + T$: The attention map indicates the salient
+  regions over the last $T$ frames.
+
+We chose frame $\tau + T/2$ as the underlay as it provides both information on
+what was salient, and what is to be salient.
+
+## Evaluation {#sec:ebp-evaluation}
+### Qualitative
+
+We performed EBP on two pretrained late fusion two stream CNNs
+
+<##todo Add davide/mike reference for BEOID network>
+
+* BEOID trained network: evaluated on BEOID split 1
+* UCF101 trained network: evaluated on UCF101 split 1, trained according to the
+  techniques in [@wang2015_GoodPracticesVery] ^[See
+  https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
+  for detailed Caffe training parameters]
+
+<##check Is the way I've attributed the UCF101 trained network sufficient, is it
+clear I didn't train it?>
+
+Since the late fusion two stream architecture is composed of two separate
+network *towers* that process the spatial and temporal streams in tandem, we
+performed EBP on each tower separately generating an attention map per tower. We
+also investigated contrastive vs non-contrastive EBP on the networks.
+
+#### UCF101
+
+More results are available on YouTube^[UCF101 EBP videos: https://goo.gl/QBYZLJ]
+
+
+#### BEOID
+
+More BEOID videos are available on YouTube^[BEOID EBP videos: https://goo.gl/PazivH]
+
+### Quantitive
+#### Smoothness
+
+The attention maps for contrastive EBP varied drastically between frames as can
+be seen in [@fig:contrastive-attention-map-non-smooth], whereas for
+non-contrastive EBP the attention maps seemed much smoother with fewer jumps. To
+quantify this relative difference in video smoothness we compared consecutive
+pairs of frames using the L2 distance, to summarise the smoothness of the
+sequence of attention maps for a specific videos we computed the sample mean and
+variance. The smoothness for the contrastive/non-contrastive EBP for both
+networks is presented in [@plot:smoothness-analysis-ucf101-summary] for UCF101,
+and [@plot:smoothness-analysis-beoid-summary]. As the plots show, contrastive EBP
+is considerably less smooth than non-contrastive EBP validating our observation.
+
+![Contrastive attention map sequence demonstrating significant variation between consecutive frames](media/images/contrastive-attention-map-non-smooth.png){#fig:contrastive-attention-map-non-smooth}
+
+![BEOID Smoothness analysis (violin plots)](media/plots/beoid-l2-smoothness.pdf){#plot:smoothness-analysis-ucf101-summary}
+
+![UCF101 Smoothness analysis (violin plots)](media/plots/ucf101-l2-smoothness.pdf){#plot:smoothness-analysis-beoid-summary}
+
+<##todo write something about overlapping classes and how this might make
+contrastive inferior>
+
+#### BEOID gaze comparison
+
+The BEOID dataset is provided with gaze data for each video: the operator
+performing the action is wearing a set of glasses that are both recording what
+the operator can see and the operator's gaze across the 2D video frame.
+
+Human gaze flips between two modes of operation: fixation and saccading.
+When fixating, the eye is stationary focusing on specific object in the field of
+view. Saccades occur between periods of fixation, during the saccade, the eye
+darts around the field of view. Gaze data is provided
+
+Methods:
+
+* Model attention as a 2D Gaussian around center of gaze
+* Find top-N peaks and compare them to the center of gaze, pick the one closest,
+  then plot cumulative frequency at 10%, 20% etc
+* As above but instead threshold correctness at X% distance
+
+
+# Conclusion
+
+Contributions:
+* Survey of visualisation methods for CNNs organised into hierarchy
+* Validation of the use of EBP on temporal network towers to understand features
+  learnt by the 2SCNN.
 
 # Future work {#sec:future-work}
 
-* Applying activation maximisation on temporal networks with a prior encoding similarity
-  over the multiple frames to generate videos.
-* Train DGN to invert temporal network to generate videos (like in [@nguyen2016_Synthesizingpreferredinputs])
-* Use deepdraw a la TSN paper to visualise actions of my networks
+## Directed
 
-<!--
-Karpathy 2014 notes
+Future work focused on further the investigations set out in this thesis.
 
-* Introduction of Sports-1M collected from YouTube with 487 classes
-* Comparison of single frame to multiple frame networks
-* Only slightly better performance for multiframe models
-* Low res context stream with high res fovea stream inspired by the eye to
-  improve training speeds
-* Transfer learning from networks trained on Sports-1M to UCF101
-* 178x178 input, down sampled to 89x89 for context stream and center cropped to
-  89x89 for fovea stream obtaining similar accuracy to full 178x178 stream but
-  with quicker training times
-* 4 architectures: single frame, late fusion, early fusion, slow fusion
-* motion aware networks underperform when there is camera motion
-* Slow fusion network performs best
--->
+* **Model attention as 2D Gaussian about the centre of gaze and investigate the use
+of the Wasserstein (a.k.a. Earth Mover's) metric in calculating the difference
+between the attention maps and the
 
-![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
-layer colours indicate function: red--convolutional, green--normalization,
-blue--pooling. The bottom white boxes indicate a series of frames that are used
-as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+**LRP vs EBP**, We only discovered LRP late into the project, its focus on
+producing discriminative attention maps makes it an ideal candidate for
+explaining why classification decision were made. Contrastive EBP aims to solve
+the same problem, so a quantitative comparison between the two methods would help
+researchers decide which method to use and under what conditions. It is our
+opinion that both LRP and EBP represent the current state of the art for
+attention mapping methods for CNNs.
 
-Investigations of different architectures for video classification were
-performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
-styles of architecture were investigated to determine optimal stages of fusing
-temporal and spatial information. Each architecture had a different connectivity
-to the video sequence stack, from using a single frame as input to a dense
-sub-sequence of frames (see [@fig:karpathy2014-fusion-architectures] for
-architectures and video sequence connectivity). Slow fusion, an architecture
-that progressively enlarges the temporal and spatial field of view as the input
-propagates deeper into the network performed best.
+**Contrastive attention mapping** Contrastive attention was proposed by Zhang
+\etal{} and could be applied to sensitivity and deconvolutional attention
+mapping. Sensitivity is rarely used in practice due to its poor results, however
+deconvolutional attention mapping is quite widely implemented (e.g. Deep
+visualisation toolbox) so improvements in deconvolutional attention maps could
+be worth the effort of investigating the application of contrastive attention.
 
-<##todo expand on this>
+<##todo Check that contrastive attention can be applied to sensitivity and
+deconvolution, need to think about this a bit more>
+
+**Attention mapping other network architectures**: Conduct broad survey of
+network for action recognition, apply all attention mapping methods to compare
+and contrast their use.
 
 
-<!--
-Tran 2014
+## Divergent
 
-* 3D CNN better than 2D CNN
-* 3x3x3 kernels in all layers obtains best results in all architectures tested
-  in paper
-* Says Karpathy 2014 used 2D Convolutions in all architectures but slow fusion
-  which they hypothesis is why it performed best
-* Investigate varying depth of 3D convolution whilst holding other
-  hyperparameters constant
-* *visualisation* deconvolution of network
-* Call their architecture C3D
--->
+Future work that diverges from the work carried out in this thesis.
+
+**Activation maximisation for temporal networks**, To our knowledge very few
+researchers have used activation maximisation to visualise features learnt by
+temporal networks. Wang \etal{} use
+DeepDraw[^https://github.com/auduno/deepdraw] (an implementation of activation
+maximisation) to visualise temporal segment
+networks[@wang2016_TemporalSegmentNetworks], however they only generate single
+frames in optical flow space.
+
 
 <!--
 Feichtenhofer 2016
@@ -1349,7 +1691,63 @@ spatio-temporal stream from the fully connected layers onwards. The authors find
 that keeping the spatial stream in addition to the spatio-temporal stream and
 combining their respective predictions further increases performance over
 predictions from the spatio-temporal stream alone.
-<##todo Report performance improvements over fusing into single tower>
+
+Feichtenhofer's \etal{} mid-fusion network fuses the spatial and temporal
+network towers into a combined spatio-temporal network, an interesting
+experiment would be to use activation maximisation to synthesise inputs for both
+network towers (i.e. a frame in image space, and a stack of optical flow frames)
+combining the synthesised inputs into a video.
+
+
+<!--
+Karpathy 2014 notes
+
+* Introduction of Sports-1M collected from YouTube with 487 classes
+* Comparison of single frame to multiple frame networks
+* Only slightly better performance for multiframe models
+* Low res context stream with high res fovea stream inspired by the eye to
+  improve training speeds
+* Transfer learning from networks trained on Sports-1M to UCF101
+* 178x178 input, down sampled to 89x89 for context stream and center cropped to
+  89x89 for fovea stream obtaining similar accuracy to full 178x178 stream but
+  with quicker training times
+* 4 architectures: single frame, late fusion, early fusion, slow fusion
+* motion aware networks underperform when there is camera motion
+* Slow fusion network performs best
+-->
+
+
+
+![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
+layer colours indicate function: red--convolutional, green--normalization,
+blue--pooling. The bottom white boxes indicate a series of frames that are used
+as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
+
+Investigations of different architectures for video classification were
+performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
+styles of architecture were investigated to determine optimal stages of fusing
+temporal and spatial information. Each architecture had a different connectivity
+to the video sequence stack, from using a single frame as input to a dense
+sub-sequence of frames (see [@fig:karpathy2014-fusion-architectures] for
+architectures and video sequence connectivity). Slow fusion, an architecture
+that progressively enlarges the temporal and spatial field of view as the input
+propagates deeper into the network performed best.
+
+
+<!--
+Tran 2014
+
+* 3D CNN better than 2D CNN
+* 3x3x3 kernels in all layers obtains best results in all architectures tested
+  in paper
+* Says Karpathy 2014 used 2D Convolutions in all architectures but slow fusion
+  which they hypothesis is why it performed best
+* Investigate varying depth of 3D convolution whilst holding other
+  hyperparameters constant
+* *visualisation* deconvolution of network
+* Call their architecture C3D
+-->
+
 
 # Glossary
 
@@ -1365,15 +1763,18 @@ DNN
 EBP
 : Excitation Backpropagation
 
+2SCNN
+: Two stream CNN
+
 Top down attention
 : Attention driven by top down factors like task information
 
 Bottom up attention
 : Attention based on the salience of regions of the input image.
 
-Excitation Map
-: A heat map over an image denoting the regions contributing contributing to its
-classification
+Attention Map
+: A heat map over an image denoting the regions contributing to excitation of a
+chosen neuron.
 
 # Notation
 
@@ -1392,19 +1793,21 @@ $\neuronforward{l}{j}$
 $\weight{l}{j}{k}$
 : The weight connecting neuron $\neuron{l}{j}$ to neuron $\neuron{l + 1}{k}$
 
-$\ebpscalar{l}{j}$
-: The scaling factor used in calculating the conditional probabilities in EBP
-ensuring that the probabilities sum to one.
-
 $\children{l}{j}$
 : The child neurons (those in layer $l - 1$) of the neuron in layer $l$ with index $j$
+  ${\children{l}{j} = \{ \neuron{l - 1}{k} | \weight{l - 1}{k}{j} \neq 0 \}}$
 
 $\parents{l}{j}$
 : The parent neurons (those in layer $l + 1$) of the neuron in layer $l$ with index $j$
+  ${\parents{l}{j} = \{\neuron{l + 1}{k} | \weight{l}{j}{k} \neq 0 \}}$
 
 $\cwp{l}{j}{l + 1}{k}$
 : The *conditional winning probability* of $\neuron{l}{j}$ given that $\neuron{l
-+ 1}{k}$ is winning neuron (see EBP).
++ 1}{k}$ is winner neuron (see EBP).
+
+$\ebpscalar{l}{j}$
+: The scaling factor used in calculating the conditional probabilities in EBP
+ensuring that the probabilities sum to one.
 
 $\mwp{l}{j}$
 : The *marginal winning probability* of $\neuron{l}{j}$ (see EBP)
@@ -1415,4 +1818,4 @@ $\neuroninput{l}{j}$
 $\neuronoutput{l}{j}$
 : The output of neuron $\neuron{l}{j}$
 
-# References
+# Bibliography
