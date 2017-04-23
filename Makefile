@@ -70,7 +70,7 @@ $(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
 		$<\
 		--standalone\
 		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
-		--to=context\
+		--to=latex\
 		--output=$@\
 
 $(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
