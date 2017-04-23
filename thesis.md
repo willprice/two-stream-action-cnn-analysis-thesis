@@ -141,26 +141,26 @@ video sequence classified by a 2SCNN.
 We introduce the basic concepts of artificial neural networks and convolutional
 neural networks, then we go on to look at visualisation techniques developed to
 understand the different aspects of trained CNNs with a particular focus on
-excitation back propagation which is studied at depth in
-[@sec:ebp-for-2scnn] and extended for use on temporal networks.
+excitation back propagation which is studied at depth in [@sec:ebp-for-2scnn]
+and extended for the application to two stream CNNs.
 
 ## Artificial neural networks (ANNs) {#sec:background:ann}
 
 Biology is a rich source of inspiration for techniques in computer science.
 Artificial neural networks (ANNs) form a strand of biologically inspired
 computational models based on the learning and communication processes in the
-brain. To understand neural networks, we will take each concept from the bottom
-up step by step until we arrive at the modern model of an artificial neural
-network. First we shall examine *artificial neurons*, of which there are several
-models, the earliest being the McCulloch-Pitts
+brain. To understand neural networks, we will examine each concept from the
+bottom up step by step until we arrive at the modern model of an artificial
+neural network. First we shall examine *artificial neurons*, of which there are
+several models, the earliest being the McCulloch-Pitts
 neuron[@mcculloch1943_logicalcalculusideas], followed by the
-perceptron[@rosenblatt1957_Perceptronperceivingrecognising]. We will then see
-how one can form a network made up of artificial neurons using perceptrons, then
-briefly discuss the computational challenges scaling these networks up to
-process images or videos leading onto the introduction to convolutional neural
-networks, a constrained form ANN architecture encoding certain assumptions about
-the input to make training these models on modern computers a viable
-proposition.
+perceptron[@rosenblatt1957_Perceptronperceivingrecognising]. We will then
+demonstrate how one can form a network made up of artificial neurons using
+perceptrons, then briefly discuss the computational challenges scaling these
+networks up to process images or videos leading into an introduction to
+convolutional neural networks, a constrained form ANN architecture encoding
+certain assumptions about the input to make training these models on modern
+computers a computationally tractable proposition.
 
 ### The McCulloch-Pitt's neuron
 
@@ -179,7 +179,8 @@ MCP neurons have a set of inputs, the sum of which is compared to a threshold
 which determines whether the neuron fires or not. Both excitatory and inhibitory
 signals were modelled, if an incoming inhibitory connection is firing, then the
 output is completely inhibited regardless of the firing of the other incoming
-signals.
+signals. Cells produce a binary output, they either fire or not, there is no
+notion of firing strength.
 
 
 ### The Perceptron
@@ -188,10 +189,10 @@ The next major contribution to the realisation of ANNs following McCulloch and
 Pitt's work was the Perceptron[@rosenblatt1957_Perceptronperceivingrecognising]
 developed by Frank Rosenblatt, initially conceived as a physical device for
 learning to recognise patterns in images or sounds (each of these using the same
-principles, but with different inputs) by Frank Rosenblatt, it was later
-formulated as an algorithm.
+principles, but with different inputs), it was later
+formulated as an algorithm for implementation in software.
 
-The perceptron in modern machine learning terms is a supervised learning
+The perceptron, in modern machine learning terms, is a supervised learning
 algorithm that produces a binary linear classifier. First we'll step through
 each term in this definition before presenting the perceptron:
 
@@ -209,9 +210,10 @@ each term in this definition before presenting the perceptron:
   \{ (\bm{x}_0, y_0), \ldots, (\bm{x}_n, y_n) \}$ to learn $f$ where
   $X_{\text{train}}$ is used as a set of examples by the learning algorithm used
   to construct $f$.
-* *classification* further refines the function $f$ to be learnt, classification
-  is about learning a function that predicts one of a finite number of labels
-  hence the label space will be a finite set of labels/classes.
+* *classification* further refines the definition of the function $f$ to be
+  learnt. Classification is about learning a function that predicts one of a
+  finite number of labels hence the label space will be a finite set of
+  labels/classes.
 * *binary classification* specifies that the *label space* consists of a set of
   2 labels/classes, usually referred to as the *positive* and *negative* classes.
 * a *linear classifier* implies that the learnt model is of the form $\bm{w}
@@ -228,15 +230,15 @@ the weight vector $w_i$ form edges from the corresponding input ($x_i$) to the
 perceptron body which computes the weighted sum of all the inputs. One can think
 of inputs flowing along the edges into the perceptron body, as they flow along
 the edge they are multiplied by the edge's weight, finally the perceptron body
-sums its inputs producing the perceptron output $\bm{w} \cdot \bm{x}$.
+sums its inputs producing the perceptron output $z = \bm{w} \cdot \bm{x}$.
 
 ![Graphical representation of the perceptron](media/images/perceptron.pdf){#fig:perceptron}
 
 The perceptron learning algorithm constructs $\bm{w}$ from a set
-of labelled training examples $\mathscr{X} = \{ (\bm{x}_0, y_0), \ldots,
-(\bm{x}_n, y_n) \}$ where $\bm{x}_i$ is the feature representation of the $i$-th
+of labelled training examples ${\mathscr{X} = \{ (\bm{x}_0, y_0), \ldots,
+(\bm{x}_n, y_n) \}}$ where $\bm{x}_i$ is the feature representation of the $i$-th
 training example, and $y_i$ is the true label of the example (a numerical
-encoding of its class, usually 1 represents the positive class, and -1 the
+encoding of its class, typically 1 represents the positive class, and -1 the
 negative class).
 
 Algorithm \ref{alg:perceptron-training} learns a $\bm{w}$ such that the
@@ -265,24 +267,32 @@ $\bm{w} \leftarrow \bm{0}$\;
 The idea is to iteratively build up a weight vector $\bm{w}$ that correctly
 classifies all training data. Initially starting with the zero vector will
 result in the misclassification of all training examples as they will all lie on
-the decision boundary, $\bm{w} \cdot \bm{x} = 0$. The core of the algorithm depends
-on interpreting the dot product as a measure of similarity: the dot product
-produces a more positive result if $\bm{w}$ and $\bm{x}$ are similar, and a
-negative result if $\bm{w}$ and $\bm{x}$ are dissimilar. By adding weighted
-training feature vectors and factoring in the correct sign of $y_i$, $\eta
-\bm{x}_i y_i$ to the weight vector $\bm{w}$, we increase the similarity of the
-new weight vector with the training example resulting in a more positive dot
-product between $\bm{w}$ and $\bm{x}_i y_i$ which is more likely to pass the
-decision threshold.
+the decision boundary, $\bm{w} \cdot \bm{x} = 0$. The core of the algorithm
+depends on interpreting the dot product as a measure of similarity: the dot
+product produces a more positive result if $\bm{w}$ and $\bm{x}$ are similar,
+and a negative result if $\bm{w}$ and $\bm{x}$ are
+dissimilar[^dot-product-similarity] . By adding weighted training feature
+vectors and factoring in the correct sign of $y_i$, $\eta \bm{x}_i y_i$ to the
+weight vector $\bm{w}$, we increase the similarity of the new weight vector with
+the training example resulting in a more positive dot product between $\bm{w}$
+and $\bm{x}_i y_i$ which is more likely to pass the decision threshold.
+
+[^dot-product-similarity]: Consider the definition of the dot product: ${\bm{a}
+\cdot \bm{b} = |\bm{a}||\bm{b}| \cos(\theta)}$, when $\bm{a}$ and $\bm{b}$ are
+orthogonal, $\theta = 90^\circ$ hence $\bm{a}
+\cdot \bm{b} = 0$, when the vectors point in the same direction $\theta =
+0^\circ$ then ${\bm{a} \cdot \bm{b} = |\bm{a}||\bm{b}|}$. Finally, when the
+vectors point in the opposite direction $\theta = 180^\circ$ hence ${\bm{a}
+\cdot \bm{b} = -|\bm{a}||\bm{b}|}$
 
 The perceptron learns a linear classifier, which is only of use if the data is
 linearly separable, if it isn't then we have to consider alternatives. Minsky
 and Papert used the following example ([@fig:xor]) in
 Perceptrons[@minsky1969_Perceptrons] to demonstrate the limitations of a single
-perceptron, the figure shows the function XOR where the red
-points cannot be separated from the green points with a linear boundary, so a
-boundary like that shown in [@fig:xor-non-linear-decision-boundary] is needed to
-separate the data.
+perceptron, the figure shows the function XOR where the red points (negative
+examples) cannot be separated from the green points (positive examples) with a
+linear boundary, so a boundary like that shown in
+[@fig:xor-non-linear-decision-boundary] is needed to separate the data.
 
 ![XOR](media/images/xor.pdf){#fig:xor}
 
@@ -294,34 +304,41 @@ Boolean functions and then use the XOR propositional decomposition ($p \oplus q
 XOR, but this solution negates the main benefit of using a learning algorithm in
 the first place: we want the machine to form a solution.
 
-Perceptrons can be used to learn a non linear decision boundary in two ways. The
-first technique is to replace the dot product with a *kernel*, a function with
-properties similar to that of the dot product. Use of a kernel as a replacement
-for the dot product can be thought of as a transformation of the instances into
-a new space in which a linear decision boundary is learnt. A kernel is chosen
-such that it is likely that the data will be linearly separable in this new space.
-Alternatively, the other technique is to stack perceptrons so that the output of
-one is used as (one of) the input(s) to another, the network formed is called a
-*multilayer perceptron (MLP)*.
+Perceptrons are capable of learning non linear decision boundaries with one of
+two modifications. The first technique is to replace the dot product with a
+*kernel*, a function with properties similar to that of the dot product. Use of
+a kernel as a replacement for the dot product can be thought of as a
+transformation of the instances into a new space in which a linear decision
+boundary is learnt. A kernel is chosen such that it is likely that the data will
+be linearly separable in this new space. Alternatively, the other technique is
+to stack perceptrons so that the output of one is used as (one of) the input(s)
+to another, the network formed is called a *multilayer perceptron (MLP)*.
 
 When using MLPs we have to adapt the perceptron's output to be followed by a
 non-linear transformation $\phi$; the reason for this is that if we otherwise
 stack perceptrons without modification the network would compute a combination
 of linear transformations and any combination of linear transformations can be
-represented by a single linear transformation i.e.
+represented by a single linear transformation[^perceptron-affine-transform] i.e.
 MLPs without non linearity applied to the output of each unit are no more
 expressive than a single perceptron; the complexity of the decision boundaries
 learnt by MLPs is due to the successive application of linear transformations
 and non linearities.
 
+[^perceptron-affine-transform]: A perceptron unit computes an affine transform.
+    Affine transforms can be combined into a new affine transform representing
+    the transform computed by combining the constituent transforms.
+
 A small multilayer perceptron network is given in [@fig:ann-example]. Each
 circle represents the body of a perceptron in which the weighted sum of its
 inputs are calculated and then passed through an activation function $\phi$.
-Each edge between perceptrons indicates the connectivity and weight between
-them. For example, $\neuron{1}{0}$ has two incoming connections: one from
-$\neuron{0}{0}$ with a weight $+1$ and another from $\neuron{0}{1}$ with a
-weight $0$, it will output the value ${\phi\left(1 \cdot \neuron{0}{0} + 0 \cdot
-\neuron{0}{1}\right)}$
+Perceptrons are labelled using the notation $\neuron{l}{j}$ where $l$ indicates
+the index of the layer the perceptron lies within, and $j$ the index of the
+perceptron within the layer, e.g. $\neuron{1}{0}$ is the first (index 0)
+perceptron in layer 2 (index 1). Each edge between perceptrons indicates the
+connectivity and weight between them. For example, $\neuron{1}{0}$ has two
+incoming connections: one from $\neuron{0}{0}$ with a weight $+1$ and another
+from $\neuron{0}{1}$ with a weight $0$, it will output the value ${\phi\left(1
+\cdot \neuron{0}{0} + 0 \cdot \neuron{0}{1}\right)}$
 
 ![Example Multilayer Perceptron with a single hidden layer](media/images/ann-example.pdf){#fig:ann-example}
 
@@ -353,9 +370,9 @@ recall, and the $F_1$ score; picking a measure depends on the class ratio of the
 data you expect to run your model on and the cost ratio that defines how costly
 it is to mistake one class for another. Let's assume we've chosen accuracy to
 evaluate a perceptron we've just trained, to evaluate it we could see how it
-performs on the training data however since we know that the perceptron
-perfectly splits the training data into two classes otherwise the algorithm
-doesn't terminate the training accuracy will always be 100%, which makes this a
+performs on the training data however, since we know that the perceptron
+perfectly splits the training data into two classes (otherwise the algorithm
+doesn't terminate) the training accuracy will always be 100%, which makes this a
 useless test, instead we need a new dataset (perhaps some data kept back from
 the training set) on which the model hasn't been trained, referred to as the
 *validation dataset*, on which we evaluate the performance.
@@ -372,12 +389,13 @@ was applied to the problem by Paul Werbos[@schmidhuber2015_DeepLearningNeural].
 Back propagation gives us a tool to understand how modifying each component of
 the weight vector of each perceptron changes the output of the network. A loss
 function is defined that specifies how the output of the network differs from
-the expected output, the partial derivatives of the loss function with respect
-to each weight component $\frac{\partial a^{(n)}_i}{\partial w^{(l)}_j}$ are
-calculated. Having obtained the partial derivatives we can perform gradient
-descent to tweak the weights in such a way that the output of the network
-becomes closer to the desired output for each training example, thereby
-minimising the loss function.
+the desired output. The partial derivatives of the loss function with respect to
+each weight component $\frac{\partial a^{(n)}_i}{\partial w^{(l)}_j}$ are
+calculated through use of the chain rule. Having obtained the partial
+derivatives of the loss function with respect to the weights of the network, we
+can perform gradient descent in the weight space to tweak the weights in such a
+way that the loss function is minimized thus causing the output of the network
+to be closer to the desired output for each training example.
 
 The MLP is the foundation of modern neural networks, although
 in modern parlance it is known as a *fully connected feedforward network*. The
