@@ -407,40 +407,55 @@ known as *recurrent networks*).
 
 ## Convolutional neural networks (CNNs) {#sec:background:cnn}
 
-<##todo This introduction is insufficient, the explanation needs to be expanded>
-
 CNNs, a specialised form of ANNs, were first proposed in
 [@fukushima1980_Neocognitronselforganizingneural] as a network architecture
 called the *neocognitron* inspired by the research of Hubel and Wiesel on the
 visual cortex[@hubel1959_Receptivefieldssingle]. Hubel and Wiesel found that the
 neurons in the visual cortex of a cat's brain responded to patterns in regions
-in the cats field of view, they termed the region causing an excitation of a
-neuron as the *receptive field* of that neuron. Furthermore, they discovered that
-neurons were arranged in such a way that neurons that had similar receptive
-fields were also physically co-located in the cortex. Fukushima
+in the cat's field of view, they termed the region causing an excitation of a
+neuron as the *receptive field* of that neuron. Furthermore, they discovered
+that neurons were arranged in such a way that neurons that had similar receptive
+fields were also physically co-located in the cortex. [@fig:receptive-fields]
+illustrates an example field of view shown to a cat where two neurons with
+receptive fields $r_1$ and $r_2$ both were excited by the white dot. Fukushima
 \etal{} designed the connectivity of the neurons in the neocognitron to model
 the connectivity of the neurons in the visual cortex such that each neuron was
 connected to neurons in the previous layer to form a receptive field. This
 architecture is very similar to those currently in use.
 
+![An image with white dots on shown to a cat in Hubel and Wiesel's experiments on
+  the visual cortex. Grey rectangles $r_1$ and $r_2$ mark the receptive
+  fields of two neurons that both detect the presence of a white dot in their
+  respective receptive field](media/images/receptive-fields.pdf){#fig:receptive-fields}
+
 Building on the work of the neocognitron, modern CNN models introduce one
 substantial improvement: rather than learning parameters for each individual
 neuron in a layer, we instead assume that there exist neurons that fire in
 response to a class of patterns in the input for all receptive fields, this
-allows us to learn only a single set of weights to detect such patterns and
-effectively construct the neurons for each receptive field at runtime. To
-implement this, convolutional filters are learnt instead of individual neuronal
-weights which are then convolved with the input tensor to produce the output.
+allows us to learn only a single set of weights for identifying the pattern in a
+receptive field, then those weights can be duplicated across all receptive
+fields producing a layer of neurons that respond to a given pattern at different
+locations in an input. Consider a layer of neurons that recognise the white dots
+in [@fig:receptive-fields] at different receptive fields, the weights of the
+connections going into a neuron in the layer is the same for all neurons
+throughout the layer, it is only the connectivity that differs (which area of
+the input image the neuron looks for the white circle). This layer architecture
+corresponds to convolution of a filter/kernel over the layer input, so we now
+switch to discussing CNNs from this viewpoint: learning filters, convolving
+those filters over the input to produce an output. The size required to store
+the convolutional layer parameters is massively reduced by only storing kernels
+instead of the duplicated kernels that correspond to each neuron for each
+receptive field.
 
 The restricted architectures of CNNs facilitates a new view of these networks
 compared to ANNs; the overarching theme is to raise the level of abstraction
-from neurons to layers, and individual inputs to input volumes. ANNs
-have no fixed/predetermined function, different groups of neurons in a layer can serve
-different purposes, however this is not the case in CNNs, layers are homogeneous
-in their function, e.g. a convolutional layer only computes convolution of its
-input. CNN architectures are described by their constituent layers and the
-hyperparameters that configure those layers, different layer types have
-different hyperparameters.
+from neurons to layers, and individual scalar inputs to tensors (ND matrices).
+ANNs have no fixed/predetermined function, different groups of neurons in a
+layer can serve different purposes, however this is not the case in CNNs, layers
+are homogeneous in their function, e.g. a convolutional layer only computes the
+convolution of its input with a set of filters. CNN architectures are described
+by their constituent layers and the hyperparameters that configure those layers,
+different layer types have different hyperparameters.
 
 Layers are constructed using this conceptual model and can be mapped down to the
 traditional ANN model of neurons and weights.
@@ -454,39 +469,39 @@ channels in the image (e.g. 3 for RGB images, 1 for grayscale).
 
 ### Layers
 
-Layers can be thought of volume transformation functions, a volume of dimensions
+Layers can be thought of a tensor transformation functions, a tensor of dimension
 $W \times H \times D$ used as input by a layer is transformed to an output
-volume of dimensions $W' \times H' \times D'$ where the new dimensions are a
-function of the input volume's dimensions and layer's parameters.
+tensor of dimension $W' \times H' \times D'$ where the new dimensions are a
+function of the input tensor's dimension and layer's parameters.
 
 There are many types of layers, but they mainly fit into four broad categories:
 *fully connected*, *pooling*, *convolutional*, *activation*.
 
 #### Fully connected
 
-Fully connected layers are like those in a MLP where each neuron
-is connected to every neuron in the previous layer, see [@fig:layers:fully-connected]. These layers are very large in
-parameters so are usually used further in the network when the input volume size
-is considerably reduced. In CNNs, fully connected layers draw together
-high level features from regions that are spatially distant from each other,
-consider the task of detecting a bike in an image, if you have filters that fire
-based on wheels, there will be neurons that activate when wheels are present in
-different locations in the image, the fully connected layer will be able to draw
-together the wheel-neuron activations that are spatially separate and help
-discriminate images of bikes from images with wheels that don't share the same
-spatial relationship that wheels on bikes do.
+Fully connected layers are like those in a MLP where each neuron is connected to
+every neuron in the previous layer, see [@fig:layers:fully-connected]. These
+layers are very large in parameters so are usually used further in the network
+when the input tensor size is considerably reduced. In CNNs, fully connected
+layers draw together high level features from regions that are spatially distant
+from each other, consider the task of detecting a bike in an image, if you have
+neurons that fire on wheels, there will be neurons that activate when wheels are
+present in different locations in the image, the fully connected layer will be
+able to draw together the wheel-neuron activations that are spatially separate
+and help discriminate images of bikes from images with wheels that don't share
+the same spatial relationship that wheels on bikes do.
 
-![Fully Connected layer](media/images/layer-fully-connected.pdf){#fig:layers:fully-connected}
+![Fully Connected layer example](media/images/layer-fully-connected.pdf){#fig:layers:fully-connected}
 
 #### Pooling
 
 Pooling layers exist to increase the receptive field of deeper layers enabling
-them to learn features than span larger spatial extents, this is accomplished by
-reducing the size of the input volume by computing some function over a region
-of the input yielding a single value, this operation is computed by a *pooling
-filter*, see [@fig:layers:pooling]. Max pooling is a common pooling filter where the maximum value in an
-input region is selected to be propagated forward discarding the rest of the
-values in the region.
+them to learn features that span larger spatial extents, this is accomplished by
+reducing the size of the input tensor by computing some function over a region
+of the input yielding a single value. Max pooling is a common pooling filter
+where the maximum value in an input region is selected to be propagated forward
+discarding the rest of the values in the region, see [@fig:layers:pooling] for a
+small max pooling layer example.
 
 Pooling layers typically have *size*, *pad* and *stride* parameters. The *size*
 determines the region over which pooling takes place, *padding* specifies the
@@ -507,26 +522,23 @@ input will be of size $226 \times 226 \times 10$, since the pooling region is $2
 at, but our stride isn't $1 \times 1$, but $2 \times 2$ hence the output tensor
 will have dimensions ${(226 - 2) / 2 \times (226 - 2) / 2 = 112 \times 112}$
 
-
-<##check Dima, could you double check I haven't messed this up!>
-
-![Pooling layer](media/images/layer-pooling.pdf){#fig:layers:pooling}
+![Max pooling layer example](media/images/layer-pooling.pdf){#fig:layers:pooling}
 
 
 #### Convolutional
 
 Convolutional layers consist of one or more filters that are slid along an input
-volume and convolved at each location producing a single value which are
-aggregated in an output volume, see [@fig:layers:convolution]. The filter parameters are learnt and are
-constant across different locations in the input volume, this massively reduces
+tensor and convolved at each location producing a single value which are
+aggregated in an output tensor, see [@fig:layers:convolution]. The filter parameters are learnt and are
+constant across different locations in the input tensor, this massively reduces
 the number of parameters of the model compared to a fully connected layer
-handling similar volumes sizes making them much more space efficient than fully
+handling similar tensor sizes making them much more space efficient than fully
 connected networks.
 
 The number of parameters in a convolutional layer is *only* dependent upon the
 filters. The filter is parameterised by its size, stride and zero padding. The
 *size* determines the volume of the filter; *stride*, how the filter is moved
-through the input volume; *zero padding*, whether or not the volume is padded with
+through the input tensor; *zero padding*, whether or not the tensor is padded with
 zeros when convolved with the filter.
 
 For a layer with 4 filters with the parameters:
@@ -538,7 +550,7 @@ For a layer with 4 filters with the parameters:
 The layer has a total of $4 \cdot 4 \cdot 3 \cdot 1 \cdot 1 = 38$ parameters.
 
 
-![Convolutional layer](media/images/layer-convolution.pdf){#fig:layers:convolution}
+![Convolutional layer example with a single filter](media/images/layer-convolution.pdf){#fig:layers:convolution}
 
 <##todo Go through the computation of a single or few cells in the above example>
 
@@ -548,15 +560,15 @@ Activation layers are much the same as in traditional ANNs, an activation
 function is chosen and applied element wise to the input tensor to produce an
 output tensor of the same dimensions, see [@fig:layers:activation]. Activation functions take the form
 $\phi(x)$, common functions used include the
-rectified linear unit (ReLU), $\phi(x) = \max(x, 0)$, sigmoid
-$\phi(x) = \frac{1}{1 + e^{-x}}$ and hyperbolic tangent ${\phi(x) =
-\frac{e^{2x} - 1}{e^{2x} + 1}}$
+rectified linear unit (ReLU), $\phi(x) = \max(x, 0)$; sigmoid,
+$\phi(x) = \frac{1}{1 + e^{-x}}$; and hyperbolic tangent ${\phi(x) =
+\frac{e^{2x} - 1}{e^{2x} + 1}}$.
 
 ![Activation layer](media/images/layer-activation.pdf){#fig:layers:activation}
 
 ### Architectures
 
-The architecture of a CNN refers to the choice of layers, and parameters and
+The architecture of a CNN refers to the choice of layers, parameters, and
 connectivity of those layers. Architectures are designed to solve a particular
 problem where the number of layers limits the complexity of the features learnt
 by the network. Networks are designed such that they have sufficient
@@ -568,28 +580,38 @@ already considerable time spent searching for optimal hyperparameters by
 training a network per hyperparameter configuration.
 
 First we look at architectures for object detection as this task has been the
-focus of most research inspiring architectures for action recognition which we
+focus of most research, inspiring architectures for action recognition, which we
 discuss afterwards.
 
 #### Object detection {#sec:background:cnn:architectures:object-detection}
 
 Historically CNNs were extensively applied to the object detection problem
 popularised by the ImageNet challenge [@russakovsky2014_ImageNetLargeScale]. The
-challenge consists of two main problems *object detection* and *object
+challenge consists of two main problems: *object detection* and *object
 localisation*, participants produce a model capable of predicting the likelihood
-of object classes presence in a test image. Models are evaluated based on their
-top-1 and top-5 error rate where the top-$N$ error rate is defined as the
-proportion of test images whose prediction is considered an error if the ground
-truth label does not appear in the top-$N$ predictions.
+of object class presence in a test image for 1000 object classes. Models are
+evaluated based on their top-1 and top-5 error rate where the top-$N$ error rate
+is defined as the proportion of test images whose prediction is considered an
+error if the ground truth label does not appear in the top-$N$ predictions.
 
 ##### AlexNet
 
 AlexNet[@krizhevsky2012_Imagenetclassificationdeep] was the first CNN submission
 to ImageNet 2012 challenge achieving a large error-rate reduction over previous
-state of the art methods scoring a top-1 error rate of 36.7% and top-5 error
-rate of 15.3%.
+state of the art methods using feature engineering (unlike ANNs which learn
+feature representations from raw inputs) scoring a top-1 error rate of 36.7% and
+top-5 error rate of 15.3%.
 
-![AlexNet Architecture](media/images/alexnet.pdf){#fig:architecture:alexnet height=2cm}
+In [@fig:architecture:alexnet] we see the architecture of AlexNet, convolutional
+layers are use to learn features covering progressively larger spatial extents
+the deeper into the network the layer lies by use of pooling layer to reduce the
+dimensionality of the tensors flowing through the network. Three fully
+connected layers are used to combine features from locations across the input
+image. The final softmax layer acts as a linear classifier over the output
+feature vector from the last fully connected layer.
+
+
+![AlexNet Architecture](media/images/alexnet.pdf){#fig:architecture:alexnet}
 
 ##### VGG16
 
@@ -657,7 +679,7 @@ the LSTM layer to a linear classifier and only found modest performance benefits
 (on the order of a few percentage points) indicating that short clips from a
 video may be sufficient for action recognition.
 
-A similar architecture with a larger input volume was investigated in
+A similar architecture with a larger input was investigated in
 [@ji2013_3DConvolutionalNeural], instead of training the whole network, the
 first layers were hand initialised to obtain the following transformations:
 grayscale, spatial gradients in both x and y directions, and optical flow in
@@ -1933,6 +1955,13 @@ chosen neuron.
 
 Clip
 : A short sequence of a video in which an action is performed
+
+Filter
+: A filter/kernel in the context of convolutional
+
+Kernel
+: See *Filter*
+
 
 # Notation
 
