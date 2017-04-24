@@ -1360,29 +1360,29 @@ width=7.5in}
 represented by a different neuron in the final layer of the network, to
 determine the regions in the input that contribute to the activation of the
 class neuron we can model the top-down attention as a one-hot probability
-distribution where all probabilities are 0 apart from at the class of interest
-where the probability is 1. We can determine the regions of interest by using
-EBP and this prior distribution encoding the top-down attention yielding an
-attention map, however this has one main caveat: regions that increase the
-activation of one neuron may well increase the activations of other neurons
-(regions in which there are features common to the two classes). Depending on
-the goal of the user, this may be desired, or distracting, the user might wish
-to understand "why is this image of a cat classified as a cat and not something
-else?" in this case we want to encode the question "why is this classified as
-*cat* and not *non-cat*", this is a question of finding the discriminative
-features in the input. We have already created a distribution modelling *cat*,
-but to model a *non-cat* distribution we have to modify the network; we
-construct a new network where all the weights are the same apart from those in
-the last layer in which we invert all the weights to the class neurons
-transforming positively discriminative neurons into negatively discriminative
-neurons (i.e. the *cat* neuron becomes *non-cat* in the new network). We can
-then compute the attention maps from both network forming an attention map that
-indicates the regions contributing to the *cat* classification and another the
-regions contributing to the *non-cat* classification, by subtracting the
-*non-cat* attention map from the *cat* attention map we end up with an attention
-map describing the features in the input that contribute to the *cat*
-classification but not to anything else, Zhang \etal{} call this a *contrastive
-attention map*, and the method to produce the attention map *contrastive EBP*.
+distribution. We can determine the regions of interest by using EBP and this
+prior distribution encoding the top-down attention yielding an attention map,
+however this has one main caveat: regions that increase the activation of one
+neuron may well increase the activations of other neurons (regions in which
+there are features common to the two classes). Depending on the goal of the
+user, this may be desired, or distracting, the user might wish to understand
+"why is this image of a cat classified as a cat and not something else?" in this
+case we want to encode the question "why is this classified as *cat* and not
+*non-cat*", this is a question of finding the discriminative features in the
+input; *contrastive* EBP extends EBP to help answer this question. We have
+already created a distribution modelling *cat*, but to model a *non-cat*
+distribution we have to modify the network; we construct a new network where all
+the weights are the same apart from those in the last layer in which we invert
+all the weights to the class neurons transforming positively discriminative
+neurons into negatively discriminative neurons (i.e. the *cat* neuron becomes
+*non-cat* in the new network). We can then compute the attention maps from both
+networks forming two attention maps: an attention map that indicates the regions
+contributing to the *cat* classification and another the regions contributing to
+the *non-cat* classification. By subtracting the *non-cat* attention map from
+the *cat* attention map we end up with an attention map describing the features
+in the input that contribute to the *cat* classification but not to anything
+else, Zhang \etal{} call this a *contrastive attention map*, and the method to
+produce the attention map *contrastive EBP*.
 
 \newpage
 
@@ -1412,6 +1412,10 @@ between the two MWPs of the second last layer, then EBP from there to the input.
 We demonstrate EBP with a simple network composed of 5 neurons over 3 layers all
 using ReLU activations.
 
+For a given neuron $\neuron{l}{j}$, we denote the input to the neuron as
+$\neuroninput{l}{j}$ defined in \eqref{eq:neuron-input} and the output of the
+neuron as $\neuronoutput{l}{j}$ defined in \eqref{eq:neuron-output}.
+
 \begin{equation}
 \label{eq:neuron-input}
 \neuroninput{i + 1}{j} = \sum_{a_{k}^{(i)} \in \children{i + 1}{j}} \weight{i}{k}{j} \neuronoutput{i}{k}
@@ -1437,9 +1441,6 @@ First we define the input of the network (these could be any arbitrary input):
 
 Now we compute the forward pass using the forward propagation rule
 
-<##todo move this to ANN section>
-$$\neuronforward{i}{k} = \phi(\sum_j \neuronforward{i - 1}{j} \cdot \weight{i - 1}{j}{k})$$
-
 \begin{align*}
 \neuronforward{1}{0} &= \max(0, \neuronforward{0}{0} \cdot \weight{0}{0}{0} +
     \neuronforward{0}{1} \cdot \weight{0}{1}{0})
@@ -1457,8 +1458,7 @@ The next step is to compute the conditional winning probabilities of each neuron
 given each parent neuron wins using [@eq:ebp-cwp], to compute this we need the
 scaling factors $\ebpscalar{i}{j}$ which we will compute first using
 [@eq:ebp-cwp-scalar] (in a computational implementation these would be computed
-on a per layer basis and thrown away once the layer values are
-calculated).
+on a per layer basis and discard once the layer values are calculated).
 
 ![Flow of probabilities in EBP](media/images/ebp-example-mwp.pdf)
 
