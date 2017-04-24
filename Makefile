@@ -22,7 +22,7 @@ PANDOC_OPTIONS:=\
 			   --filter=pandoc-crossref\
 			   --filter=pandoc-citeproc --csl computer.csl\
 			   --number-sections\
-				 --latex-engine=xelatex\
+				 --latex-engine=pdflatex\
 			   --bibliography=$(BIBLIOGRAPHY)
 # Macros are defined in a style like HTML mode for GPP
 # e.g. `<##define note|\textcolor{red}{#1}>`
