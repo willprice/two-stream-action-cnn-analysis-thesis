@@ -717,7 +717,6 @@ model uses two separate CNNs each taking a different input based on the two
 stream hypothesis: the spatial stream for handling the appearance (analog of the
 ventral stream) and the temporal stream for handling the motion (analog of the
 dorsal stream). A video sequence is processed to obtain the optical flow frames
-
 which are used as input to the temporal stream, and a single frame is used as
 input to the spatial stream. The two streams process the inputs in parallel each
 of which produces an action prediction, the results are then combined using a
@@ -737,9 +736,9 @@ all even frames in the optical flow stack are in $u$ direction and odd, the $v$
 direction.
 
 Raw optical flow frames stored as floats can take up a large amount of space so
-instead they are converted to greyscale images in the range $[0, 255]$ and
+instead they are converted to greyscale images in the range $[0, 254]$ and
 compressed using JPEG to reduce storage requirements. On input to the network
-the frames are mean-centred around $(127, 127, 127)$.
+the frames are mean-centred around $(127.5)$.
 
 The networks are trained concurrently using mini-batch stochastic gradient
 descent. 256 video sequences are selected from the training dataset uniformly
