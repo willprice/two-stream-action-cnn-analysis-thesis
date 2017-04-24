@@ -637,10 +637,10 @@ Architecture](media/images/vgg16.pdf){#fig:architecture:vgg16 width=80%}
 #### Action recognition
 
 The challenge of recognising actions from video sequences has recently seen the
-application of CNNs inspired from their performance on object detection. A
-variety of architectures for tackling the problem have emerged which we shall
-explore in chronological order to see how architectures have evolved over time
-concluding with the architecture used in our experiments.
+application of CNNs inspired by their performance on object detection. A variety
+of architectures for tackling the problem have emerged which we shall explore in
+chronological order to see how architectures have evolved over time concluding
+with the architecture used in our experiments.
 
 ![Which way is the tap turning? (BEOID)](media/images/beoid-turn-tap.jpg){#fig:tap-turn height=2in}
 
@@ -652,8 +652,9 @@ distinguishing factor from other actions. For example, take the example in
 [@fig:tap-turn] of someone turning a water tap in a kitchen sink on and off. We
 cannot reliably determine whether the tap is being turned on or off from a
 single image alone, instead it is necessary to examine multiple video frames
-over time to determine the direction of turning (and flow of water) and hence
-distinguish the two actions: turning the tap on and turning the tap off.
+over time to determine the direction of turning or whether water was flowing
+prior to turning the tap or not, and hence distinguish the two actions: turning
+the tap on and turning the tap off.
 
 ![Contextual clues from the surrounding environment can aid action recognition
 from single frames](media/images/action-recognition-contextual-clues.pdf){#fig:contextual-clues height=2.5in}
@@ -664,60 +665,63 @@ actions being performed can be determined from appearance alone, we can infer
 that the man is writing on the board because he is facing the board, the board
 has writing on it, and he is holding a pen close to where there is writing.
 Similarly, the head massage image
-Gkioxari \etal have investigated the use of these contextual clues in action
+Gkioxari \etal{} have investigated the use of these contextual clues in action
 recognition[@gkioxari2015_ContextualActionRecognition]
 
 The first investigation of CNNs for action recognition operating on raw frame
-data (i.e. without explicit feature extraction) was conducted in
-[@baccouche2011_SequentialDeepLearning]. They introduced an architecture with an
-input of a stack of video frames which were then processed by multiple
+data (i.e. without explicit feature extraction) was conducted by Baccouche
+\etal{} [@baccouche2011_SequentialDeepLearning]. They introduced an architecture
+with an input of a stack of video frames which were then processed by multiple
 convolutional layers to learn spatio-temporal features on the KTH human actions
-dataset[@schuldt2004_Recognizinghumanactions] the output of which was then used
-by a recurrent ANN called a long short-term memory (LSTM) to obtain a prediction
-over the whole video sequence, although they also compared classification with
-the LSTM layer to a linear classifier and only found modest performance benefits
-(on the order of a few percentage points) indicating that short clips from a
-video may be sufficient for action recognition.
+dataset[@schuldt2004_Recognizinghumanactions], the output of which was then used
+by a recurrent ANN architecture called a long short-term memory (LSTM) to obtain
+a prediction over the whole video sequence, although they also compared
+classification with the LSTM layer to a linear classifier and only found modest
+performance benefits (on the order of a few percentage points) indicating that
+short clips from a video may be sufficient for action recognition in the KTH
+dataset.
 
 A similar architecture with a larger input was investigated in
 [@ji2013_3DConvolutionalNeural], instead of training the whole network, the
-first layers were hand initialised to obtain the following transformations:
-grayscale, spatial gradients in both x and y directions, and optical flow in
+first layers were hand initialised to obtain the following transformations: rgb
+to grayscale, spatial gradients in both x and y directions, and optical flow in
 both x and y directions. A video sequence processed by the first layer results
 in a stack of grayscale video frames, spatial gradient frames and optical flow
-frames. The network was evaluated on both the KTH dataset with competitive
-performance to other methods developed at the time and TRECVID[@_TRECVIDData]
-dataset improving over the state of the art.
+frames. The rest of the weights were trained as normal through gradient descent.
+The network was evaluated on both the KTH dataset with competitive performance
+to other methods developed at the time and TRECVID[@_TRECVIDData] dataset
+improving over the previous state of the art.
 
-##### Two stream {#sec:background:cnn:architectures:2scnn}
+##### Two stream convolutional neural network (2SCNN) {#sec:background:cnn:architectures:2scnn}
 
 A biologically inspired architecture based on the two-stream visual processing
-hypothesis for action recognition is introduced in
+hypothesis for action recognition was introduced in
 [@simonyan2014_TwoStreamConvolutionalNetworks]. The two stream hypothesis states
 that two processing streams are used in the brain for processing visual input:
-the dorsal stream for motion, good at detecting and recognising movements; and
-the ventral stream recognising form, good at detecting objects. The proposed
+the *dorsal stream* for motion, good at detecting and recognising movements; and
+the *ventral stream* recognising form, good at detecting objects. The proposed
 model uses two separate CNNs each taking a different input based on the two
-stream hypothesis: the spatial for handling the appearance (analog of the
-ventral stream) and the temporal for handling the motion (analog of the dorsal
-stream). A video sequence is processed to obtain the optical flow frames using
-the TVL1[@zach2007_DualityBasedApproach] algorithm which are used as input to
-the temporal stream, and a single frame is used as input to the spatial stream.
-The two streams process the inputs in parallel each of which produces an action
-prediction, the results are then combined using a linear classifier, see
-[@fig:architecture:two-stream].
+stream hypothesis: the spatial stream for handling the appearance (analog of the
+ventral stream) and the temporal stream for handling the motion (analog of the
+dorsal stream). A video sequence is processed to obtain the optical flow frames
+using the TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm
+which are used as input to the temporal stream, and a single frame is used as
+input to the spatial stream. The two streams process the inputs in parallel each
+of which produces an action prediction, the results are then combined using a
+linear classifier, see [@fig:architecture:two-stream] for a graphical depiction.
 
 The spatial stream takes in a single input frame $\tau$, size $W \times H \times
 3$ (using RGB images). The corresponding input to the temporal stream is $W
 \times H \times 2L$ where $L$ is the temporal duration, a hyperparameter of the
-network determining over how a long period to compute optical flow from,
-In [@simonyan2014_TwoStreamConvolutionalNetworks] use $L = 10$ and both our
-networks are also trained with $L = 10$. The temporal input is computed from the
-frames $\tau - L/2$ to $\tau + L/2$ yielding $L$ frames from which $2L$ optical
-flow frames are obtained, twice as many as the input due to computing both
-flow in $u$ and $v$ directions. The flow frames are then combined by
-alternating $u$ and $v$ frames, all even frames in the optical flow stack are in
-$u$ direction and odd, the $v$ direction.
+network determining the temporal window of the network. In
+[@simonyan2014_TwoStreamConvolutionalNetworks] $L = 10$ is used (optical flow is
+thus calculated from 11 consecutive frames). The temporal input is computed from
+the frames ${\tau - \lfloor(L + 1)/2}\rfloor$ to ${\tau + \lceil(L +
+1)/2\rceil}$ yielding $L + 1$ frames from which $2L$ optical flow frames are
+obtained, twice as many as the input due to computing both flow in $u$ and $v$
+directions. The flow frames are then combined by alternating $u$ and $v$ frames,
+all even frames in the optical flow stack are in $u$ direction and odd, the $v$
+direction.
 
 Raw optical flow frames stored as floats can take up a large amount of space so
 instead they are converted to greyscale images in the range $[0, 255]$ and
@@ -726,25 +730,18 @@ the frames are mean-centred around $(127, 127, 127)$.
 
 The networks are trained concurrently using mini-batch stochastic gradient
 descent. 256 video sequences are selected from the training dataset uniformly
-across the classes from which a single frame $\tau$ is sampled from each of
-these videos and the corresponding optical flow stack from $\tau - L/2$ to
-$\tau + L/2$ is computed forming the input of the spatial and temporal network
-respectively. Stochastic gradient descent with momentum is used to train the
-networks against the ground truth actions of the sample video. A common strategy
-in training CNNs is to initialise the weights of the network to those of the
-same network architecture trained on ImageNet, this helps avoid overfitting on
-small datasets. The weights of the UCF101 trained network was initialised with
-ImageNet trained weights, and the BEOID trained network was initialised on the
-weights of the UCF101 trained network.
-
-<##check Dima, this is not entirely true, the UCF101 trained network was from a
-separate source, not the one that Mike/Davide trained, but I'm hesitant to state
-this as it muddies the explanation>
+across the classes from which a single frame is sampled from each of these
+videos for which the corresponding optical flow stack is computed forming the
+input of the spatial and temporal network respectively. Stochastic gradient
+descent with momentum is used to train the networks against the ground truth
+actions of the sample video. A common strategy in training CNNs is to initialise
+the weights of the network to those of the same network architecture trained on
+ImageNet helping to avoid overfitting on small datasets.
 
 Classification of a video using the two stream network is accomplished by
-sampling a fixed number of frames with equal temporal distance between each
-pair of consecutively sampled frames. For each sampled frame $F$, a new set of
-frames are computed by flipping and cropping $F$. The corresponding input to the
+sampling a fixed number of frames with equal temporal distance between each pair
+of consecutively sampled frames. For each sampled frame $F$, a new set of frames
+are computed by flipping and cropping $F$. The corresponding input to the
 temporal network is computed from the frames post-transformation. The overall
 class scores for the whole video is computed as the average of the class scores
 for each individual sample. For example sampling 20 frames from a 60 second long
@@ -753,23 +750,30 @@ for $k \in [0 .. 19]$, each frame $F_k$ at index $k$ in the video will then be
 cropped and flipped to produce a set of derived frames $\mathscr{F_k}$, each
 frame in the set will have its class score computed by a forward pass through
 the spatial network, a corresponding input for the temporal network is also
-computed, the scores are then combined (*fused*) by a linear combination.
+computed, the scores are then combined (*fused*) by a linear classifier.
 
 
-| Dataset | Stream                  | Accuracy |
-|---------|-------------------------|----------|
-| BEOID   | Spatial                 |    83.9% |
-|         | Temporal                |    92.9% |
-|         | Post convolution fusion |    94.8% |
-| UCF101  | Spatial                 |    78.4% |
-|         | Temporal                |    87.0% |
-|         | Late fusion             |    91.4% |
-: Two stream network tower accuracy on BEOID and UCF101. {#tbl:network-accuracy-results}
+| Dataset | Stream                                            | Accuracy |
+|---------|---------------------------------------------------|----------|
+| BEOID   | Spatial                                           |    83.9% |
+|         | Temporal                                          |    92.9% |
+|         | Post convolution[^post-convolution-fusion] fusion |    94.8% |
+| UCF101  | Spatial                                           |    78.4% |
+|         | Temporal                                          |    87.0% |
+|         | Late fusion                                       |    91.4% |
+: Two stream network stream accuracy on BEOID and UCF101. {#tbl:network-accuracy-results}
+
+[^post-convolution-fusion]: Post convolution fusion refers to the combination of
+    the network streams after the convolutional layers (before the fully
+    connected layers) combining the two streams into a single spatio-temporal
+    stream. This idea was proposed by Feichtenhofer \etal{} in
+    [@feichtenhofer2016_ConvolutionalTwoStreamNetwork].
 
 <##check Maybe add SGD, mini batch, momentum explanation?>
 
-![Two stream CNN
-architecture[@simonyan2014_TwoStreamConvolutionalNetworks]](media/images/two-stream-cnn.pdf){#fig:architecture:two-stream}
+![Two stream CNN architecture[@simonyan2014_TwoStreamConvolutionalNetworks]](media/images/two-stream-cnn-vertical.pdf){#fig:architecture:two-stream}
+
+<##todo figure out how to include the rotated version of this figure without it unrotating>
 
 ## Video Datasets {#sec:background:datasets}
 
@@ -888,17 +892,17 @@ don't compute any useful transform. Zeiler \etal{} empirically establish a new
 architecture which learns fewer dead filters in the first layer using first
 layer filter visualisation to check this.
 
-We present the filters for both network towers in a 2SCNN trained on UCF101 in
+We present the filters for both network streams in a 2SCNN trained on UCF101 in
 [@fig:spatial-network-filters:ucf101;@fig:temporal-network-filters:ucf101]. We
 also visualised the filters for a 2SCNN trained on BEOID where the weights
 where initialised as the UCF101 weights, but the differences were imperceptible
 to the us, so we omitted them for brevity.
 
-![Filters of the first convolutional layer from the spatial tower
+![Filters of the first convolutional layer from the spatial stream
 in the 2SCNN trained for action recognition on UCF101
 ](media/images/vgg16-spatial-ucf101-filters.pdf){#fig:spatial-network-filters:ucf101}
 
-![Filters from the first convolutional layer from the temporal tower
+![Filters from the first convolutional layer from the temporal stream
 in the 2SCNN trained on UCF101. Since the filters are 3D ($20 \times 3 \times 3$) we
 flatten the 3D tensor into a 2D image by slicing it into $1 \times 3 \times 3$
 parts and joining them horizontally (so each filter spans a row).
@@ -1534,20 +1538,20 @@ distribution:
 
 Two stream CNNs (2SCNN) were introduced in
 [@sec:background:cnn:architectures:2scnn], they are composed of two network
-towers concurrently processing the network input: the spatial tower takes a
-single video frame as input, and the temporal tower takes a stack of $T$ optical
+streams concurrently processing the network input: the spatial stream takes a
+single video frame as input, and the temporal stream takes a stack of $T$ optical
 flow (u, v) pairs. We produce attention maps from both the spatial and
-temporal tower on a per frame basis, the spatial tower poses no complications in
-producing attention maps as only a single frame is input to the tower.
-The temporal tower is not quite as simple as the spatial tower since it
+temporal stream on a per frame basis, the spatial stream poses no complications in
+producing attention maps as only a single frame is input to the stream.
+The temporal stream is not quite as simple as the spatial stream since it
 convolves the entire optical flow input in the first layer marginalising time;
-the input/output dimensions of the first layer in the temporal tower are: $224
+the input/output dimensions of the first layer in the temporal stream are: $224
 \times 224 \times 2T \rightarrow 224 \times 224 \times 64$, where $T$ is the
 temporal extent of the network (10 for our networks), the layer contains
 $64 \times 3 \times 3$ filters, so each filter convolves over a tensor of
 dimension $3 \times 3 \times 20$ producing a single scalar output. If we could
 use EBP back to the first layer then we would be able to generate attention maps
-on a per frame basis for the temporal network tower, however the marginal
+on a per frame basis for the temporal network stream, however the marginal
 winning probabilities become increasingly small and sparse as the stopping layer
 gets closer to the first layer in the network to the point that when visualised
 the attention maps visually provide little information. Stopping at any
@@ -1568,7 +1572,7 @@ of pixels in input space giving acceptable spatial resolution.
 
 Generating attention maps at the third pooling layer still results in a single
 attention map for the entire input, to mitigate this and generate attention maps
-on a frame by frame basis from the temporal tower we utilised using a sliding
+on a frame by frame basis from the temporal stream we utilised using a sliding
 window with the same temporal extent as the network computing attention maps for
 each window and then sliding the window along by a single frame repeatedly until
 there are no longer any frames remaining in the video sequence. Let $\tau$ be
@@ -1662,7 +1666,7 @@ the BEOID dataset as a proxy variable for the action location, as the two are
 correlated; a person's gaze when performing an action is directed towards the
 action. We compare the location of the attention map maximum (i.e. the most
 salient region) to the location of the operator's gaze to comparatively assess
-the different EBP methods over both network towers.
+the different EBP methods over both network streams.
 
 <##todo Get Michael Land reference from Dima>
 
@@ -1708,7 +1712,7 @@ contrastive inferior>
 
 ![Contrastive *max* jitter `v_Swing_g06_c07`](media/results/extrema/ucf101/v_Swing_g06_c07.pdf)
 
-Attention maps for the clips with the max/min jitter for the **spatial** tower
+Attention maps for the clips with the max/min jitter for the **spatial** stream
 and EBP type (contrastive/non-contrastive) (network trained on UCF101)
 
 </div>
@@ -1722,7 +1726,7 @@ and EBP type (contrastive/non-contrastive) (network trained on UCF101)
 
 ![Contrastive *max* jitter `v_Haircut_g06_c01`](media/results/extrema/ucf101/v_Haircut_g06_c01.pdf)
 
-Attention maps for the clips with the max/min jitter for the **temporal** tower
+Attention maps for the clips with the max/min jitter for the **temporal** stream
 and EBP type (contrastive/non-contrastive) (network trained on UCF101)
 
 </div>
@@ -1749,7 +1753,7 @@ and EBP type (contrastive/non-contrastive) (network trained on UCF101)
 
 ![Contrastive *max* jitter `05_Row1_pull_rowing-machine_2751-2784`](media/results/extrema/beoid/05_Row1_pull_rowing-machine_2751-2784.pdf)
 
-Attention maps for the clips with the max/min jitter for the **spatial** tower
+Attention maps for the clips with the max/min jitter for the **spatial** stream
 and EBP type (contrastive/non-contrastive) (network trained on BEOID)
 
 </div>
@@ -1763,7 +1767,7 @@ and EBP type (contrastive/non-contrastive) (network trained on BEOID)
 
 ![Contrastive *max* jitter `02_Sink1_scoop_spoon_1294-1332`](media/results/extrema/beoid/02_Sink1_scoop_spoon_1294-1332.pdf)
 
-Attention maps for the clips with the max/min jitter for the **temporal** tower
+Attention maps for the clips with the max/min jitter for the **temporal** stream
 and EBP type (contrastive/non-contrastive) (network trained on BEOID)
 
 </div>
@@ -1793,7 +1797,7 @@ Methods:
 Contributions:
 
 * Survey of visualisation methods for CNNs organised into hierarchy
-* Validation of the use of EBP on temporal network towers to understand features
+* Validation of the use of EBP on temporal network streams to understand features
   learnt by the 2SCNN.
 
 # Future work {#sec:future-work}
