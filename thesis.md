@@ -80,8 +80,21 @@ header-includes:
   - \newcommand{\neuronoutput}[2]{\hat{a}^{(#1)}_{#2}}
     # 1: layer index
     # 2: neuron index
+  - \newcommand{\imframe}[1]{I_{#1}}
+    # 1: frame index
+  - \newcommand{\flow}[2]{I^{#2}_{#1}}
+    # 1: frame index
+    # 2: x,y selection
+  - \newcommand{\temporalinput}[2]{T_{#1}^{#2}}
+    # 1: initial frame index
+    # 2: offset index
+  - \newcommand{\isep}{\mathrel{{.}\,{.}}\nobreak}
+  - '\newcommand{\intrangeincl}[2]{[ #1 \isep #2 ]}'
+    # 1: from
+    # 1: to
   - \newcommand{\coloredtext}[2]{\color{#1}{#2}\color{black}}
 ---
+
 
 <!--- Draft options -->
 \SetWatermarkScale{0.3}
@@ -704,7 +717,7 @@ model uses two separate CNNs each taking a different input based on the two
 stream hypothesis: the spatial stream for handling the appearance (analog of the
 ventral stream) and the temporal stream for handling the motion (analog of the
 dorsal stream). A video sequence is processed to obtain the optical flow frames
-using the TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm
+
 which are used as input to the temporal stream, and a single frame is used as
 input to the spatial stream. The two streams process the inputs in parallel each
 of which produces an action prediction, the results are then combined using a
@@ -1566,6 +1579,51 @@ gets closer to the first layer in the network to the point that when visualised
 the attention maps visually provide little information. Stopping at any
 other layer above the input provides only a single attention map.
 
+We investigated the application of EBP to a 2SCNN network constructed from two
+VGG-16 network towers forming the spatial and temporal stream. The network
+weights were provided for the network trained on UCF101 using ImageNet weight
+initialisation and BEOID using the UCF101 network's weights for initialisation
+to reduce overfitting.
+
+Videos clips were decomposed into constituent frames and encoded as 8-bit
+integers using JPEG compression. BEOID video is recorded at $640 \times 480$
+resolution, UCF101 at $320 \times 240$[^ucf101-resolution]. The optical flow
+$T_\tau$ of a pair of frames $I_\tau$ and $I_{\tau + 1}$ with respective frame
+indices $\tau$ and $\tau + 1$ are obtained by using the
+TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm. The
+resulting motion vectors can be positive or negative, but are recorded in image
+form, to handle negative values, optical flow is rescaled to be in the range
+$[0, 254]$ where 127 represents 0, anything below 127 is negative and anything
+above is positive.
+
+[^ucf101-resolution]: UCF101 is collected from YouTube so it possible that
+  videos are upsampled to the desired resolution.
+
+Both network streams were trained starting with network weights taken from a
+network with the same architecture trained on ImageNet, and so we inherit a lot
+of the hyperparameters common to ImageNet networks: Namely a feature scale of
+$[0, 255]$, mean subtraction of $(103.9, 116.8, 123.7)$ and channel order: BGR.
+
+The spatial stream takes a single color video frame input $I_\tau$ of dimensions
+$224 \times 224 \times 3$ in BGR format in the range $[0,255]$ mean centred
+about the value $(103.9, 116.8, 123.7)$.
+
+The temporal stream takes a stack of optical flow frames specified by a starting
+frame index $\tau$ of duration $L$ in frames ($L = 10$ for our experiments).
+Optical flow is computed in both $u$ and $v$ directions so there are $2L$
+optical flow frames in the input to the temporal stream, they are stacked such
+that frames with even offsets from $\tau$ are in the $u$ direction and in the
+$v$ direction for odd offsets. Let $\temporalinput{\tau}{}$ be the input to the
+stream, and $\temporalinput{\tau}{k}$ be the optical flow frame in the input at
+offset $k$, then the full input $\temporalinput{\tau}{}$ is defined as
+$\temporalinput{\tau}{2k} = \flow{\tau + 2k}{}$ and $\temporalinput{\tau}{2k +
+1} = \flow{\tau + 2k + 1}{}$ for $k \in \intrangeincl{0}{L - 1}$. Optical flow
+frames are encoded in 8-bit integer images, once read into memory they are
+transformed to be in the range $[-127.5, 127.5]$, this is performed by mean
+centring around $127.5$. Review [@fig:architecture:two-stream] for a graphical
+depiction of how frames are stacked for input.
+
+
 Selecting the stopping layer for EBP was an exercise in trial and error, we
 computed attention maps by stopping at various layers in the network and found
 that the third pooling layer provided a good compromise between visual
@@ -2017,5 +2075,9 @@ $\neuroninput{l}{j}$
 
 $\neuronoutput{l}{j}$
 : The output of neuron $\neuron{l}{j}$
+
+$\intrangeincl{a}{b}$
+: The integer range from $a$ to $b$ (inclusive)
+
 
 # Bibliography
