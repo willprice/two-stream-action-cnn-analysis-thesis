@@ -1178,25 +1178,27 @@ and compute the smallest bounding box around the remaining thresholded points.
 # Excitation backpropagation {#sec:ebp}
 
 Excitation backpropagation[@zhang2016_TopdownNeuralAttention] (EBP) is an
-attention mapping method based on selective tuning model of
-attention[@tsotsos1995_ModelingVisualAttention] inspired by the visual
-processing pyramid of primates. *Visual attention* is the mechanism through
-which information from the visual field is selected. Attention can be split up
-into two distinct processes: *top down attention* and *bottom up
+attention mapping method inspired by visual attention in the primate visual
+cortex. *Visual attention* is the mechanism through which information from the
+visual field is selected. Attention can be split up into two distinct processes:
+*top down attention* and *bottom up
 attention*[@connor2004_VisualAttentionBottomUp]. Bottom up attention is driven
-by raw sensory input shifting attention to potential regions of interests;
+by raw sensory input shifting attention to potential regions of interests:
 regions that 'pop out' from the visual field, e.g. a shiny gold coin on the
-floor; whereas top down attention refines the input based on high level goals ;
-regions satisfying the actor's search criteria e.g. spotting a friend in a crowd
-of people. Tsotos \etal{} propose a binary winner-takes-all (WTA) model of
-visual attention inspired by the primate visual cortex and the top-down
-bottom-up model of visual attention called the selective tuning
-model[@tsotsos1995_ModelingVisualAttention]. Zhang \etal{} adapted the model of
-Tsotos \etal{} into a probabilistic formulation called Excitation
-Backpropagation capable of producing probabilistic attention maps instead of
-binary attention maps.
+floor. Top down attention refines the input based on high level goals: regions
+satisfying the actor's search criteria e.g. spotting a friend in a crowd of
+people. Tsotos \etal{} propose a binary winner-takes-all (WTA) model of visual
+attention inspired by the primate visual cortex and the top-down bottom-up model
+of visual attention called the *selective tuning
+model*[@tsotsos1995_ModelingVisualAttention]. Zhang \etal{} adapt the selective
+tuning model of Tsotos \etal{} into a probabilistic formulation called
+Excitation Backpropagation capable of producing probabilistic attention maps
+instead of binary attention maps. The probabilistic attention maps confer the
+relative importance of regions in the input to a CNN based on a top-down
+attention signal provided by the researcher indicating their interest in
+activation of specific neurons in a chosen layer.
 
-Like the top-down bottom-up model of human attention, EBP decomposes attention
+Like the top-down bottom-up model of primate attention, EBP decomposes attention
 into two parts: bottom-up and top-down. The model makes the following
 assumptions:
 
@@ -1204,23 +1206,27 @@ assumptions:
   feature.
 * The response of a neuron is non negative
 
-The bottom-up component of attention is composed of the intermediate
-computations in the network modelling the intrinsic salience of the input. The
-top-down component, modelling the high-level search goal, is specified as a
-prior distribution over the neurons in the top layer. The prior distribution
-encodes the search goal as probabilities over the task relevant neurons, e.g.
-finding the discriminative regions in a video frame that cause the frame to be
-classified as 'put down plug' can be encoded as a one-hot probability
-distribution over the classification layer of an action recognition network
-where all but the 'put down plug' class neuron probabilities are zero and the
-'put down plug' class neuron is one.
+The bottom-up component of attention comprises the intermediate computations in
+the network modelling the intrinsic salience of the input. The top-down
+component, modelling the high-level search goal, is specified as a prior
+distribution over the neurons in the top layer. The prior distribution encodes
+the search goal as probabilities over the task relevant neurons, e.g. finding
+the discriminative regions in a video frame from a video of someone putting down
+a plug that cause the frame to be classified as 'put down plug' can be encoded
+as a one-hot probability distribution[^one-hot-probability-distribution] over the classification layer of an action
+recognition network where all but the 'put down plug' class neuron probabilities
+are zero and the 'put down plug' class neuron is one.
 
+[^one-hot-probability-distribution]: We use the term one-hot probability
+    distribution to refer to a distribution over a variable $X$ in which
+    ${\exists x_{\text{hot}} \in X : P(X = x) = 1}$ therefore ${\forall x \in X
+    \setminus \{x_\text{hot}\} : P(X = x) = 0}$
 
 **Explanation** EBP computes attention maps using a probabilistic
 winner-takes-all approach. A neuron is a winner neuron if it has the highest
 activation in the layer. *Winner-takes-all* refers to the winner neuron
 consuming all the attention from its children (neurons in the previous layer
-connected to the winner neuron with non negative weights), attention isn't
+connected to the winner neuron with non negative weights); attention isn't
 distributed from the neurons in the layer below across the neurons to the layer
 above, but only to the winner neuron. At a high level, the idea is to consider
 each neuron in the top layer in turn, we assume that the neuron 'wins' and
@@ -1250,28 +1256,31 @@ defined encoding the relative interest in each neuron in the layer and hence the
 features recognised by those neurons of interest. The probability distribution
 is defined:
 
-$$ P(L) = (P(\neuron{l}{0}), \ldots, P(\neuron{l}{n})) $$
+$$ P(L_{\text{start}}) = (P(\neuron{l_{\text{start}}}{0}), \ldots, P(\neuron{l_{\text{start}}}{n})) $$
 
-$L$ is a layer with index $l$^[Layers are labelled bottom up, from input layer
-to output layer, starting at 0 (in contrast to Zhang \etal{}'s
-explanation[@zhang2016_TopdownNeuralAttention]).], and $\neuron{l}{i}$ is neuron
-with index $i$ at layer $l$. $P(\neuron{l}{i})$ is the marginal winning
-probability of a neuron, the probability that this neuron has the highest
-activation in the layer. In our example we define a probability distribution
-over the classification layer in which each neurons recognises a single class of
-image, the probability distribution is 'one-hot'; we set $P(a_{\text{car}}) = 1$
-and ${\forall a \in (L_{\text{start}} \setminus \{a_{\text{car}\}}) : (P(a) =
-0)}$ as we have no interest in any other image class.
+$L_{\text{start}}$ is a layer with index $l_{\text{start}}$[^layer-numbers], and
+$\neuron{l_{\text{start}}}{i}$ is neuron with index $i$ in layer
+$L_{\text{start}}$. $P(\neuron{l_{\text{start}}}{i})$ is the marginal winning
+probability of the neuron $\neuron{l_{\text{start}}}{i}$, the probability that
+the neuron has the highest activation in the layer. In our example we define a
+probability distribution over the classification layer in which each neurons
+recognises a single object class in an image, the probability distribution is
+'one-hot'; we set $P(a_{\text{car}}) = 1$ as we have no interest in any other
+object class.
 
-The next steps are repeated for each layer in the network starting at the top
-and proceeding until the target layer $L_{\text{stop}}$ is reached. At each step
-we consider two adjacent layers, the top layer (closer to the output of the
-network) $L_{\text{top}}$ and the layer below $L_{\text{bottom}}$ (closer to the
-input of the network). The probability distribution for $P(L_{\text{top}})$ will
-always be defined during each step, and we will compute $P(L_{\text{bottom}})$
-using the rules of EBP. For each neuron $\neuron{l}{j} \in L_{\text{top}}$ we
-compute the marginal winning probability of all child neurons $\children{l}{j}$
-where
+[^layer-numbers]: Layers are labelled bottom up, from input layer to output
+layer, starting at 0 (in contrast to Zhang \etal{}'s
+explanation[@zhang2016_TopdownNeuralAttention]).
+
+The next steps are repeated for each layer in the network starting at the
+*start* layer and proceeding until the *stopping* layer $L_{\text{stop}}$ is
+reached. At each step we consider two adjacent layers, the top layer (closer to
+the output of the network) $L_{\text{top}}$ and the layer below
+$L_{\text{bottom}}$ (closer to the input of the network). The probability
+distribution for $P(L_{\text{top}})$ will always be defined during each step,
+and we will compute $P(L_{\text{bottom}})$ using the rules of EBP. For each
+neuron $\neuron{l}{j} \in L_{\text{top}}$ we compute the marginal winning
+probability of all child neurons $\children{l}{j}$ where
 
 \begin{equation}
 \label{eq:ebp-children}
@@ -1304,9 +1313,9 @@ that $\sum_{\neuron{l - 1}{k} \in \children{l}{j}} \cwp{l - 1}{k}{l}{j} = 0$
 \end{equation}
 
 
-having computed the CWPs for all parent/child pairs in $L_{\text{top}}$ and
+having computed the CWPs for all parent-child pairs in $L_{\text{top}}$ and
 $L_{\text{bottom}}$ we then compute the MWP for each neuron $\neuron{l - 1}{k}
-\in L_{\text{bottom}}$ by marginalising \eqref{eq:ebp-mwp} over its parents
+\in L_{\text{bottom}}$ by marginalising \eqref{eq:ebp-mwp} over the neuron's parents
 \eqref{eq:ebp-parents}
 
 \begin{equation}

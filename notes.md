@@ -61,7 +61,32 @@ Code is available at
 
 ## Background
 
+## ANNs
+
+* Very little about training
+
 ## CNNs
 
 * Intro about receptive fields is a bit confused
 * Lacking in computational details.
+* In the two stream explanation I talk about momentum, SGD but don't explain
+  them, perhaps add an explanation?
+* Two stream explanation is a bit thin
+
+## Datasets
+
+* Add more details on BEOID, size of data set, number of operators, number of
+  objects, number of actions, number of combinations of object/action
+  interactions
+* Add UCF101 details, size of data set, breadth of actions
+
+## Visualising
+
+* Add filter responses of spatial network
+
+## EBP
+
+* What is the selective tuning model of attention?
+* The first page on EBP is a bit confused, the ordering of definitions could be
+  improved
+* Sort out eqref and switch to crossref
