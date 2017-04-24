@@ -82,7 +82,7 @@ header-includes:
     # 2: neuron index
   - \newcommand{\imframe}[1]{I_{#1}}
     # 1: frame index
-  - \newcommand{\flow}[2]{I^{#2}_{#1}}
+  - \newcommand{\flow}[2]{V^{#2}_{#1}}
     # 1: frame index
     # 2: x,y selection
   - \newcommand{\temporalinput}[2]{T_{#1}^{#2}}
@@ -763,17 +763,6 @@ cropped and flipped to produce a set of derived frames $\mathscr{F_k}$, each
 frame in the set will have its class score computed by a forward pass through
 the spatial network, a corresponding input for the temporal network is also
 computed, the scores are then combined (*fused*) by a linear classifier.
-
-
-| Dataset | Stream                                            | Accuracy |
-|---------|---------------------------------------------------|----------|
-| BEOID   | Spatial                                           |    83.9% |
-|         | Temporal                                          |    92.9% |
-|         | Post convolution[^post-convolution-fusion] fusion |    94.8% |
-| UCF101  | Spatial                                           |    78.4% |
-|         | Temporal                                          |    87.0% |
-|         | Late fusion                                       |    91.4% |
-: Two stream network stream accuracy on BEOID and UCF101. {#tbl:network-accuracy-results}
 
 [^post-convolution-fusion]: Post convolution fusion refers to the combination of
     the network streams after the convolutional layers (before the fully
@@ -1557,37 +1546,121 @@ distribution:
 
 # EBP for two stream CNNs {#sec:ebp-for-2scnn}
 
+## Theory
+
 Two stream CNNs (2SCNN) were introduced in
 [@sec:background:cnn:architectures:2scnn], they are composed of two network
 streams concurrently processing the network input: the spatial stream takes a
-single video frame as input, and the temporal stream takes a stack of $T$ optical
-flow (u, v) pairs. We produce attention maps from both the spatial and
-temporal stream on a per frame basis, the spatial stream poses no complications in
-producing attention maps as only a single frame is input to the stream.
-The temporal stream is not quite as simple as the spatial stream since it
-convolves the entire optical flow input in the first layer marginalising time;
-the input/output dimensions of the first layer in the temporal stream are: $224
-\times 224 \times 2T \rightarrow 224 \times 224 \times 64$, where $T$ is the
-temporal extent of the network (10 for our networks), the layer contains
-$64 \times 3 \times 3$ filters, so each filter convolves over a tensor of
-dimension $3 \times 3 \times 20$ producing a single scalar output. If we could
-use EBP back to the first layer then we would be able to generate attention maps
-on a per frame basis for the temporal network stream, however the marginal
-winning probabilities become increasingly small and sparse as the stopping layer
-gets closer to the first layer in the network to the point that when visualised
-the attention maps visually provide little information. Stopping at any
-other layer above the input provides only a single attention map.
+single video frame as input, and the temporal stream takes a stack of $L$
+optical flow (u, v) pairs. We produce attention maps from both the spatial and
+temporal stream on a per frame basis. Attention maps can be computed for the
+spatial stream with no modifications to EBP as only a single frame is input to
+the network. The temporal stream is not quite as simple since it convolves the
+entire optical flow input in the first layer marginalising over time; the
+input/output dimensions of the first layer are: $W \times H \times 224 \times 2L
+\rightarrow W \times H \times 64$, the layer contains $64 \times 3 \times 3$
+filters, so each filter convolves over a 3D tensor of dimension $3 \times 3
+\times 20$ producing a single scalar output. If we could use EBP back to the
+first layer then we would be able to generate attention maps on a per frame
+basis for the temporal network stream, however the marginal winning
+probabilities become increasingly small and sparse as the stopping layer gets
+closer to the first layer in the network to the point that when visualised the
+attention maps visually provide little information as can be seen in
+[@fig:ebp-pooling-layer-sizes]. Stopping at any other layer above the input
+provides only a single attention map so we have to use a different approach to
+generate attention maps for each frame with EBP.
+
+![The affect of stopping EBP at different layers (UCF101 boxing)](media/images/ebp-pooling-layer-sizes.pdf){#fig:ebp-pooling-layer-sizes width=6in}
+
+We propose a novel method for generating attention maps on a per frame basis for
+temporal streams in the 2SCNN architecture using EBP. For a temporal stream
+network with temporal extent $L$, a window over $L + 1$ video frames is
+constructed such that the first frame of the window has index $\tau$ hence the
+window covers frames $\tau$ to $\tau + L + 1$. The temporal stream input
+$\temporalinput{\tau}{}$ corresponding to the frames in the window is computed
+to produce a stack of optical flow frames of size $2L$, We compute a forward
+pass and a backward pass using EBP to generate an attention map $A_\tau$
+corresponding to the window $W_\tau$. The window is then slid along by a single
+frame and the process is repeated to produce another attention map $A_{\tau +
+1}$. The sliding window is initialised at $\tau = 1$ (the first frame). For a
+video $f$ frames long, we are able to produce $f - (L + 1)$ attention maps as
+there are insufficient frames from frames with indices $\tau > f - (L + 1)$ to
+form a full input to the temporal network hence we cannot compute an attention
+map. A graphical depiction of this process is presented in [@fig:ebp-two-stream]
+
+![Sliding window technique generating attention maps on a per frame basis, example video clip from UCF101](media/images/ebp-two-stream.pdf){#fig:ebp-two-stream}
+
+The method produces attention maps for windows of frames but can't give us a
+frame level resolution since the attention map applies equally to all frames in
+the window and so it is an arbitrary choice which frame we associate with
+$A_\tau$ providing it is between $\tau$ and $\tau + L + 1$ (in the associated
+window). Several obvious choices come to mind: the first frame $\tau$, the
+middle frame $\tau + (L + 1)/2$ and the final frame $\tau + L + 1$. To evaluate
+which of these makes the most sense we overlaid the attention map $A_\tau$ on
+the chosen frame $\tau_{\text{underlay}}$ and recombined the overlaid frames
+into a video. The videos illustrate the impact of the frame choice:
+
+* $\tau_{\text{underlay}} = \tau$: The attention map indicates the salient
+  regions in the next $L + 1$ frames.
+* $\tau_{\text{underlay}} = \tau + (L + 1)/2$: The attention map indicates the salient
+  regions of the last $(L + 1)/2$ and future $(L + 1)/2$ frames.
+* $\tau_{\text{underlay}} = \tau + L + 1$: The attention map indicates the salient
+  regions over the last $L + 1$ frames.
+
+## Details
+
+Selecting the stopping layer for EBP was an exercise in trial and error, we
+computed attention maps by stopping at various layers in the network and found
+that the third pooling layer provided a good compromise between visual
+interpretability and resolution of attention (i.e. the size of the area for which
+the marginal winning probability applies). At the third pooling layer of VGG16, the
+dimensionality of the attention map is $28 \times 28$ and so each marginal
+winning probability is constant over a $224/28 \times 224/28 = 8 \times 8$ patch
+of pixels in input space giving acceptable spatial resolution. See
+[@fig:ebp-pooling-layer-sizes] for a visual comparison of attention maps
+computed for the same frame using different stopping layers.
+
+We chose frame $\tau + (L + 1)/2$ as the underlay as it provides both
+information on what was salient, and what is to be salient.
+
+The attention maps we generate are those for the videos from the test set used
+to evaluate the accuracy of the network
+
+
+
+## Networks
 
 We investigated the application of EBP to a 2SCNN network constructed from two
-VGG-16 network towers forming the spatial and temporal stream. The network
+VGG-16 network towers forming the spatial and temporal stream, networks were
+trained and provided for use by CUHK[^cuhk-ucf101-2scnn] and UoB[^uob-beoid-2scnn]. The network
 weights were provided for the network trained on UCF101 using ImageNet weight
-initialisation and BEOID using the UCF101 network's weights for initialisation
-to reduce overfitting.
+initialisation by CUHK and BEOID using the UCF101 network's weights for initialisation
+to reduce overfitting. The accuracy of the network on the two datasets is
+detailed in [@tbl:network-accuracy-results].
+
+[^uob-beoid-2scnn]: VGG16 2SCNN (BEOID), provided by UoB.
+[^cuhk-ucf101-2scnn]: VGG16 2SCNN (UCF101), provided by Wang \etal{}, trained
+  according to their paper on best practices in
+  training[@wang2015_GoodPracticesVery], See
+  https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
+  for detailed Caffe training parameters
+
+
+
+| Dataset | Stream                                            | Accuracy |
+|---------|---------------------------------------------------|----------|
+| BEOID   | Spatial                                           |    83.9% |
+|         | Temporal                                          |    92.9% |
+|         | Post convolution[^post-convolution-fusion] fusion |    94.8% |
+| UCF101  | Spatial                                           |    78.4% |
+|         | Temporal                                          |    87.0% |
+|         | Late fusion                                       |    91.4% |
+: VGG-16 Network stream accuracy on BEOID and UCF101. {#tbl:network-accuracy-results}
 
 Videos clips were decomposed into constituent frames and encoded as 8-bit
 integers using JPEG compression. BEOID video is recorded at $640 \times 480$
 resolution, UCF101 at $320 \times 240$[^ucf101-resolution]. The optical flow
-$T_\tau$ of a pair of frames $I_\tau$ and $I_{\tau + 1}$ with respective frame
+$\flow{\tau}{}$ of a pair of frames $\imframe{\tau}$ and $\imframe{\tau + 1}$ with respective frame
 indices $\tau$ and $\tau + 1$ are obtained by using the
 TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm. The
 resulting motion vectors can be positive or negative, but are recorded in image
@@ -1621,64 +1694,6 @@ frames are encoded in 8-bit integer images, once read into memory they are
 transformed to be in the range $[-127.5, 127.5]$, this is performed by mean
 centring around $127.5$. Review [@fig:architecture:two-stream] for a graphical
 depiction of how frames are stacked for input.
-
-
-Selecting the stopping layer for EBP was an exercise in trial and error, we
-computed attention maps by stopping at various layers in the network and found
-that the third pooling layer provided a good compromise between visual
-interpretability and resolution of attention (i.e. the size of the area of which
-the marginal winning probability applies), a comparison of attention maps
-generated by stopping at progressively lower layers is presented in
-[@fig:ebp-pooling-layer-sizes]. At the third pooling layer of VGG16, the
-dimensionality of the attention map is $28 \times 28$ and so each marginal
-winning probability is constant over a $224/28 \times 224/28 = 8 \times 8$ patch
-of pixels in input space giving acceptable spatial resolution.
-
-![The affect of stopping EBP at different layers (UCF101 boxing)](media/images/ebp-pooling-layer-sizes.pdf){#fig:ebp-pooling-layer-sizes width=6in}
-
-Generating attention maps at the third pooling layer still results in a single
-attention map for the entire input, to mitigate this and generate attention maps
-on a frame by frame basis from the temporal stream we utilised using a sliding
-window with the same temporal extent as the network computing attention maps for
-each window and then sliding the window along by a single frame repeatedly until
-there are no longer any frames remaining in the video sequence. Let $\tau$ be
-the frame index of the first frame in the sliding window $W_\tau$ and $T$ the length
-of the window, then frames $\tau$ to $\tau + T$ make up the window. We compute a
-forward pass using the optical flow derived from the frames in $W_\tau$ and
-then a backward pass using EBP to generate an attention map $A_\tau$.
-
-The method produces attention maps for windows of frames but can't give us a
-frame level resolution since the attention map applies equally to all frames in
-the window and so it is an arbitrary choice which frame we associate with
-$A_\tau$ providing it is between $\tau$ and $\tau + T$ (in the associated
-window). Several obvious choices come to mind: the first frame $\tau$, the
-middle frame $\tau + T/2$ and the final frame $\tau + T$. To evaluate which
-of these makes the most sense we overlaid the attention map $A_\tau$ on the
-chosen frame $\tau_{\text{underlay}}$ and recombined the overlaid frames into a
-video. The videos illustrate the impact of the frame choice:
-
-* $\tau_{\text{underlay}} = \tau$: The attention map indicates the salient
-  regions in the next $T$ frames.
-* $\tau_{\text{underlay}} = \tau + T/2$: The attention map indicates the salient
-  regions of the last $T/2$ and future $T/2$ frames.
-* $\tau_{\text{underlay}} = \tau + T$: The attention map indicates the salient
-  regions over the last $T$ frames.
-
-We chose frame $\tau + T/2$ as the underlay as it provides both information on
-what was salient, and what is to be salient.
-
-## Results
-
-We perform EBP on two pretrained late fusion 2SCNNs:
-
-* VGG16 2SCNN (BEOID), provided by UoB
-* VGG16 2SCNN (UCF101), provided by Wang \etal{}, trained according to their
-  paper on best practices in training[@wang2015_GoodPracticesVery] ^[See
-  https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
-  for detailed Caffe training parameters]
-
-The attention maps we generate are those for the videos from the test set used
-to evaluate the accuracy of the network
 
 
 | Dataset | Fold | Clip Count | Average frame count |
