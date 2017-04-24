@@ -1607,6 +1607,11 @@ into a video. The videos illustrate the impact of the frame choice:
 * $\tau_{\text{underlay}} = \tau + L + 1$: The attention map indicates the salient
   regions over the last $L + 1$ frames.
 
+We illustrate how the choice of underlay frame for the attention maps affects
+the output in [@fig:ebp-temporal-underlay].
+
+![Choosing the underlay frame for (example from UCF101)](media/images/ebp-temporal-layering-vertical.pdf){#fig:ebp-temporal-underlay height=9in}
+
 ## Details
 
 Selecting the stopping layer for EBP was an exercise in trial and error, we
@@ -1625,7 +1630,6 @@ information on what was salient, and what is to be salient.
 
 The attention maps we generate are those for the videos from the test set used
 to evaluate the accuracy of the network
-
 
 
 ## Networks
@@ -1696,11 +1700,6 @@ centring around $127.5$. Review [@fig:architecture:two-stream] for a graphical
 depiction of how frames are stacked for input.
 
 
-| Dataset | Fold | Clip Count | Average frame count |
-|---------|------|------------|---------------------|
-| UCF101  |    1 |        100 |                 186 |
-| BEOID   |    1 |        155 |                  47 |
-: Dataset statistics {#tbl:dataset-statistics}
 
 <##todo Add davide/mike reference for BEOID network>
 
@@ -1768,6 +1767,12 @@ produces more jitter than non-contrastive EBP validating our observation.
 
 ![UCF101 Jitter analysis (violin plots)](media/plots/ucf101-l2-jitter.pdf){#plot:jitter-analysis-beoid-summary}
 
+| Dataset | Fold | Clip Count | Average frame count |
+|---------|------|------------|---------------------|
+| UCF101  |    1 |        100 |                 186 |
+| BEOID   |    1 |        155 |                  47 |
+: Dataset statistics {#tbl:dataset-statistics}
+
 <##todo write something about overlapping classes and how this might make
 contrastive inferior>
 
@@ -1782,7 +1787,6 @@ contrastive inferior>
 |          | Contrastive     | Min     | `v_RopeClimbing_g05_c07`  |    8.1 |
 |          |                 | Max     | `v_Haircut_g06_c01`       |   44.6 |
 : Jitter extrema (UCF101) {#tbl:ucf101-jitter}
-
 
 <div id="fig:jitter-results:spatial:ucf101">
 ![Non-contrastive *min* jitter `v_PlayingTabla_g07_c01`](media/results/extrema/ucf101/v_PlayingTabla_g07_c01.pdf)
