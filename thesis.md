@@ -1387,8 +1387,6 @@ in the input that contribute to the *cat* classification but not to anything
 else, Zhang \etal{} call this a *contrastive attention map*, and the method to
 produce the attention map *contrastive EBP*.
 
-\newpage
-
 ## Example
 
 First a forward pass of the network is computed, this produces the intermediate
@@ -1808,9 +1806,10 @@ for future research directions to answer this question.
 : Dataset statistics {#tbl:dataset-statistics}
 
 <div id='fig:average-jitter-distribution'>
-![UCF101](media/plots/average-jitter-distribution-ucf101.pdf){#fig:average-jitter-distribution:ucf101}
-
-![BEOID](media/plots/average-jitter-distribution-beoid.pdf){#fig:average-jitter-distribution:beoid}
+![UCF101](media/plots/average-jitter-distribution-ucf101.pdf){
+#fig:average-jitter-distribution:ucf101 width=45%}
+![BEOID](media/plots/average-jitter-distribution-beoid.pdf){
+#fig:average-jitter-distribution:beoid width=45%}
 
 Distribution of average jitter over clips for each network stream and EBP type.
 </div>
@@ -1960,7 +1959,6 @@ shot from static cameras.
 shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){ #fig:average-jitter-distribution:beoid:by-location}
 
 
-
 ### Egocentric gaze analysis
 
 We use the gaze data of the operator in the BEOID dataset as a proxy variable
@@ -1977,7 +1975,6 @@ of the actions as what does and doesn't constitute part of an action is
 debatable,
 
 <##todo Insert Michael Land reference from Dima>
-\newpage
 
 The BEOID dataset is provided with gaze data for each video: the operator
 performing the action is wearing a set of glasses that are both recording what
@@ -2027,34 +2024,6 @@ Methods:
   then plot cumulative frequency at 10%, 20% etc
 * As above but instead threshold correctness at X% distance
 
-<div id="fig:gaze-results:spatial:beoid">
-![Non-contrastive *min* gaze distance `01_Sink1_put_cup_799-826`](media/results/extrema/gaze/beoid/01_Sink1_put_cup_799-826.pdf)
-
-![Non-contrastive *max* gaze distance `02_Door2_open_door_181-224`](media/results/extrema/gaze/beoid/02_Door2_open_door_181-224	.pdf)
-
-![Contrastive *min* gaze distance `04_Printer2_press_button_370-409`](media/results/extrema/gaze/beoid/04_Printer2_press_button_370-409.pdf)
-
-![Contrastive *max* gaze distance `02_Door2_open_door_181-224`](media/results/extrema/gaze/beoid/02_Door2_open_door_181-224.pdf)
-
-
-Attention maps for the clips with the max/min distance from the highest
-attention map peak to the centre of gaze for the **spatial** stream.
-</div>
-
-<div id="fig:gaze-results:temporal:beoid">
-![Non-contrastive *min* gaze distance `02_Sink2_pour_spoon_1319-1333`](media/results/extrema/gaze/beoid/02_Sink2_pour_spoon_1319-1333.pdf)
-
-![Non-contrastive *max* gaze distance `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/gaze/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
-
-![Contrastive *min* gaze distance `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/gaze/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
-
-![Contrastive *max* gaze distance `01_Desk2_pick-up_tape_957-998`](media/results/extrema/gaze/beoid/01_Desk2_pick-up_tape_957-998.pdf)
-
-Attention maps for the clips with the max/min distance from the highest
-attention map peak to the centre of gaze for the **temporal** stream.
-</div>
-
-\newpage
 
 
 # Conclusion
@@ -2229,13 +2198,12 @@ GitHub^[[https://github.com/jimmie33/Caffe-ExcitationBP](https://github.com/jimm
 we too make our work available on
 GitHub^[[https://github.com/willprice/two-stream-action-cnn-analysis](https://github.com/willprice/two-stream-action-cnn-analysis)].
 
-## Attention maps for jitter extrema
+## Jitter extrema
 
-We collect video clips in the datasets with maximum and minimum jitter, and
-reproduce selected attention maps for those clips.
-
-
-### UCF101
+The following tables ([@tbl:ucf101-jitter] and [@tbl:beoid-jitter]) summarise
+the clips leading to extreme jitter values across each network stream and EBP
+type. Corresponding videos showing attention maps for can be found on YouTube
+(link provided at start of [@sec:ebp-evaluation])
 
 | Network  | EBP Type        | Extrema | Clip                      | Jitter |
 |----------|-----------------|---------|---------------------------|--------|
@@ -2249,35 +2217,6 @@ reproduce selected attention maps for those clips.
 |          |                 | Max     | `v_Haircut_g06_c01`       |   44.6 |
 : Jitter extrema (UCF101) {#tbl:ucf101-jitter}
 
-<div id="fig:jitter-results:spatial:ucf101">
-![Non-contrastive *min* jitter `v_PlayingTabla_g07_c01`](media/results/extrema/jitter/ucf101/v_PlayingTabla_g07_c01.pdf)
-
-![Non-contrastive *max* jitter `v_Mixing_g05_c04`](media/results/extrema/jitter/ucf101/v_Mixing_g05_c04.pdf)
-
-![Contrastive *min* jitter `v_PlayingGuitar_g05_c01`](media/results/extrema/jitter/ucf101/v_PlayingGuitar_g05_c01.pdf)
-
-![Contrastive *max* jitter `v_Swing_g06_c07`](media/results/extrema/jitter/ucf101/v_Swing_g06_c07.pdf)
-
-Attention maps for the clips with the max/min jitter for the **spatial** stream
-and EBP type (contrastive/non-contrastive) (network trained on UCF101)
-
-</div>
-
-<div id="fig:jitter-results:temporal:ucf101">
-![Non-contrastive *min* jitter `v_Hammering_g07_c05`](media/results/extrema/jitter/ucf101/v_Hammering_g07_c05.pdf)
-
-![Non-contrastive *max* jitter `v_Knitting_g07_c05`](media/results/extrema/jitter/ucf101/v_Knitting_g07_c05.pdf)
-
-![Contrastive *min* jitter `v_RopeClimbing_g05_c07`](media/results/extrema/jitter/ucf101/v_RopeClimbing_g05_c07.pdf)
-
-![Contrastive *max* jitter `v_Haircut_g06_c01`](media/results/extrema/jitter/ucf101/v_Haircut_g06_c01.pdf)
-
-Attention maps for the clips with the max/min jitter for the **temporal** stream
-and EBP type (contrastive/non-contrastive) (network trained on UCF101)
-
-</div>
-
-
 | Network  | EBP Type        | Extrema | Clip                                    | Jitter |
 |----------|-----------------|---------|-----------------------------------------|--------|
 | Spatial  | Non-contrastive | Min     | `03_Sink2_stir_spoon_1793-1887`         |    9.7 |
@@ -2289,35 +2228,6 @@ and EBP type (contrastive/non-contrastive) (network trained on UCF101)
 |          | Contrastive     | Min     | `04_Sink1_press_button_800-835`         |    3.6 |
 |          |                 | Max     | `02_Sink1_scoop_spoon_1294-1332`        |   53.8 |
 : Jitter extrema (BEOID) {#tbl:beoid-jitter}
-
-### BEOID
-
-
-<div id="fig:jitter-results:spatial:beoid">
-![Non-contrastive *min* jitter `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/jitter/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
-
-![Non-contrastive *max* jitter `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/jitter/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
-
-![Contrastive *min* jitter `06_Treadmill1_press_button_4469-4493`](media/results/extrema/jitter/beoid/06_Treadmill1_press_button_4469-4493.pdf)
-
-![Contrastive *max* jitter `05_Row1_pull_rowing-machine_2751-2784`](media/results/extrema/jitter/beoid/05_Row1_pull_rowing-machine_2751-2784.pdf)
-
-Attention maps for the clips with the max/min jitter for the **spatial** stream
-and EBP type (contrastive/non-contrastive) (network trained on BEOID)
-</div>
-
-<div id="fig:jitter-results:temporal:beoid">
-![Non-contrastive *min* jitter `01_Sink2_press_button_527-561`](media/results/extrema/jitter/beoid/01_Sink2_press_button_527-561.pdf)
-
-![Non-contrastive *max* jitter `01_Sink1_turn_tap_406-441`](media/results/extrema/jitter/beoid/01_Sink1_turn_tap_406-441.pdf)
-
-![Contrastive *min* jitter `04_Sink1_press_button_800-835`](media/results/extrema/jitter/beoid/04_Sink1_press_button_800-835.pdf)
-
-![Contrastive *max* jitter `02_Sink1_scoop_spoon_1294-1332`](media/results/extrema/jitter/beoid/02_Sink1_scoop_spoon_1294-1332.pdf)
-
-Attention maps for the clips with the max/min jitter for the **temporal** stream
-and EBP type (contrastive/non-contrastive) (network trained on BEOID)
-</div>
 
 
 # Glossary
