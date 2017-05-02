@@ -92,6 +92,8 @@ header-includes:
   - '\newcommand{\intrangeincl}[2]{[ #1 \isep #2 ]}'
     # 1: from
     # 1: to
+  - \newcommand{\attentionmap}[1]{A_{#1}}
+    # 1: frame index
   - \newcommand{\coloredtext}[2]{\color{#1}{#2}\color{black}}
 ---
 
@@ -736,7 +738,7 @@ all even frames in the optical flow stack are in $u$ direction and odd, the $v$
 direction.
 
 Raw optical flow frames stored as floats can take up a large amount of space so
-instead they are converted to greyscale images in the range $[0, 254]$ and
+instead they are converted to greyscale images in the range $\intrangeincl{0}{254}$ and
 compressed using JPEG to reduce storage requirements. On input to the network
 the frames are mean-centred around $(127.5)$.
 
@@ -1544,9 +1546,41 @@ distribution:
 \end{align*}
 
 
-# EBP for two stream CNNs {#sec:ebp-for-2scnn}
+# Investigating features learnt by 2SCNN networks
 
-## Theory
+We investigate the features learnt by two 2SCNN networks sharing the same
+architecture on two datasets: BEOID and UCF101. We produce and analyse the
+filters of the first and second layers of the networks. An extension of EBP is
+presented for use on the temporal stream of a 2SCNN to produce attention maps on
+a per frame basis. We produce attention maps using EBP from both the spatial and
+temporal streams and qualitatively analyse the output to determine features
+learnt by the network and pathological behaviour. The attention maps are
+quantitatively evaluated using two methods: for both network we evaluate the
+*jitter* between attention maps generated from consecutive frames, and for the
+BEOID trained network we compare the maximum of the attention map to the action
+location using the operator's gaze as a proxy variable.
+
+
+## Networks
+
+We investigate the application of EBP to a 2SCNN network constructed from two
+VGG-16 network towers forming the spatial and temporal stream, networks were
+provided pretrained for use by CUHK[^cuhk-ucf101-2scnn] and
+UoB[^uob-beoid-2scnn]. We use the method to produce attention maps to help
+determine what features the networks learn to recognise.
+
+[^uob-beoid-2scnn]: VGG16 2SCNN (BEOID), provided by UoB.
+[^cuhk-ucf101-2scnn]: VGG16 2SCNN (UCF101), provided by Wang \etal{}, trained
+  according to their paper on best practices in
+  training[@wang2015_GoodPracticesVery], See
+  https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
+  for detailed Caffe training parameters
+
+
+## Filter analysis
+
+## EBP for two stream CNNs {#sec:ebp-for-2scnn}
+
 
 Two stream CNNs (2SCNN) were introduced in
 [@sec:background:cnn:architectures:2scnn], they are composed of two network
@@ -1579,9 +1613,9 @@ constructed such that the first frame of the window has index $\tau$ hence the
 window covers frames $\tau$ to $\tau + L + 1$. The temporal stream input
 $\temporalinput{\tau}{}$ corresponding to the frames in the window is computed
 to produce a stack of optical flow frames of size $2L$, We compute a forward
-pass and a backward pass using EBP to generate an attention map $A_\tau$
+pass and a backward pass using EBP to generate an attention map $\attentionmap{\tau}$
 corresponding to the window $W_\tau$. The window is then slid along by a single
-frame and the process is repeated to produce another attention map $A_{\tau +
+frame and the process is repeated to produce another attention map $\attentionmap{\tau +
 1}$. The sliding window is initialised at $\tau = 1$ (the first frame). For a
 video $f$ frames long, we are able to produce $f - (L + 1)$ attention maps as
 there are insufficient frames from frames with indices $\tau > f - (L + 1)$ to
@@ -1593,10 +1627,10 @@ map. A graphical depiction of this process is presented in [@fig:ebp-two-stream]
 The method produces attention maps for windows of frames but can't give us a
 frame level resolution since the attention map applies equally to all frames in
 the window and so it is an arbitrary choice which frame we associate with
-$A_\tau$ providing it is between $\tau$ and $\tau + L + 1$ (in the associated
+$\attentionmap{\tau}$ providing it is between $\tau$ and $\tau + L + 1$ (in the associated
 window). Several obvious choices come to mind: the first frame $\tau$, the
 middle frame $\tau + (L + 1)/2$ and the final frame $\tau + L + 1$. To evaluate
-which of these makes the most sense we overlaid the attention map $A_\tau$ on
+which of these makes the most sense we overlaid the attention map $\attentionmap{\tau}$ on
 the chosen frame $\tau_{\text{underlay}}$ and recombined the overlaid frames
 into a video. The videos illustrate the impact of the frame choice:
 
@@ -1612,43 +1646,55 @@ the output in [@fig:ebp-temporal-underlay].
 
 ![Choosing the underlay frame for (example from UCF101)](media/images/ebp-temporal-layering-vertical.pdf){#fig:ebp-temporal-underlay height=9in}
 
-## Details
+## EBP Attention map evaluation {#sec:ebp-evaluation}
 
+A good attention map will have maxima in the regions of the input that the
+network uses to discriminate between classes, helping to determine why the
+network has classified the input as it has, giving us insight into the salient
+features of the input with respect to a specific neuron (usually a class
+neuron). For example, consider an object detection network with a 'person'
+neuron that detects people in images, if we produce an attention map for the
+'person' class neuron over an input image of a person, and the attention map
+highlights the person but not the surrounding background then we can conclude
+that the network has learnt how to recognise a person, at least in relation to
+the other classes the it is trained on. In contrast, if the attention map
+has no meaningful correlation with the regions in which the person lies, then
+there is little information we can derive from the attention map other than the
+network can't distinguish the person from its surrounding context.
+
+For a network to have truly learnt to recognise actions without overfitting to a
+specific dataset it is necessary that the network should be able to localise the
+action; it is not possible to recognise an action without knowing where it has
+taken place. If the network can localise actions then the attention maps should
+be maximal in regions over the action. The following evaluations aim to quantify
+this property.
+
+We produce videos with the overlaid attention maps for both the spatial and
+temporal streams, results are available on YouTube:
+
+* UCF101 EBP videos: [https://goo.gl/QBYZLJ](https://goo.gl/QBYZLJ)
+* BEOID EBP videos: [https://goo.gl/PazivH](https://goo.gl/PazivH)
+
+**Stopping layer**
 Selecting the stopping layer for EBP was an exercise in trial and error, we
 computed attention maps by stopping at various layers in the network and found
 that the third pooling layer provided a good compromise between visual
-interpretability and resolution of attention (i.e. the size of the area for which
-the marginal winning probability applies). At the third pooling layer of VGG16, the
-dimensionality of the attention map is $28 \times 28$ and so each marginal
-winning probability is constant over a $224/28 \times 224/28 = 8 \times 8$ patch
-of pixels in input space giving acceptable spatial resolution. See
+interpretability and resolution of attention (i.e. the size of the area for
+which the marginal winning probability applies). At the third pooling layer of
+VGG16, the attention map dimensions are $28 \times 28$ and so each marginal
+winning probability covers a $224/28 \times 224/28 = 8 \times 8$ patch of pixels
+in input space giving acceptable spatial resolution. See
 [@fig:ebp-pooling-layer-sizes] for a visual comparison of attention maps
 computed for the same frame using different stopping layers.
 
-We chose frame $\tau + (L + 1)/2$ as the underlay as it provides both
-information on what was salient, and what is to be salient.
 
 The attention maps we generate are those for the videos from the test set used
 to evaluate the accuracy of the network
 
+<##todo Add davide/mike reference for BEOID network>
 
-## Networks
-
-We investigated the application of EBP to a 2SCNN network constructed from two
-VGG-16 network towers forming the spatial and temporal stream, networks were
-trained and provided for use by CUHK[^cuhk-ucf101-2scnn] and UoB[^uob-beoid-2scnn]. The network
-weights were provided for the network trained on UCF101 using ImageNet weight
-initialisation by CUHK and BEOID using the UCF101 network's weights for initialisation
-to reduce overfitting. The accuracy of the network on the two datasets is
-detailed in [@tbl:network-accuracy-results].
-
-[^uob-beoid-2scnn]: VGG16 2SCNN (BEOID), provided by UoB.
-[^cuhk-ucf101-2scnn]: VGG16 2SCNN (UCF101), provided by Wang \etal{}, trained
-  according to their paper on best practices in
-  training[@wang2015_GoodPracticesVery], See
-  https://github.com/yjxiong/caffe/tree/action_recog/models/action_recognition
-  for detailed Caffe training parameters
-
+<##check Is the way I've attributed the UCF101 trained network sufficient, is it
+clear I didn't train it?>
 
 
 | Dataset | Stream                                            | Accuracy |
@@ -1669,8 +1715,9 @@ indices $\tau$ and $\tau + 1$ are obtained by using the
 TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm. The
 resulting motion vectors can be positive or negative, but are recorded in image
 form, to handle negative values, optical flow is rescaled to be in the range
-$[0, 254]$ where 127 represents 0, anything below 127 is negative and anything
-above is positive.
+$\intrangeincl{0}{254}$ where 127 represents 0, anything below 127 is negative and anything
+above is positive. Similarly to the video frames these were stored as 8-bit
+integers using JPEG compression
 
 [^ucf101-resolution]: UCF101 is collected from YouTube so it possible that
   videos are upsampled to the desired resolution.
@@ -1699,73 +1746,60 @@ transformed to be in the range $[-127.5, 127.5]$, this is performed by mean
 centring around $127.5$. Review [@fig:architecture:two-stream] for a graphical
 depiction of how frames are stacked for input.
 
+### Jitter
 
+Contrastive attention maps (those produced with contrastive EBP) demonstrate
+large variances between consecutive frames where there is little change in the
+corresponding video frames, we expect there to be a correspondingly small change
+between the attention maps, we call this property of attention map sequences
+**jitter**. Attention map pairs with low jitter are those in which the
+highlighted regions in the first map are highlighted in the next map; map pairs
+with high jitter can be considered unstable in the sense that a highlighted
+region in one frame is not highlighted in the next frame, there are rapid
+changes in region highlighting across the sequence.
+[@fig:jitter-examples:ucf101] shows a cliff diving clip in which the spatial
+non-contrastive attention maps are considered to have low jitter, they localise
+the diver through each consecutive frame. The spatial contrastive attention map
+sequence is one we consider to have high jitter; specifically the behaviours we
+consider 'jitter' in the sequence for spatial contrastive are the first frame
+correctly highlighting the diver, but then the next frame not highlighting any
+region over the diver, instead highlighting an irrelevant region in the top
+right; frame 4 highlighting the diving platform but neither frames 3 or 5 do.
+Similarly the temporal non contrastive attention maps have low jitter, they
+localise the action well and have significant overlap whereas the temporal
+contrastive attention maps have little overlap frame to frame with regions of
+high attention appearing and disappearing between frames.
 
-<##todo Add davide/mike reference for BEOID network>
+![Example of attention map sequence suffering from high jitter (Cliff diving, UCF101)](media/results/ucf101/v_CliffDiving_g01_c05.pdf){#fig:jitter-examples:ucf101}
 
-<##check Is the way I've attributed the UCF101 trained network sufficient, is it
-clear I didn't train it?>
+We quantitatively assess the jitter of a sequence of attention maps by first
+computing the jitter between pairs of consecutive frames, then averaging the
+jitter between pairs over the whole sequence to give a jitter score for each
+video clip. To compute the jitter between frames we compute the L2 difference
+element-wise and sum over the element differences.
 
+We compare the distribution of jitter for each network stream and EBP type in
+[@fig:average-jitter-distribution] over all video clips, the number of clips and
+average frame counts used for this analysis are detailed in
+[@tbl:dataset-statistics]. The distribution for jitter in UCF101
+([@fig:average-jitter-distribution:ucf101]) highlights the large disparity
+between contrastive and non-contrastive EBP in the spatial stream. We believe
+that the inferiority of the attention maps produced by contrastive EBP compared
+to non contrastive EBP is due to feature overlap across classes in each
+network's respective domain. Consider the classes `PlayingGuitar` and
+`PlayingSitar` in UCF101, both actions involve the musician holding the
+fretboard in one hand, and picking or strumming the strings by the
+other hand. The instruments are similar in shape, they each have a body,
+a fretted neck and tuning pegs although the sitar is generally a much longer
+instrument with a wider fretboard. Suppose there exists a filter in the spatial
+network that recognises part of a fretboard, the fully connected layers will
+piece together
 
-More results are available on YouTube^[UCF101 EBP
-videos: [https://goo.gl/QBYZLJ](https://goo.gl/QBYZLJ)]
+<##todo continue this train of thought>
 
-More BEOID videos are available on YouTube^[BEOID EBP
-videos: [https://goo.gl/PazivH](https://goo.gl/PazivH)]
+see [@sec:future-work]
+for future research directions to answer this question.
 
-## Attention map evaluation {#sec:ebp-evaluation}
-
-A good attention map will have maxima in the regions of the input that the
-network uses to discriminate between classes, it helps us determine why the
-network has classified the input as it has giving us insight into the salient
-features of the input with respect to a specific neuron (in this case a class
-neuron). For example, consider an object detection network with a 'person'
-neuron that detects people in images, if we produce an attention map for the
-'person' class neuron over an input image of a person, and the attention map
-highlights the person but not the surrounding background then we can conclude
-that the network has learnt how to recognise a person, at least in relation to
-the other classes the it is trained on. In contrast, if the attention map
-has no meaningful correlation with the regions in which the person lies, then
-there is little information we can derive from the attention map other than the
-network can't distinguish the person from its surrounding context.
-
-**Action recognition attention maps evaluation methods**
-
-**Temporal jitter analysis** To our surprise, on visual inspection the
-contrastive attention maps (those produced with contrastive EBP) demonstrate
-large variances between consecutive frames where there is little in the
-corresponding video frames, to quantify this *jitter* we compute the L2 distance
-between consecutive pairs of attention maps
-
-**Egocentric gaze analysis** We expect the attention map to peak at the location
-an action is being performed as it is necessary for the network to implicitly
-localise the action for it to be able to recognise the action. BEOID, nor UCF101
-have bounding box annotations of the actions as what does and doesn't constitute
-part of an action is debatable, instead we use the gaze data of the operator in
-the BEOID dataset as a proxy variable for the action location, as the two are
-correlated; a person's gaze when performing an action is directed towards the
-action. We compare the location of the attention map maximum (i.e. the most
-salient region) to the location of the operator's gaze to comparatively assess
-the different EBP methods over both network streams.
-
-<##todo Get Michael Land reference from Dima>
-
-#### Jitter
-
-The attention maps for contrastive EBP varied drastically between frames as can
-be seen in [@fig:contrastive-attention-map-non-smooth], whereas for
-non-contrastive EBP the attention maps seemed much smoother with fewer jumps. To
-quantify this relative difference in video smoothness we compared consecutive
-pairs of frames using the L2 distance, to summarise the smoothness of the
-sequence of attention maps for a specific videos we computed the sample mean and
-variance. The smoothness for the contrastive/non-contrastive EBP for both
-networks is presented in [@plot:jitter-analysis-ucf101-summary] for UCF101,
-and [@plot:jitter-analysis-beoid-summary]. As the plots show, contrastive EBP
-produces more jitter than non-contrastive EBP validating our observation.
-
-![BEOID Jitter analysis (violin plots)](media/plots/beoid-l2-jitter.pdf){#plot:jitter-analysis-ucf101-summary}
-
-![UCF101 Jitter analysis (violin plots)](media/plots/ucf101-l2-jitter.pdf){#plot:jitter-analysis-beoid-summary}
 
 | Dataset | Fold | Clip Count | Average frame count |
 |---------|------|------------|---------------------|
@@ -1773,91 +1807,177 @@ produces more jitter than non-contrastive EBP validating our observation.
 | BEOID   |    1 |        155 |                  47 |
 : Dataset statistics {#tbl:dataset-statistics}
 
-<##todo write something about overlapping classes and how this might make
-contrastive inferior>
+<div id='fig:average-jitter-distribution'>
+![UCF101](media/plots/average-jitter-distribution-ucf101.pdf){#fig:average-jitter-distribution:ucf101}
 
-| Network  | EBP Type        | Extrema | Clip                      | Jitter |
-|----------|-----------------|---------|---------------------------|--------|
-| Spatial  | Non-contrastive | Min     | `v_PlayingTabla_g07_c01`  |    2.9 |
-|          |                 | Max     | `v_Mixing_g05_c04`        |   52.7 |
-|          | Contrastive     | Min     | `v_PlayingGuitar_g05_c01` |   31.0 |
-|          |                 | Max     | `v_Swing_g06_c07`         |  126.8 |
-| Temporal | Non-contrastive | Min     | `v_Hammering_g07_c05`     |    9.4 |
-|          |                 | Max     | `v_Knitting_g07_c05`      |   38.6 |
-|          | Contrastive     | Min     | `v_RopeClimbing_g05_c07`  |    8.1 |
-|          |                 | Max     | `v_Haircut_g06_c01`       |   44.6 |
-: Jitter extrema (UCF101) {#tbl:ucf101-jitter}
+![BEOID](media/plots/average-jitter-distribution-beoid.pdf){#fig:average-jitter-distribution:beoid}
 
-<div id="fig:jitter-results:spatial:ucf101">
-![Non-contrastive *min* jitter `v_PlayingTabla_g07_c01`](media/results/extrema/ucf101/v_PlayingTabla_g07_c01.pdf)
-
-![Non-contrastive *max* jitter `v_Mixing_g05_c04`](media/results/extrema/ucf101/v_Mixing_g05_c04.pdf)
-
-![Contrastive *min* jitter `v_PlayingGuitar_g05_c01`](media/results/extrema/ucf101/v_PlayingGuitar_g05_c01.pdf)
-
-![Contrastive *max* jitter `v_Swing_g06_c07`](media/results/extrema/ucf101/v_Swing_g06_c07.pdf)
-
-Attention maps for the clips with the max/min jitter for the **spatial** stream
-and EBP type (contrastive/non-contrastive) (network trained on UCF101)
-
-</div>
-
-<div id="fig:jitter-results:temporal:ucf101">
-![Non-contrastive *min* jitter `v_Hammering_g07_c05`](media/results/extrema/ucf101/v_Hammering_g07_c05.pdf)
-
-![Non-contrastive *max* jitter `v_Knitting_g07_c05`](media/results/extrema/ucf101/v_Knitting_g07_c05.pdf)
-
-![Contrastive *min* jitter `v_RopeClimbing_g05_c07`](media/results/extrema/ucf101/v_RopeClimbing_g05_c07.pdf)
-
-![Contrastive *max* jitter `v_Haircut_g06_c01`](media/results/extrema/ucf101/v_Haircut_g06_c01.pdf)
-
-Attention maps for the clips with the max/min jitter for the **temporal** stream
-and EBP type (contrastive/non-contrastive) (network trained on UCF101)
-
+Distribution of average jitter over clips for each network stream and EBP type.
 </div>
 
 
-| Network  | EBP Type        | Extrema | Clip                                    | Jitter |
-|----------|-----------------|---------|-----------------------------------------|--------|
-| Spatial  | Non-contrastive | Min     | `03_Sink2_stir_spoon_1793-1887`         |    9.7 |
-|          |                 | Max     | `02_Sink2_pick-up_jar_1003-1027`        |   52.7 |
-|          | Contrastive     | Min     | `06_Treadmill1_press_button_4469-4493`  |    5.7 |
-|          |                 | Max     | `05_Row1_pull_rowing-machine_2751-2784` |   46.4 |
-| Temporal | Non-contrastive | Min     | `01_Sink2_press_button_527-561`         |    4.2 |
-|          |                 | Max     | `01_Sink1_turn_tap_406-441`             |   39.7 |
-|          | Contrastive     | Min     | `04_Sink1_press_button_800-835`         |    3.6 |
-|          |                 | Max     | `02_Sink1_scoop_spoon_1294-1332`        |   53.8 |
-: Jitter extrema (BEOID) {#tbl:beoid-jitter}
 
-<div id="fig:jitter-results:spatial:beoid">
-![Non-contrastive *min* jitter `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
+#### UCF101
 
-![Non-contrastive *max* jitter `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
+We select a few interesting examples from which we can infer the features
+recognised by the network streams or that demonstrate pathological behaviour
+for which we give possible explanations.
 
-![Contrastive *min* jitter `06_Treadmill1_press_button_4469-4493`](media/results/extrema/beoid/06_Treadmill1_press_button_4469-4493.pdf)
+For brevity we make use of the following abbreviations:
 
-![Contrastive *max* jitter `05_Row1_pull_rowing-machine_2751-2784`](media/results/extrema/beoid/05_Row1_pull_rowing-machine_2751-2784.pdf)
+* **SC**: Attention maps for Spatial network generated from Contrastive EBP
+* **SNC**: Attention maps for Spatial network generated from Non-Contrastive EBP
+* **TC**: Attention maps for Temporal network generated from Contrastive EBP
+* **TNC**: Attention maps for Temporal network generated from Non-Contrastive EBP
 
-Attention maps for the clips with the max/min jitter for the **spatial** stream
-and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+<##todo decide whether to include full results in the appendices>
 
-</div>
+[@Fig:results:ucf101:mixing] (mixing): Good SNC maps, the attention is localised
+to the bowl and is consistent across the frame sequence. SC suffers from heavy
+jitter, regions to which attention is localised are not consistent across the
+frame sequence, they jump around the entire frame with little overlap despite
+the similarity between frames; frames 3 and 4 localise attention to the bowl.
+The localisation of attention to regions over the bowl indicate that the spatial
+stream has learnt to recognise bowls as a proxy for mixing since mixing most
+often occurs in bowls.
 
-<div id="fig:jitter-results:temporal:beoid">
-![Non-contrastive *min* jitter `01_Sink2_press_button_527-561`](media/results/extrema/beoid/01_Sink2_press_button_527-561.pdf)
+![UCF101 Example: `v_Mixing_g01_c04`](media/results/ucf101/v_Mixing_g01_c04-spatial.pdf){#fig:results:ucf101:mixing}
 
-![Non-contrastive *max* jitter `01_Sink1_turn_tap_406-441`](media/results/extrema/beoid/01_Sink1_turn_tap_406-441.pdf)
+[@Fig:results:ucf101:writing] (writing on board): A good example of where the
+spatial network has learnt features sufficient for distinction between classes,
+but not corresponding to the action. The whiteboard contains writing over which
+most of the attention is distributed for both SC and SNC. If we consider the
+region localising the action of writing on the board to be the region covering
+the hand and pen and a small surrounding patch of the whiteboard, then this
+comprises a very small proportion of the whole frame, it is much easier for the
+network to recognise the large patches of writing on a white background than it
+is to recognise this small patch in which the region actually takes place; the
+network is has not learnt to recognise the action for this class in this
+example, but instead uses proxy features (patches of writing on the board) for
+differentiating between classes.
 
-![Contrastive *min* jitter `04_Sink1_press_button_800-835`](media/results/extrema/beoid/04_Sink1_press_button_800-835.pdf)
+![UCF101 Example: `v_WritingOnBoard_g04_c03`](media/results/ucf101/v_WritingOnBoard_g04_c03-spatial.pdf){#fig:results:ucf101:writing}
 
-![Contrastive *max* jitter `02_Sink1_scoop_spoon_1294-1332`](media/results/extrema/beoid/02_Sink1_scoop_spoon_1294-1332.pdf)
+[@Fig:results:ucf101:tennis] (tennis): Noisy attention maps for both SNC and SC.
+A good proportion of the attention is distributed the regions covering the
+tennis player and his racket in the SNC maps, SC suffers from jitter as most
+regions of attention in one frame are not present in the next frame. Attention
+is distributed to the fence suggesting that there are multiple examples in the
+training dataset in which fences are present in the `TennisSwing` action.
 
-Attention maps for the clips with the max/min jitter for the **temporal** stream
-and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+![UCF101 Example: `v_TennisSwing_g07_c02` (high spatial contrastive)](media/results/ucf101/v_TennisSwing_g07_c02-spatial.pdf){#fig:results:ucf101:tennis}
 
-</div>
+[@Fig:results:ucf101:flute] (flute): Excellent attention maps for SNC, TC,
+TC with accurately localised attention. The SNC maps localise attention to the
+flute, and face and arms of the player consistently across the frame sequence.
+The SC maps suffer from jitter but the localised regions are generally
+considered to be relevant the `PlayingFlute` action. The TNC maps are similar to
+those generated by  SNC indicating agreement between the two streams in relevant
+features. The optical flow for the sequence outlines the player so it is
+probable that the temporal network is acting similarly in the spatial network:
+recognising by appearance rather than by motion. The TC maps localise attention
+to the face and tip of the flute unlike the TNC maps which localise over the full
+length flute.
 
-#### BEOID gaze comparison
+![UCF101 Example: `v_PlayingFlute_g03_c05`](media/results/ucf101/v_PlayingFlute_g03_c05.pdf){#fig:results:ucf101:flute}
+
+[@Fig:results:ucf101:soccer] (soccer penalty): The SNC maps are consistent and
+correctly localise the player, referee, and goal goalkeeper; attention is
+also distributed to the surrounding advertisements on the pitch walls, this
+could be due to `SoccerPenalty` being the only class conducted in a large
+stadium with low-zoom footage as it would be a positive discriminator for the
+class. The SC maps suffer from jitter, but localise the player and referee in
+3/5 of the frames, the goal keeper is only localised in 1 frame. The TNC maps
+localise the action to the player, ball and goalkeeper, the moving objects
+comprising the action. The trail of attention behind the ball is due to the
+temporal window over which the attention maps are calculated for the temporal
+network. The TC maps localise the player and goal keeper but not the ball, we
+posit this is due to the overlap in classes featuring moving balls, like
+`TennisSwing`, `Billiards`, the contrastive method will cancel out common winner
+neurons resulting in the attention not being distributed to regions over the
+moving ball.
+
+![UCF101 Example: `v_SoccerPenalty_g01_c06`](media/results/ucf101/v_SoccerPenalty_g01_c06.pdf){#fig:results:ucf101:soccer}
+
+[@Fig:results:ucf101:climbing] (rope climbing): This is one of the few examples in
+which SC performs better than SNC at localising the action, SC distributes
+attention to the climber and the rope in all but frame 2 in which the
+instructor's face is localised, unlike SNC in which the instructor is localised
+throughout the frames. TNC and TC exhibit similar differences to SNC and SC, the
+instructor is localised in TNC, but not in TC. The localisation of the climber
+is finer in TC, but only covers the upper portion of the body whereas TNC covers
+the full body of the climber in addition to the rope below.
+
+![UCF101 Example: `v_RopeClimbing_g05_c07`](media/results/ucf101/v_RopeClimbing_g05_c07.pdf){#fig:results:ucf101:climbing}
+
+[@Fig:results:ucf101:hammering] (hammering): TC localises hammer action better
+than TNC, both are good restricting attention localisation to the child and
+hammer, but TC further restricts the attention to the region in which the hammer
+is moving suggesting the temporal network has learnt to recognise the repetitive
+motion of hammering.
+
+![UCF101 Example: `v_Hammering_g07_c05`](media/results/ucf101/v_Hammering_g07_c05-temporal.pdf){#fig:results:ucf101:hammering}
+
+[@Fig:results:ucf101:guitar] (playing guitar): TC fails to localise the
+strumming motion, instead localising the top of the musicians head. The TNC
+attention maps spread over a significant proportion of the frame, but do indeed
+localise the musician and peak around the soundhole and fretboard.
+
+![UCF101 Example: `v_PlayingGuitar_g05_c01`](media/results/ucf101/v_PlayingGuitar_g05_c01-temporal.pdf){#fig:results:ucf101:guitar}
+
+[@Fig:results:ucf101:swing] (swing): The features highlighted in the attention
+maps for both TNC and TC are hard to determine, attention is localised to the
+reflection of light on the child's hair which will exhibit a strong swinging
+motion in the optical flow frames, the temporal network may have learnt a
+feature encapsulating objects following this swinging motion.
+
+![UCF101 Example: `v_Swing_g06_c07`](media/results/ucf101/v_Swing_g06_c07-temporal.pdf){#fig:results:ucf101:swing}
+
+
+| Clip               | SNC jitter | SC jitter | TNC jitter | TC jitter |
+|--------------------|------------|-----------|------------|-----------|
+| `v_Mixing_g01_c04` |            |           |            |           |
+: Jitter measurements for the examples of UCF101
+
+
+#### BEOID
+
+The distribution of jitter for BEOID ([@fig:average-jitter-distribution:beoid])
+suggests that for the spatial stream contrastive and non-contrastive EBP perform
+similarly, however qualitatively on viewing the attention map videos one can see
+that this is not the case and that the contrastive attention maps are
+considerably more variable in the objects they highlight than the
+non-contrastive (we propose a more robust jitter measure in [@sec:future-work]).
+The BEOID dataset is shot from a head mounted camera, so all videos have at
+least some camera motion whereas UCF101 is composed mostly of static camera
+shots, the L2-jitter for 'good' attention map sequences (ones qualitatively
+assessed as having low jitter) and 'bad' attention map sequences (ones
+qualitatively assessed as having high jitter) pairs can be similar if there are
+large camera movements. Our L2 jitter analysis is more appropriate for videos
+shot from static cameras.
+
+![Distribution of average jitter over clips broken down by location clip was
+shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){ #fig:average-jitter-distribution:beoid:by-location}
+
+
+
+### Egocentric gaze analysis
+
+We use the gaze data of the operator in the BEOID dataset as a proxy variable
+for the action location, as the two are correlated; a person's gaze when
+performing an action is directed towards the action. We compare the location of
+the attention map maximum (i.e. the most salient region) to the location of the
+operator's gaze to comparatively assess the different EBP methods over both
+network streams.
+
+We expect the attention map to peak at the location an action is being performed
+as it is necessary for the network to implicitly localise the action for it to
+be able to recognise the action. BEOID, nor UCF101 have bounding box annotations
+of the actions as what does and doesn't constitute part of an action is
+debatable,
+
+<##todo Insert Michael Land reference from Dima>
+\newpage
 
 The BEOID dataset is provided with gaze data for each video: the operator
 performing the action is wearing a set of glasses that are both recording what
@@ -1868,6 +1988,38 @@ When fixating, the eye is stationary focusing on specific object in the field of
 view. Saccades occur between periods of fixation, during the saccade, the eye
 darts around the field of view. Gaze data is provided
 
+<div id='fig:attention-map-peak-gaze-distance-plots'>
+![Distribution of attention map peak - gaze distance across all attention maps](media/plots/gaze-attention-map-peak-distance-distribution-beoid.pdf){#fig:gaze-peak-distance-distribution
+width=45%}
+![Cumulative frequency density of ](media/plots/gaze-attention-map-peak-distance-cumfreq-beoid.pdf){#fig:gaze-peak-distance-cumfreq width=45%}
+
+Attention map peak - gaze distance plots
+</div>
+
+
+<##todo Decide whether to include this table>
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll|lllll}
+  \toprule
+  Network  & EBP Type        & \multicolumn{5}{c}{\% of attention maps under distance (px)} \\
+  {}       &                 & 10\%   & 25\%   & 50\%   & 75\%    & 90\% \\
+  \hline
+  Spatial  & Non-contrastive & 23     & 56     & 116    & 200     & 277  \\
+  {}       & Contrastive     & 42     & 108    & 163    & 267     & 349  \\
+  \hline
+  Temporal & Non-contrastive & 31     & 76     & 164    & 265     & 368  \\
+  {}       & Contrastive     & 38     & 85     & 164    & 287     & 367  \\
+  \bottomrule \\
+\end{tabular}
+\label{tbl:gaze-attention-map-peak-cumfreq-distances}
+\caption{Summary statistics regarding cumulative frequency density of attention map peak - gaze distance}
+
+\end{table}
+
+![Average L2-jitter per clip across locations (BEOID)](media/plots/average-jitter-distribution-beoid-by-location.pdf)
+
+
 Methods:
 
 * Model attention as a 2D Gaussian around center of gaze
@@ -1875,6 +2027,34 @@ Methods:
   then plot cumulative frequency at 10%, 20% etc
 * As above but instead threshold correctness at X% distance
 
+<div id="fig:gaze-results:spatial:beoid">
+![Non-contrastive *min* gaze distance `01_Sink1_put_cup_799-826`](media/results/extrema/gaze/beoid/01_Sink1_put_cup_799-826.pdf)
+
+![Non-contrastive *max* gaze distance `02_Door2_open_door_181-224`](media/results/extrema/gaze/beoid/02_Door2_open_door_181-224	.pdf)
+
+![Contrastive *min* gaze distance `04_Printer2_press_button_370-409`](media/results/extrema/gaze/beoid/04_Printer2_press_button_370-409.pdf)
+
+![Contrastive *max* gaze distance `02_Door2_open_door_181-224`](media/results/extrema/gaze/beoid/02_Door2_open_door_181-224.pdf)
+
+
+Attention maps for the clips with the max/min distance from the highest
+attention map peak to the centre of gaze for the **spatial** stream.
+</div>
+
+<div id="fig:gaze-results:temporal:beoid">
+![Non-contrastive *min* gaze distance `02_Sink2_pour_spoon_1319-1333`](media/results/extrema/gaze/beoid/02_Sink2_pour_spoon_1319-1333.pdf)
+
+![Non-contrastive *max* gaze distance `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/gaze/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
+
+![Contrastive *min* gaze distance `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/gaze/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
+
+![Contrastive *max* gaze distance `01_Desk2_pick-up_tape_957-998`](media/results/extrema/gaze/beoid/01_Desk2_pick-up_tape_957-998.pdf)
+
+Attention maps for the clips with the max/min distance from the highest
+attention map peak to the centre of gaze for the **temporal** stream.
+</div>
+
+\newpage
 
 
 # Conclusion
@@ -1894,6 +2074,17 @@ Future work focused on further the investigations set out in this thesis.
 Model attention as 2D Gaussian about the centre of gaze and investigate the use
 of the Wasserstein (a.k.a. Earth Mover's) metric in calculating the difference
 between the attention maps and the
+
+**Jitter analysis**: The camera motion in BEOID causes considerable deviation in
+attention maps when compared with the L2 distance, a better metric would be the
+Earth movers distance which considers a 2D array as piles of earth on a surface,
+the distance between the two piles of earth is computed as the minimum effort
+required to shift earth such that the first array is transformed into the second
+one. The attention maps with large jitter in BEOID that are considered 'good',
+i.e. between frames the attention map consistently highlights the same object
+will have a low distance whereas those attention maps that truly are 'jittery',
+i.e objects highlighted in one attention map are not highlighted in the next
+attention map, would have a high distance.
 
 **LRP vs EBP**, We only discovered LRP late into the project, its focus on
 producing discriminative attention maps makes it an ideal candidate for
@@ -1916,6 +2107,11 @@ deconvolution, need to think about this a bit more>
 **Attention mapping other network architectures**: Conduct broad survey of
 network for action recognition, apply all attention mapping methods to compare
 and contrast their use.
+
+
+* Generate attention maps that only indicate regions salient to a specific frame
+  in the temporal input stack by mean blanking the corresponding frame in the
+  input stack, computing attention maps for both and subtracting one from another.
 
 
 ## Divergent
@@ -2015,6 +2211,115 @@ Tran 2014
 -->
 
 
+
+
+# Appendices
+## Network details
+
+In this section we discuss the details of the networks used for generating
+attention maps for our evaluation of EBP on temporal networks.
+
+The network weights were provided for the network trained on UCF101 using
+ImageNet weight initialisation by CUHK and BEOID using the UCF101 network's
+weights for initialisation to reduce overfitting. The accuracy of the network on
+the two datasets is detailed in [@tbl:network-accuracy-results].
+
+We build on top of the EBP example code provided by Zhang \etal{} available on
+GitHub^[[https://github.com/jimmie33/Caffe-ExcitationBP](https://github.com/jimmie33/Caffe-ExcitationBP)],
+we too make our work available on
+GitHub^[[https://github.com/willprice/two-stream-action-cnn-analysis](https://github.com/willprice/two-stream-action-cnn-analysis)].
+
+## Attention maps for jitter extrema
+
+We collect video clips in the datasets with maximum and minimum jitter, and
+reproduce selected attention maps for those clips.
+
+
+### UCF101
+
+| Network  | EBP Type        | Extrema | Clip                      | Jitter |
+|----------|-----------------|---------|---------------------------|--------|
+| Spatial  | Non-contrastive | Min     | `v_PlayingTabla_g07_c01`  |    2.9 |
+|          |                 | Max     | `v_Mixing_g05_c04`        |   52.7 |
+|          | Contrastive     | Min     | `v_PlayingGuitar_g05_c01` |   31.0 |
+|          |                 | Max     | `v_Swing_g06_c07`         |  126.8 |
+| Temporal | Non-contrastive | Min     | `v_Hammering_g07_c05`     |    9.4 |
+|          |                 | Max     | `v_Knitting_g07_c05`      |   38.6 |
+|          | Contrastive     | Min     | `v_RopeClimbing_g05_c07`  |    8.1 |
+|          |                 | Max     | `v_Haircut_g06_c01`       |   44.6 |
+: Jitter extrema (UCF101) {#tbl:ucf101-jitter}
+
+<div id="fig:jitter-results:spatial:ucf101">
+![Non-contrastive *min* jitter `v_PlayingTabla_g07_c01`](media/results/extrema/jitter/ucf101/v_PlayingTabla_g07_c01.pdf)
+
+![Non-contrastive *max* jitter `v_Mixing_g05_c04`](media/results/extrema/jitter/ucf101/v_Mixing_g05_c04.pdf)
+
+![Contrastive *min* jitter `v_PlayingGuitar_g05_c01`](media/results/extrema/jitter/ucf101/v_PlayingGuitar_g05_c01.pdf)
+
+![Contrastive *max* jitter `v_Swing_g06_c07`](media/results/extrema/jitter/ucf101/v_Swing_g06_c07.pdf)
+
+Attention maps for the clips with the max/min jitter for the **spatial** stream
+and EBP type (contrastive/non-contrastive) (network trained on UCF101)
+
+</div>
+
+<div id="fig:jitter-results:temporal:ucf101">
+![Non-contrastive *min* jitter `v_Hammering_g07_c05`](media/results/extrema/jitter/ucf101/v_Hammering_g07_c05.pdf)
+
+![Non-contrastive *max* jitter `v_Knitting_g07_c05`](media/results/extrema/jitter/ucf101/v_Knitting_g07_c05.pdf)
+
+![Contrastive *min* jitter `v_RopeClimbing_g05_c07`](media/results/extrema/jitter/ucf101/v_RopeClimbing_g05_c07.pdf)
+
+![Contrastive *max* jitter `v_Haircut_g06_c01`](media/results/extrema/jitter/ucf101/v_Haircut_g06_c01.pdf)
+
+Attention maps for the clips with the max/min jitter for the **temporal** stream
+and EBP type (contrastive/non-contrastive) (network trained on UCF101)
+
+</div>
+
+
+| Network  | EBP Type        | Extrema | Clip                                    | Jitter |
+|----------|-----------------|---------|-----------------------------------------|--------|
+| Spatial  | Non-contrastive | Min     | `03_Sink2_stir_spoon_1793-1887`         |    9.7 |
+|          |                 | Max     | `02_Sink2_pick-up_jar_1003-1027`        |   52.7 |
+|          | Contrastive     | Min     | `06_Treadmill1_press_button_4469-4493`  |    5.7 |
+|          |                 | Max     | `05_Row1_pull_rowing-machine_2751-2784` |   46.4 |
+| Temporal | Non-contrastive | Min     | `01_Sink2_press_button_527-561`         |    4.2 |
+|          |                 | Max     | `01_Sink1_turn_tap_406-441`             |   39.7 |
+|          | Contrastive     | Min     | `04_Sink1_press_button_800-835`         |    3.6 |
+|          |                 | Max     | `02_Sink1_scoop_spoon_1294-1332`        |   53.8 |
+: Jitter extrema (BEOID) {#tbl:beoid-jitter}
+
+### BEOID
+
+
+<div id="fig:jitter-results:spatial:beoid">
+![Non-contrastive *min* jitter `03_Sink2_stir_spoon_1793-1887`](media/results/extrema/jitter/beoid/03_Sink2_stir_spoon_1793-1887.pdf)
+
+![Non-contrastive *max* jitter `02_Sink2_pick-up_jar_1003-1027`](media/results/extrema/jitter/beoid/02_Sink2_pick-up_jar_1003-1027.pdf)
+
+![Contrastive *min* jitter `06_Treadmill1_press_button_4469-4493`](media/results/extrema/jitter/beoid/06_Treadmill1_press_button_4469-4493.pdf)
+
+![Contrastive *max* jitter `05_Row1_pull_rowing-machine_2751-2784`](media/results/extrema/jitter/beoid/05_Row1_pull_rowing-machine_2751-2784.pdf)
+
+Attention maps for the clips with the max/min jitter for the **spatial** stream
+and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+</div>
+
+<div id="fig:jitter-results:temporal:beoid">
+![Non-contrastive *min* jitter `01_Sink2_press_button_527-561`](media/results/extrema/jitter/beoid/01_Sink2_press_button_527-561.pdf)
+
+![Non-contrastive *max* jitter `01_Sink1_turn_tap_406-441`](media/results/extrema/jitter/beoid/01_Sink1_turn_tap_406-441.pdf)
+
+![Contrastive *min* jitter `04_Sink1_press_button_800-835`](media/results/extrema/jitter/beoid/04_Sink1_press_button_800-835.pdf)
+
+![Contrastive *max* jitter `02_Sink1_scoop_spoon_1294-1332`](media/results/extrema/jitter/beoid/02_Sink1_scoop_spoon_1294-1332.pdf)
+
+Attention maps for the clips with the max/min jitter for the **temporal** stream
+and EBP type (contrastive/non-contrastive) (network trained on BEOID)
+</div>
+
+
 # Glossary
 
 ANN
@@ -2095,7 +2400,8 @@ $\neuronoutput{l}{j}$
 : The output of neuron $\neuron{l}{j}$
 
 $\intrangeincl{a}{b}$
-: The integer range from $a$ to $b$ (inclusive)
+: The integer range from $a$ to $b$ (inclusive): ${\forall x \in
+\intrangeincl{a}{b} : x \geq a \land x \leq b \land x \in \mathbb{Z}}$
 
 
 # Bibliography
