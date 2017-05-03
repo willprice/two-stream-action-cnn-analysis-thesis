@@ -166,18 +166,18 @@ Approach:
 
 | Video                       | Jitter     | SC | SNC | TC  | TNC | Interesting | Frames of interest | Behaviour                                                                               |
 |-----------------------------|------------|----|-----|-----|-----|-------------|--------------------|-----------------------------------------------------------------------------------------|
-| v_PlayingGuitar_g05_c01	 | SC low     | G  | G   | VB  | G   | 2/5         | All                | SC very stable, TC variable                                                             |
+| v_PlayingGuitar_g05_c01	  | SC low     | G  | G   | VB  | G   | 2/5         | All                | SC very stable, TC variable                                                             |
 | v_PlayingFlute_g03_c05      | SC low     | IG | G   | G   | G   | 4/5         |                    | SC flips between face & flute                                                           |
 | v_PlayingTabla_g07_c01      | SNC low    | B  | G   | G   | G   | 3/5         |                    | SC flips between tabla and face, SNC most stable, TC & TNC good                         |
 | v_WritingOnBoard_g04_c03    | SNC low    | IG | G   | G   | G   | 5/5         |                    | SNC highlight writing not action, SC flips between patches of writing                   |
 | v_RopeClimbing_g05_c07      | TC low     | G  | G   | G   | G   | 5/5         |                    | TC very good, doesn't highlight person unlike TNC                                       |
 | v_Bowling_g01_c01           | TC low     | VB | G   | G   | G   | 2/5         |                    | SC all over the place, SNC recognises alley, T good, mix of skittles OF failure and arm |
-| v_Hammering_g07_c05	     | TNC low    | B  | O   | G   | G   | 3/5         |                    | TNC very well localised to hammering action, TC good too                                |
+| v_Hammering_g07_c05	      | TNC low    | B  | O   | G   | G   | 3/5         |                    | TNC very well localised to hammering action, TC good too                                |
 | v_SoccerPenalty_g01_c06     | TNC low    | B  | G   | IB  | G   | 4/5         |                    | TNC excellent, TC not bad either, SC all over the place                                 |
 |                             |            |    |     |     |     |             |                    |                                                                                         |
 | v_Swing_g06_c07             | S(N)C high | B  | O   | O   | B   | 2/5         |                    | Horrible, very noisy                                                                    |
 | v_TennisSwing_g07_c02       | SC high    | VB | O   | B   | O   | 3/5         |                    | TC crap, TNC OK                                                                         |
-| v_Mixing_g05_c04	        | SNC high   | VB | VB  | O   | B   | 3/5         |                    | TC OK, TNC bad, good example                                                            |
+| v_Mixing_g05_c04	          | SNC high   | VB | VB  | O   | B   | 3/5         |                    | TC OK, TNC bad, good example                                                            |
 | v_Haircut_g06_c01           | TC high    | VB | G   | O   | O   | 3/5         |                    | Neither TC/TNC are good, hard to interpret what is recognised, falling hair?            |
 | v_Mixing_g01_c04            | TC high    | O  | VG  | IVB | G   | 3/5         |                    | SC noisy, TC looks at reflection and not real action!                                   |
 | v_Knitting_g07_c05	      | TNC high   | B  | G   | IG  | G   | 4/5         |                    | TC jumpy, but still good                                                                |
@@ -221,7 +221,7 @@ To show
 ### BEOID
 
 | Video                                     | Jitter      | SC | SNC | TC  | TNC | Interesting                                       | Behaviour |
-|-------------------------------------------|-------------|----|-----|-----|-----|---------------------------------------------------|-----------|
+|-------------------------------------------+-------------+----+-----+-----+-----+---------------------------------------------------+-----------|
 | 06_Treadmill1_press_button_4469-4493	  | L SC        | B  | VB  | B   | B   | Highlights foot rather than button                |           |
 | 07_Treadmill1_press_button_193-305	    | L SC        | VB | G   | B   | G   | Contrastive ignores finger press                  |           |
 | 03_Sink2_stir_spoon_1793-1887	         | L SNC       | VB | G   | G   | G   | TC localises end of spoon movement                |           |
@@ -229,7 +229,7 @@ To show
 | 04_Sink1_press_button_800-835	         | L TC, L TNC | B  | B   | IVB | O   | Reflection, nob, TNC localises reflection + press |           |
 | 04_Door2_open_door_284-333	            | L TC        | G  | G   | B   | O   | TNC localises door disparity                      |           |
 | 01_Sink2_press_button_527-561	         | L TNC       | VB | IVB | IG  | B   | TC much better than TNC                           |           |
-| 05_Row2_pull_rowing-machine_2030-2060	 | H SC        |    |     |     |     |                                                   |           |
+| 05_Row2_pull_rowing-machine_2030-2060	 | H SC        | VB | G   | O   | O   |                                                   |           |
 | 02_Sink2_pick-up_jar_1003-1027	        | H SNC       | B  | IB  | O   | G   | SNC localises rowing machine handle               |           |
 | 01_Desk2_pick-up_tape_957-998	         | H SNC       | IB | IO  | O   | IG  | Large camera movements, spatial recognise env     |           |
 | 02_Sink1_scoop_spoon_1294-1332	        | H TC        | O  | O   | IO  | IO  | Temporal, noisy OF microwave                      |           |
@@ -237,30 +237,33 @@ To show
 | 01_Sink1_turn_tap_406-441                 | H TNC       | B  | O   | B   | O   |                                                   |           |
 | 06_Row2_pull_rowing-machine_613-641	   | H TNC       | B  | G   | B   | VG  |                                                   |           |
 
-| SC | SNC | Video |
-|----|-----|-------|
-| G  | G   |       |
-| G  | B   |       |
-| B  | G   |       |
-| B  | B   |       |
+| SC | SNC | Video                              |
+|----+-----+------------------------------------|
+| G  | G   | 04_Door2_open_door_284-333         |
+| G  | B   | 00_Sink1_turn_tap_694-717          |
+| B  | G   | 07_Treadmill1_press_button_193-305 |
+| B  | B   | 01_Sink2_press_button_527-561      |
 
-Spatial Interesting:
-* v_WritingOnBoard_g04_c03
-* v_RopeClimbing_g05_c07
+| TC | TNC | Video                                |
+|----+-----+--------------------------------------|
+| G  | G   | 03_Sink2_stir_spoon_1793-1887        |
+| G  | B   | 01_Sink2_press_button_527-561        |
+| B  | G   | 00_Sink1_turn_tap_694-717            |
+| B  | B   | 06_Treadmill1_press_button_4469-4493 |
 
-
-| TC | TNC | Video |
-|----|-----|-------|
-| G  | G   |       |
-| G  | B   |       |
-| B  | G   |       |
-| B  | B   |       |
-
+In addition:
+05_Row2_pull_rowing-machine_2030-2060
 
 To show
-| Video | SC | SNC | TC | TNC | Frames (start,stop,step) |
-|-------|----|-----|----|-----|--------------------------|
-|       |    |     |    |     |                          |
+| Video                                | Spatial | Temporal | Frames (start,stop,step) |
+|--------------------------------------+---------+----------+--------------------------|
+| 04_Door2_open_door_284-333           | x       |          | 10,30,4                  |
+| 07_Treadmill1_press_button_193-305   | x       |          | 42,62,4          |
+| 01_Sink2_press_button_527-561        | x       | x        | 9,29,4                  |
+| 00_Sink1_turn_tap_694-717            | x       | x        | 9,14,1                   |
+| 03_Sink2_stir_spoon_1793-1887        |         | x        | 7,17,2                   |
+| 06_Treadmill1_press_button_4469-4493 |         | x        | 1,11,2                   |
+
 
 Interesting:
 
@@ -278,7 +281,7 @@ Interesting:
   the diving board, but not that of the person diving. (Still doing this?)
 * [x] Regenerate UCF101 examples with correct frame underlays
 * [x] Include UCf101 examples
-* [ ] Write about UCF101 examples
+* [x] Write about UCF101 examples
 * [ ] Discuss hypothesis as to why contrastive doesn't work well, class overlap,
   common winner neurons
 * [x] Perform BEOID smoothness example selection
@@ -291,13 +294,15 @@ Interesting:
 * [ ] Make a comparison of underlay, we chose the last frame, trails behind the
   action, otherwise plotting ahead is confusing producing a cognitive
   dissonance, very few things in life have a leading 'trail'
+* [ ] Add billiards example for underlay choice
+* [ ] Add filter diff
 
 ## Gaze
-* [ ] Redo gaze distance images by plotting the gaze location on the video frame
-  along with the attention map peak.
 * [ ] Select interesting examples from gaze analysis, do similar thing to what
   we did for jitter
-* [ ] Produce a table listing the proportion of frames with gaze-attention map
+* [ ] Produce images for the above examples
+* [x] Add plots of gaze distance distribution
+* [x] Produce a table listing the proportion of frames with gaze-attention map
   peak distance under certain thresholds, e.g. 10/25/50/75/90/100% limits and
   the corresponding bounding distance for which all those frames are under
 
@@ -313,3 +318,13 @@ Interesting:
 * [ ] Add intro and conclusion in each section. Introduction should outline the
   motivation or the section and what is included, conclusion should summarise
   what was discussed and significant insights.
+
+## Final checklist
+
+* [ ] Abstract
+* [ ] Conclusion
+* [ ] Acknowledgements
+* [ ] Spell check
+* [ ] Weasel word check
+* [ ]
+* [ ] Figure positioning (VERY LAST!)

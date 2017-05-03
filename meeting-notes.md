@@ -109,7 +109,7 @@ INFO:two_stream_excitation_backprop:Generating spatial excitation map from '/hom
 * [x] Note that there are separate rules for pooling/other layers etc
 * [x] Conv layers aren't fully connected
 * [x] Add title above ebp two stream visualisation to distinguish it from single stream
-* [x] Add labels to two stream ebp diagram for spatial and temporal 
+* [x] Add labels to two stream ebp diagram for spatial and temporal
 * [x] Add example of ebp for object detection networks
 * [x] Change EBP FC example to 1 and 0 from 0.9 and 0.1
 
@@ -146,3 +146,25 @@ INFO:two_stream_excitation_backprop:Generating spatial excitation map from '/hom
 * Explain examples that work well
 * Explain examples that don't work well
 * Compare and contrast contrastive and non-contrastive results -> lead into future work
+
+# Final
+
+## Pre meeting notes
+
+ * [ ] Dima, Are you absolutely sure that the page limit is going to be an
+   issue? I could pull the example EBP calculation out to the appendices, that'd
+   reduce things
+ * [ ]
+ * [ ] Project guidelines state you should need no more nesting than 3 levels of
+   headings, I was going to ignore this and go ahead with what I've got,
+   thoughts?
+ * [ ] Go through the table of contents to see whether the thesis is structured
+   well, explain how each section leads into the next
+ * [ ] Review cumulative frequency figure, discuss how I can't find the right name
+   for the heading (similarly the plot)
+ * [ ] A lot of my references are pulled for arxiv even when they have a proper
+   published paper, I know this is bad form, but can I skip correcting them to
+   reference the published paper and not the preprint
+ * [ ] Review abstract
+ * [ ] Review conclusion
+ * [ ] 'Salient regions', can I use, or not?

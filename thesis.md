@@ -2,7 +2,38 @@
 title: Feature analysis of two stream convolutional neural networks
 author: Will Price
 abstract: |
-  Abstract contents
+  We investigate visualisation methods to provide insight into the features
+  learnt by a CNN. We perform a survey of existing visualisation methods
+  categorising them into broad categories with a particular focus on methods for
+  attention mapping; methods producing heatmaps for specific network inputs
+  indicating the relevance of region to the activation of a given neuron across
+  the input.
+
+  We apply Excitation Backprop (EBP), an attention mapping method developed and
+  tested on object detection networks, to the two stream CNN (2SCNN), a network
+  architecture designed for action recognition. The network is composed of two
+  separate network towers: the spatial tower, receiving a single video frame as
+  input; and the temporal tower, operating over a stack of optical flow frames
+  derived from the video sequence. We generate attention maps for two instances
+  of the 2SCNN, one trained on UCF101, an action recognition dataset sourced
+  from YouTube; the other on BEOID, an egocentric object-interaction action
+  recognition dataset using two variations of EBP: contrastive and
+  non-contrastive. We also visualise the first and second layer filters from the
+  network.
+
+  We show that attention maps generated from the temporal stream highlight
+  salient regions over a temporal window determined by the network input. We
+  extend EBP on the temporal stream to produce attention maps on a per frame
+  basis by using a sliding window approach to select the inputs frames from
+  which an input to the network is derived producing a sequence of attention
+  maps from which we can determine attention changes after sliding the temporal
+  window.
+
+  We analyse the attention maps to determine features learnt by the network,
+  whilst also finding that contrastive EBP produces noisy attention maps for the
+  spatial network, and to a lesser extent the temporal network despite producing
+  superior performance on object detection CNNs as shown by Zhang \etal{}.
+
 bibliography: ~/references.bib
 keywords:
   - cnn
@@ -1355,7 +1386,7 @@ like I'm trying to claim the method as my own, or is it OK?>
 
 <##todo Redo all graphics with neurons so layer indices use $l$>
 
-![EBP in a nuteshell](media/images/ebp-in-a-nutshell.pdf){#fig:ebp-in-a-nutshell
+![EBP in a nutshell](media/images/ebp-in-a-nutshell.pdf){#fig:ebp-in-a-nutshell
 width=7.5in}
 
 
@@ -1955,8 +1986,36 @@ qualitatively assessed as having high jitter) pairs can be similar if there are
 large camera movements. Our L2 jitter analysis is more appropriate for videos
 shot from static cameras.
 
-![Distribution of average jitter over clips broken down by location clip was
-shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){ #fig:average-jitter-distribution:beoid:by-location}
+\newpage
+
+![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
+
+
+![BEOID Example: `04_Door2_open_door_284-333`](media/results/beoid/04_Door2_open_door_284-333-spatial.pdf){#fig:results:beoid:open-door
+width=90%}
+
+\newpage
+
+![BEOID Example: `07_Treadmill1_press_button_193-305`](media/results/beoid/07_Treadmill1_press_button_193-305-spatial.pdf){#fig:results:beoid:treadmill-press-button
+width=90%}
+
+![BEOID Example: `06_Treadmill1_press_button_4469-4493`](media/results/beoid/06_Treadmill1_press_button_4469-4493-temporal.pdf){#fig:results:beoid:treadmill-press-button2
+width=90%}
+
+\newpage
+
+![BEOID Example: `01_Sink2_press_button_527-561`](media/results/beoid/01_Sink2_press_button_527-561.pdf){#fig:results:beoid:sink-press-button width=90%}
+
+\newpage
+
+![BEOID Example: `00_Sink1_turn_tap_694-717`](media/results/beoid/00_Sink1_turn_tap_694-717.pdf){#fig:results:beoid:sink-turn-tap width=90%}
+
+\newpage
+
+![BEOID Example: `03_Sink2_stir_spoon_1793-1887`](media/results/beoid/03_Sink2_stir_spoon_1793-1887-temporal.pdf){#fig:results:beoid:sink-stir-spoon
+width=90%}
+
+\newpage
 
 
 ### Egocentric gaze analysis
@@ -2014,7 +2073,26 @@ Attention map peak - gaze distance plots
 
 \end{table}
 
-![Average L2-jitter per clip across locations (BEOID)](media/plots/average-jitter-distribution-beoid-by-location.pdf)
+![Average attention map peak - gaze distance per clip across all locations (BEOID)](media/plots/gaze-attention-map-peak-distance-distribution-beoid-by-location.pdf)
+
+| Network  | Location  | # of attention maps |
+|----------|-----------|---------------------|
+| Spatial  | Desk      |                 678 |
+|          | Door      |                 105 |
+|          | Printer   |                 293 |
+|          | Row       |                 353 |
+|          | Sink      |                1201 |
+|          | Treadmill |                1128 |
+| Temporal | Desk      |                 614 |
+|          | Door      |                  99 |
+|          | Printer   |                 248 |
+|          | Row       |                 317 |
+|          | Sink      |                 978 |
+|          | Treadmill |                 876 |
+: Attention map counts by location for each network stream (BEOID), temporal has
+  fewer due to the temporal window
+  {#tbl:beoid-gaze-attention-map-counts}
+
 
 
 Methods:
@@ -2028,11 +2106,56 @@ Methods:
 
 # Conclusion
 
-Contributions:
+In this thesis we analysed features learnt by the 2SCNN architecture trained for
+action recognition on two datasets: BEOID and UCF101 using filter analysis and
+EBP.
+
+In [@sec:visualisation] we made a comprehensive survey of visualisation methods
+for CNNs with a focus on attention mapping methods that produce a heat map
+from a given network and input to that network indicating the regions salient
+to the activation of a chosen neuron. We chose EBP for the analysis of our
+networks providing a detailed explanation of the method in [@sec:ebp].
+
+In [@sec:ebp-for-2scnn] we proposed a method for generating attention map
+sequences on a per frame basis with a temporal view equal to that of the network
+input's temporal length by using a sliding window over the video clip from which
+we derive input to the network, we discussed the implication of the frame
+underlay for the attention map demonstrating how different frames affect the
+appearance of the attention map concluding with choice of using the last frame
+of the sequence as underlay.
+
+In [@sec:filter-analysis] We visually analysed the filters learnt in the first and
+second layer finding that the two streams share very similar filters in the
+second layer, and that the filters are in the first layer of the temporal
+network are remarkably homogenous across the temporal dimension of the input.
+
+
+In [@sec] we generated attention map sequences for each clip in the test set for
+both network streams^[made available on YouTube] and qualitatively analysed a
+selection of the attention map sequences to infer features learnt by the network
+noting pathologies where present. We note that the attention map sequences
+produced by contrastive EBP tend to suffer from *jitter* where similar frames
+produce considerably different attention maps, we quantify this using L2-jitter
+showing that this is the case for spatial network stream trained on UCF101.
+
+In [@sec] we performed an analysis of the quality of generated attention maps by
+comparing the attention map peak to centre of gaze acting a proxy variable for
+the action centre. We reported the distribution of distances for each network
+stream and EBP type, also providing a further breakdown by clip location.
+
+
+
+**Contribution summary**:
 
 * Survey of visualisation methods for CNNs organised into hierarchy
-* Validation of the use of EBP on temporal network streams to understand features
-  learnt by the 2SCNN.
+* Visual analysis of the first and second layer filters learnt by each stream
+* Extension of EBP for use on the temporal network streams to generate attention
+  maps on a per frame basis
+* A quantitative assessment of attention map sequences for *jitter*
+  demonstrating the inferiority of contrastive EBP on the spatial network for UCF101
+* A quantitative assessment of attention map quality on the BEOID dataset by
+  comparing the distance between action location (using gaze location as a
+  proxy) and attention map peak location
 
 # Future work {#sec:future-work}
 
