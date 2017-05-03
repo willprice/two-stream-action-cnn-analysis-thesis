@@ -1592,6 +1592,33 @@ quantitatively evaluated using two methods: for both network we evaluate the
 BEOID trained network we compare the maximum of the attention map to the action
 location using the operator's gaze as a proxy variable.
 
+A good attention map will have maxima in the regions of the input that the
+network uses to discriminate between classes, helping to determine why the
+network has classified the input as it has, giving us insight into the salient
+features of the input with respect to a specific neuron (usually a class
+neuron). For example, consider an object detection network with a 'person'
+neuron that detects people in images, if we produce an attention map for the
+'person' class neuron over the image of a person used as input to the network,
+and the attention map highlights the person but not the surrounding background
+then we can conclude that the network has learnt how to recognise a person, at
+least in relation to the other classes the it is trained on. In contrast, if the
+attention map has no meaningful correlation with the regions in which the person
+is present, then there is little information we can derive from the attention map
+other than the network can't distinguish the person from its surrounding
+context.
+
+For a network to have truly learnt to recognise actions without overfitting to a
+specific dataset it is necessary that the network should be able to localise the
+action; it is not possible to recognise an action without knowing where it has
+taken place. If the network can localise actions then the attention maps should
+be maximal in regions over the action. The following evaluations aim to quantify
+this property.
+
+We produce videos with the overlaid attention maps for both the spatial and
+temporal streams, results are available on YouTube:
+
+* UCF101 EBP videos: [https://goo.gl/QBYZLJ](https://goo.gl/QBYZLJ)
+* BEOID EBP videos: [https://goo.gl/PazivH](https://goo.gl/PazivH)
 
 ## Networks
 
@@ -1609,7 +1636,7 @@ determine what features the networks learn to recognise.
   for detailed Caffe training parameters
 
 
-## Filter analysis
+## Learnt filter analysis
 
 ## EBP for two stream CNNs {#sec:ebp-for-2scnn}
 
@@ -1680,32 +1707,6 @@ the output in [@fig:ebp-temporal-underlay].
 
 ## EBP Attention map evaluation {#sec:ebp-evaluation}
 
-A good attention map will have maxima in the regions of the input that the
-network uses to discriminate between classes, helping to determine why the
-network has classified the input as it has, giving us insight into the salient
-features of the input with respect to a specific neuron (usually a class
-neuron). For example, consider an object detection network with a 'person'
-neuron that detects people in images, if we produce an attention map for the
-'person' class neuron over an input image of a person, and the attention map
-highlights the person but not the surrounding background then we can conclude
-that the network has learnt how to recognise a person, at least in relation to
-the other classes the it is trained on. In contrast, if the attention map
-has no meaningful correlation with the regions in which the person lies, then
-there is little information we can derive from the attention map other than the
-network can't distinguish the person from its surrounding context.
-
-For a network to have truly learnt to recognise actions without overfitting to a
-specific dataset it is necessary that the network should be able to localise the
-action; it is not possible to recognise an action without knowing where it has
-taken place. If the network can localise actions then the attention maps should
-be maximal in regions over the action. The following evaluations aim to quantify
-this property.
-
-We produce videos with the overlaid attention maps for both the spatial and
-temporal streams, results are available on YouTube:
-
-* UCF101 EBP videos: [https://goo.gl/QBYZLJ](https://goo.gl/QBYZLJ)
-* BEOID EBP videos: [https://goo.gl/PazivH](https://goo.gl/PazivH)
 
 **Stopping layer**
 Selecting the stopping layer for EBP was an exercise in trial and error, we
@@ -1723,12 +1724,6 @@ computed for the same frame using different stopping layers.
 The attention maps we generate are those for the videos from the test set used
 to evaluate the accuracy of the network
 
-<##todo Add davide/mike reference for BEOID network>
-
-<##check Is the way I've attributed the UCF101 trained network sufficient, is it
-clear I didn't train it?>
-
-
 | Dataset | Stream                                            | Accuracy |
 |---------|---------------------------------------------------|----------|
 | BEOID   | Spatial                                           |    83.9% |
@@ -1741,15 +1736,7 @@ clear I didn't train it?>
 
 Videos clips were decomposed into constituent frames and encoded as 8-bit
 integers using JPEG compression. BEOID video is recorded at $640 \times 480$
-resolution, UCF101 at $320 \times 240$[^ucf101-resolution]. The optical flow
-$\flow{\tau}{}$ of a pair of frames $\imframe{\tau}$ and $\imframe{\tau + 1}$ with respective frame
-indices $\tau$ and $\tau + 1$ are obtained by using the
-TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm. The
-resulting motion vectors can be positive or negative, but are recorded in image
-form, to handle negative values, optical flow is rescaled to be in the range
-$\intrangeincl{0}{254}$ where 127 represents 0, anything below 127 is negative and anything
-above is positive. Similarly to the video frames these were stored as 8-bit
-integers using JPEG compression
+resolution, UCF101 at $320 \times 240$[^ucf101-resolution].
 
 [^ucf101-resolution]: UCF101 is collected from YouTube so it possible that
   videos are upsampled to the desired resolution.
@@ -1765,20 +1752,29 @@ about the value $(103.9, 116.8, 123.7)$.
 
 The temporal stream takes a stack of optical flow frames specified by a starting
 frame index $\tau$ of duration $L$ in frames ($L = 10$ for our experiments).
-Optical flow is computed in both $u$ and $v$ directions so there are $2L$
-optical flow frames in the input to the temporal stream, they are stacked such
-that frames with even offsets from $\tau$ are in the $u$ direction and in the
-$v$ direction for odd offsets. Let $\temporalinput{\tau}{}$ be the input to the
-stream, and $\temporalinput{\tau}{k}$ be the optical flow frame in the input at
-offset $k$, then the full input $\temporalinput{\tau}{}$ is defined as
-$\temporalinput{\tau}{2k} = \flow{\tau + 2k}{}$ and $\temporalinput{\tau}{2k +
-1} = \flow{\tau + 2k + 1}{}$ for $k \in \intrangeincl{0}{L - 1}$. Optical flow
-frames are encoded in 8-bit integer images, once read into memory they are
-transformed to be in the range $[-127.5, 127.5]$, this is performed by mean
-centring around $127.5$. Review [@fig:architecture:two-stream] for a graphical
-depiction of how frames are stacked for input.
+[@fig:architecture:two-stream] gives an accompanying graphical depiction of how
+frames are stacked for input to both network streams. The optical flow
+$\flow{\tau}{}$ of a pair of frames $\imframe{\tau}$ and $\imframe{\tau + 1}$
+with respective frame indices $\tau$ and $\tau + 1$ are obtained by using the
+TVL1[@zach2007_DualityBasedApproach] optical flow estimation algorithm. The
+resulting motion vectors can be positive or negative, but are recorded in image
+form. To handle negative values in the stored optical flow, the flow is rescaled
+to be in the range $\intrangeincl{0}{254}$ where 127 represents 0, anything
+below 127 is negative and anything above is positive. Similarly to the video
+frames these were stored as 8-bit integers using JPEG compression. Optical flow
+is computed in both $u$ and $v$ directions so there are $2L$ optical flow frames
+in the input to the temporal stream, they are stacked such that frames with even
+offsets from $\tau$ are in the $u$ direction and in the $v$ direction for odd
+offsets. Let $\temporalinput{\tau}{}$ be the input to the stream, and
+$\temporalinput{\tau}{k}$ be the optical flow frame in the input at offset $k$,
+then the full input $\temporalinput{\tau}{}$ is defined as
+$\temporalinput{\tau}{2k} = \flow{\tau + 2k}{u}$ and $\temporalinput{\tau}{2k +
+1} = \flow{\tau + 2k + 1}{v}$ for $k \in \intrangeincl{0}{L - 1}$. Once the
+optical flow is read back from JPEG format stored on disk into memory, they are
+transformed to be in the range $[-127.5, 127.5]$ performed by mean centring
+around $127.5$.
 
-### Jitter
+### Evaluating attention maps for jitter
 
 Contrastive attention maps (those produced with contrastive EBP) demonstrate
 large variances between consecutive frames where there is little change in the
@@ -2030,7 +2026,7 @@ width=90%}
 \newpage
 
 
-### Egocentric gaze analysis
+### Evaluating attention map quality by egocentric gaze
 
 We use the gaze data of the operator in the BEOID dataset as a proxy variable
 for the action location, as the two are correlated; a person's gaze when
@@ -2238,14 +2234,18 @@ probabilities to help determine whether this is the case.
 In this section we discuss the details of the networks used for generating
 attention maps for our evaluation of EBP on temporal networks.
 
-The network weights were provided for the network trained on UCF101 using
-ImageNet weight initialisation by CUHK and BEOID using the UCF101 network's
-weights for initialisation to reduce overfitting. The accuracy of the network on
-the two datasets is detailed in [@tbl:network-accuracy-results].
+The pretrained network models trained on UCF101 and BEOID were obtained from
+CUHK[@wang2015_GoodPracticesVery] and
+UoB[@moltisanti2017_TrespassingBoundariesLabeling] respectively. The UCF101
+trained network was trained using ImageNet weight initialisation for both
+network streams. The BEOID trained network was trained initialising weights from
+the UCF101 trained model to reduce overfitting as BEOID is a small dataset. The
+accuracy of the network on the two datasets is detailed in
+[@tbl:network-accuracy-results].
 
 We build on top of the EBP example code provided by Zhang \etal{} available on
 GitHub^[[https://github.com/jimmie33/Caffe-ExcitationBP](https://github.com/jimmie33/Caffe-ExcitationBP)],
-we too make our work available on
+making our work available on
 GitHub^[[https://github.com/willprice/two-stream-action-cnn-analysis](https://github.com/willprice/two-stream-action-cnn-analysis)].
 
 ## Jitter extrema
