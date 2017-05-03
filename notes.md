@@ -221,7 +221,7 @@ To show
 ### BEOID
 
 | Video                                     | Jitter      | SC | SNC | TC  | TNC | Interesting                                       | Behaviour |
-|-------------------------------------------+-------------+----+-----+-----+-----+---------------------------------------------------+-----------|
+|-------------------------------------------|-------------|----|-----|-----|-----|---------------------------------------------------|-----------|
 | 06_Treadmill1_press_button_4469-4493	  | L SC        | B  | VB  | B   | B   | Highlights foot rather than button                |           |
 | 07_Treadmill1_press_button_193-305	    | L SC        | VB | G   | B   | G   | Contrastive ignores finger press                  |           |
 | 03_Sink2_stir_spoon_1793-1887	         | L SNC       | VB | G   | G   | G   | TC localises end of spoon movement                |           |
@@ -238,14 +238,14 @@ To show
 | 06_Row2_pull_rowing-machine_613-641	   | H TNC       | B  | G   | B   | VG  |                                                   |           |
 
 | SC | SNC | Video                              |
-|----+-----+------------------------------------|
+|----|-----|------------------------------------|
 | G  | G   | 04_Door2_open_door_284-333         |
 | G  | B   | 00_Sink1_turn_tap_694-717          |
 | B  | G   | 07_Treadmill1_press_button_193-305 |
 | B  | B   | 01_Sink2_press_button_527-561      |
 
 | TC | TNC | Video                                |
-|----+-----+--------------------------------------|
+|----|-----|--------------------------------------|
 | G  | G   | 03_Sink2_stir_spoon_1793-1887        |
 | G  | B   | 01_Sink2_press_button_527-561        |
 | B  | G   | 00_Sink1_turn_tap_694-717            |
@@ -256,7 +256,7 @@ In addition:
 
 To show
 | Video                                | Spatial | Temporal | Frames (start,stop,step) |
-|--------------------------------------+---------+----------+--------------------------|
+|--------------------------------------|---------|----------|--------------------------|
 | 04_Door2_open_door_284-333           | x       |          | 10,30,4                  |
 | 07_Treadmill1_press_button_193-305   | x       |          | 42,62,4          |
 | 01_Sink2_press_button_527-561        | x       | x        | 9,29,4                  |
@@ -277,25 +277,29 @@ Interesting:
 
 * [x] Redo graph titles for smoothness -> jitter
 * [x] Bound jitter graphs at 0
-* [ ] Show diving board example and how the incorrect motion is learnt, that of
-  the diving board, but not that of the person diving. (Still doing this?)
 * [x] Regenerate UCF101 examples with correct frame underlays
 * [x] Include UCf101 examples
 * [x] Write about UCF101 examples
-* [ ] Discuss hypothesis as to why contrastive doesn't work well, class overlap,
-  common winner neurons
 * [x] Perform BEOID smoothness example selection
-* [ ] Select frames from BEOID examples
-* [ ] Generate PDFs of BEOID examples
-* [ ] Include BEOID examples
+* [x] Select frames from BEOID examples
+* [x] Generate PDFs of BEOID examples
+* [x] Include BEOID examples
 * [ ] Discuss BEOID examples
-* [ ] When discussing the attention maps for videos, group those with similar
-  behaviour (e.g. good bad)
 * [ ] Make a comparison of underlay, we chose the last frame, trails behind the
   action, otherwise plotting ahead is confusing producing a cognitive
   dissonance, very few things in life have a leading 'trail'
 * [ ] Add billiards example for underlay choice
 * [ ] Add filter diff
+* [ ] Make frame underlay choice examples bigger (that big A4 figure)
+* [ ] Make sure reference to the concept of jitter is distinct from the
+  L2-jitter measure
+* [ ] Explain how the distance between the attention map peak and gaze location
+  is calculated
+* [ ] Add figure demonstrating the above showing what the distance actually is.
+* [ ] Move jitter analysis future work back of jitter analysis section
+* [ ] Add references to abstract
+* [ ] Discuss hypothesis as to why contrastive doesn't work well, class overlap,
+  common winner neurons
 
 ## Gaze
 * [ ] Select interesting examples from gaze analysis, do similar thing to what
@@ -321,10 +325,16 @@ Interesting:
 
 ## Final checklist
 
+* [ ] Make titles more descriptive, you should be able to read them and
+ understand what is included
 * [ ] Abstract
 * [ ] Conclusion
 * [ ] Acknowledgements
 * [ ] Spell check
 * [ ] Weasel word check
-* [ ]
 * [ ] Figure positioning (VERY LAST!)
+* [ ] Add cool picture to cover page
+
+ Format for future work:
+ Title, what is it, how is it currently used, critique on this, propose
+ something better

@@ -151,20 +151,27 @@ INFO:two_stream_excitation_backprop:Generating spatial excitation map from '/hom
 
 ## Pre meeting notes
 
- * [ ] Dima, Are you absolutely sure that the page limit is going to be an
+ * [x] Dima, Are you absolutely sure that the page limit is going to be an
    issue? I could pull the example EBP calculation out to the appendices, that'd
    reduce things
- * [ ]
- * [ ] Project guidelines state you should need no more nesting than 3 levels of
+ * [x] Project guidelines state you should need no more nesting than 3 levels of
    headings, I was going to ignore this and go ahead with what I've got,
    thoughts?
- * [ ] Go through the table of contents to see whether the thesis is structured
+   * Don't list more than 3 levels of headers
+ * [x] Go through the table of contents to see whether the thesis is structured
    well, explain how each section leads into the next
- * [ ] Review cumulative frequency figure, discuss how I can't find the right name
+ * [x] Review cumulative frequency figure, discuss how I can't find the right name
    for the heading (similarly the plot)
- * [ ] A lot of my references are pulled for arxiv even when they have a proper
+ * [x] A lot of my references are pulled for arxiv even when they have a proper
    published paper, I know this is bad form, but can I skip correcting them to
    reference the published paper and not the preprint
- * [ ] Review abstract
- * [ ] Review conclusion
- * [ ] 'Salient regions', can I use, or not?
+ * [x] Review abstract
+ * [x] Review conclusion
+ * [x] Review future work
+ * [x] 'Salient regions', can I use, or not?
+ * [x] Move jitter analysis future work back of jitter analysis section
+ * [x] Add intro to future work
+
+ Format for future work:
+ Title, what is it, how is it currently used, critique on this, propose
+ something better

@@ -14,8 +14,8 @@ abstract: |
   architecture designed for action recognition. The network is composed of two
   separate network towers: the spatial tower, receiving a single video frame as
   input; and the temporal tower, operating over a stack of optical flow frames
-  derived from the video sequence. We generate attention maps for two instances
-  of the 2SCNN, one trained on UCF101, an action recognition dataset sourced
+  derived from the video sequence. We generate attention maps for two pretrained
+  models of the 2SCNN, one trained on UCF101, an action recognition dataset sourced
   from YouTube; the other on BEOID, an egocentric object-interaction action
   recognition dataset using two variations of EBP: contrastive and
   non-contrastive. We also visualise the first and second layer filters from the
@@ -24,15 +24,18 @@ abstract: |
   We show that attention maps generated from the temporal stream highlight
   salient regions over a temporal window determined by the network input. We
   extend EBP on the temporal stream to produce attention maps on a per frame
-  basis by using a sliding window approach to select the inputs frames from
-  which an input to the network is derived producing a sequence of attention
+  basis. We use a sliding window approach to produce a sequence of attention
   maps from which we can determine attention changes after sliding the temporal
   window.
 
-  We analyse the attention maps to determine features learnt by the network,
-  whilst also finding that contrastive EBP produces noisy attention maps for the
-  spatial network, and to a lesser extent the temporal network despite producing
-  superior performance on object detection CNNs as shown by Zhang \etal{}.
+  We analyse the learnt features in the network, and study the attention maps
+  over a sequence of frames. We assess the jitter in the attention maps over
+  time, quantitively and qualitaitvely, and compare the attention location to a
+  proxy location estimated by wearable gaze on BEOID.
+
+  The thesis concludes with a summary of contributions and a direction into
+  future work.
+
 
 bibliography: ~/references.bib
 keywords:
@@ -1845,7 +1848,16 @@ for future research directions to answer this question.
 Distribution of average jitter over clips for each network stream and EBP type.
 </div>
 
-
+The camera motion in BEOID causes considerable deviation in attention maps when
+compared with the L2 distance, a better metric would be the Earth movers
+distance which considers a 2D array as piles of earth on a surface, the distance
+between the two piles of earth is computed as the minimum effort required to
+shift earth such that the first array is transformed into the second one. The
+attention maps with large jitter in BEOID that are considered 'good', i.e.
+between frames the attention map consistently highlights the same object will
+have a low distance whereas those attention maps that truly are 'jittery', i.e
+objects highlighted in one attention map are not highlighted in the next
+attention map, would have a high distance.
 
 #### UCF101
 
@@ -2121,16 +2133,14 @@ sequences on a per frame basis with a temporal view equal to that of the network
 input's temporal length by using a sliding window over the video clip from which
 we derive input to the network, we discussed the implication of the frame
 underlay for the attention map demonstrating how different frames affect the
-appearance of the attention map concluding with choice of using the last frame
-of the sequence as underlay.
+appearance of the attention map.
 
-In [@sec:filter-analysis] We visually analysed the filters learnt in the first and
+In [@sec:filter-analysis] We qualitatively analysed the filters learnt in the first and
 second layer finding that the two streams share very similar filters in the
 second layer, and that the filters are in the first layer of the temporal
-network are remarkably homogenous across the temporal dimension of the input.
+network are mostly homogenous across the temporal dimension of the input.
 
-
-In [@sec] we generated attention map sequences for each clip in the test set for
+In [@sec:] we generated attention map sequences for each clip in the test set for
 both network streams^[made available on YouTube] and qualitatively analysed a
 selection of the attention map sequences to infer features learnt by the network
 noting pathologies where present. We note that the attention map sequences
@@ -2138,10 +2148,10 @@ produced by contrastive EBP tend to suffer from *jitter* where similar frames
 produce considerably different attention maps, we quantify this using L2-jitter
 showing that this is the case for spatial network stream trained on UCF101.
 
-In [@sec] we performed an analysis of the quality of generated attention maps by
+In [@sec:] we performed an analysis of the quality of generated attention maps by
 comparing the attention map peak to centre of gaze acting a proxy variable for
-the action centre. We reported the distribution of distances for each network
-stream and EBP type, also providing a further breakdown by clip location.
+the action location. We reported the distribution of distances for each network
+stream and EBP type, also providing a further breakdown by clip location for BEOID.
 
 
 
@@ -2156,154 +2166,71 @@ stream and EBP type, also providing a further breakdown by clip location.
 * A quantitative assessment of attention map quality on the BEOID dataset by
   comparing the distance between action location (using gaze location as a
   proxy) and attention map peak location
+* A qualitative assessment of successful and pathological attention map
+  sequences for both datasets
+
+<##todo  replicate into introduction>
 
 # Future work {#sec:future-work}
 
-## Directed
+We present three directions for future work: A comparison of CNN architectures
+for action recognition using EBP to generate attention maps; an investigation of
+activation maximisation techniques applied to the 2SCNN architecture to
+synthesize videos; and an investigation into the effects of class overlap on
+the quality of attention maps generated by contrastive EBP.
 
-Future work focused on further the investigations set out in this thesis.
-
-Model attention as 2D Gaussian about the centre of gaze and investigate the use
-of the Wasserstein (a.k.a. Earth Mover's) metric in calculating the difference
-between the attention maps and the
-
-**Jitter analysis**: The camera motion in BEOID causes considerable deviation in
-attention maps when compared with the L2 distance, a better metric would be the
-Earth movers distance which considers a 2D array as piles of earth on a surface,
-the distance between the two piles of earth is computed as the minimum effort
-required to shift earth such that the first array is transformed into the second
-one. The attention maps with large jitter in BEOID that are considered 'good',
-i.e. between frames the attention map consistently highlights the same object
-will have a low distance whereas those attention maps that truly are 'jittery',
-i.e objects highlighted in one attention map are not highlighted in the next
-attention map, would have a high distance.
-
-**LRP vs EBP**, We only discovered LRP late into the project, its focus on
-producing discriminative attention maps makes it an ideal candidate for
-explaining why classification decision were made. Contrastive EBP aims to solve
-the same problem, so a quantitative comparison between the two methods would help
-researchers decide which method to use and under what conditions. It is our
-opinion that both LRP and EBP represent the current state of the art for
-attention mapping methods for CNNs.
-
-**Contrastive attention mapping** Contrastive attention was proposed by Zhang
-\etal{} and could be applied to sensitivity and deconvolutional attention
-mapping. Sensitivity is rarely used in practice due to its poor results, however
-deconvolutional attention mapping is quite widely implemented (e.g. Deep
-visualisation toolbox) so improvements in deconvolutional attention maps could
-be worth the effort of investigating the application of contrastive attention.
-
-<##todo Check that contrastive attention can be applied to sensitivity and
-deconvolution, need to think about this a bit more>
-
-**Attention mapping other network architectures**: Conduct broad survey of
-network for action recognition, apply all attention mapping methods to compare
-and contrast their use.
-
-
-* Generate attention maps that only indicate regions salient to a specific frame
-  in the temporal input stack by mean blanking the corresponding frame in the
-  input stack, computing attention maps for both and subtracting one from another.
-
-
-## Divergent
-
-Future work that diverges from the work carried out in this thesis.
-
-**Activation maximisation for temporal networks**, To our knowledge very few
-researchers have used activation maximisation to visualise features learnt by
-temporal networks. Wang \etal{} use
-DeepDraw^[https://github.com/auduno/deepdraw] (an implementation of activation
-maximisation) to visualise temporal segment
-networks[@wang2016_TemporalSegmentNetworks], however they only generate single
-frames in optical flow space.
-
-
-<!--
-Feichtenhofer 2016
-* Extension of Simonyan 2014 architecture
-* Investigation of fusion of networks
-* Fusing at last convolutional layer gives best performance
-* Improve performance further by keeping both streams and fusing at the end too
-* State that  Wang 2015 and Tran 2014 have current SoA methods for UCF101 and HMDB51
-* Identifies deficiency of basic two stream network in that it can't see what is
-  happening where (caused by the late fusion)
-* By fusing earlier, the network can correlate movement with appearance and thus
-  rectify the deficiency of not being able to see what is moving where in the
-  basic two stream network
-* New architecture beats SoA (i.e. better than Wang 2015 and Tran 2014)
-* Still see an improvement when combining the new network with IDT features
--->
+**Architecture comparison by attention mapping**, A number of architectures for
+action recognition have been proposed in addition to the late fusion 2SCNN
+analysed in this thesis, we propose a survey of a set of architectures trained
+on the same dataset using EBP to generate attention maps, by comparing the
+attention maps for the same clips across network architectures we can identify
+those architectures that produce pathological attention maps to gain insight
+into how the differences in architecture affects the learnt features. In the
+following two paragraphs we outline two sets of architectures to which this
+analysis could be applied.
 
 In [@feichtenhofer2016_ConvolutionalTwoStreamNetwork], the authors extend the
-architecture presented in [@simonyan2014_TwoStreamConvolutionalNetworks] by
-observing that the previous architecture is incapable of matching appearance in
-one sub-region to motion in another sub-region since each stream is separate, to
-remedy this, the introduce a modified architecture in which the two streams are
-combined after the last convolutional layers resulting in a single
+2SCNN architecture presented in [@simonyan2014_TwoStreamConvolutionalNetworks]
+by observing that the previous architecture is incapable of matching appearance
+in one sub-region to motion in another sub-region since each stream is separate,
+to remedy this they introduce a modified 2SCNN architecture in which the two
+streams are combined after the last convolutional layers resulting in a single
 spatio-temporal stream from the fully connected layers onwards. The authors find
 that keeping the spatial stream in addition to the spatio-temporal stream and
 combining their respective predictions further increases performance over
-predictions from the spatio-temporal stream alone.
+predictions from the spatio-temporal stream alone..
 
-Feichtenhofer's \etal{} mid-fusion network fuses the spatial and temporal
-network towers into a combined spatio-temporal network, an interesting
-experiment would be to use activation maximisation to synthesise inputs for both
-network towers (i.e. a frame in image space, and a stack of optical flow frames)
-combining the synthesised inputs into a video.
-
-
-<!--
-Karpathy 2014 notes
-
-* Introduction of Sports-1M collected from YouTube with 487 classes
-* Comparison of single frame to multiple frame networks
-* Only slightly better performance for multiframe models
-* Low res context stream with high res fovea stream inspired by the eye to
-  improve training speeds
-* Transfer learning from networks trained on Sports-1M to UCF101
-* 178x178 input, down sampled to 89x89 for context stream and center cropped to
-  89x89 for fovea stream obtaining similar accuracy to full 178x178 stream but
-  with quicker training times
-* 4 architectures: single frame, late fusion, early fusion, slow fusion
-* motion aware networks underperform when there is camera motion
-* Slow fusion network performs best
--->
-
-
+Karpathy \etal{} investigate architectures for video classification operating on
+a sequence of video frames (unlike the 2SCNN which operates on both frames and
+optical flow) in [@karpathy2014_LargeScaleVideoClassification]. Four different
+architectures derived from the same basic architecture are investigated to
+determine optimal stages of fusing temporal and spatial information. Each
+architecture has a different connectivity to the video sequence stack, from
+using a single frame as input to a dense sub-sequence of frames, these
+architectures are presented in [@fig:karpathy2014-fusion-architectures].
 
 ![CNN Architectures evaluated in [@karpathy2014_LargeScaleVideoClassification],
 layer colours indicate function: red--convolutional, green--normalization,
 blue--pooling. The bottom white boxes indicate a series of frames that are used
 as input to the CNN](media/images/karpathy2014-fusion-architectures.png){#fig:karpathy2014-fusion-architectures}
 
-Investigations of different architectures for video classification were
-performed in [@karpathy2014_LargeScaleVideoClassification]. Four different
-styles of architecture were investigated to determine optimal stages of fusing
-temporal and spatial information. Each architecture had a different connectivity
-to the video sequence stack, from using a single frame as input to a dense
-sub-sequence of frames (see [@fig:karpathy2014-fusion-architectures] for
-architectures and video sequence connectivity). Slow fusion, an architecture
-that progressively enlarges the temporal and spatial field of view as the input
-propagates deeper into the network performed best.
+**Activation maximisation for temporal networks**, To our knowledge, very few
+researchers have used activation maximisation to visualise features learnt by
+temporal networks. Wang \etal{} use
+DeepDraw^[https://github.com/auduno/deepdraw] (an implementation of activation
+maximisation) to visualise temporal segment
+networks[@wang2016_TemporalSegmentNetworks], however they only generate single
+frames in optical flow space. We propose research into generation of video
+sequences using activation maximisation by generating frames both in the spatial
+and temporal domains combining the two to produce a video sequence.
 
-
-<!--
-Tran 2014
-
-* 3D CNN better than 2D CNN
-* 3x3x3 kernels in all layers obtains best results in all architectures tested
-  in paper
-* Says Karpathy 2014 used 2D Convolutions in all architectures but slow fusion
-  which they hypothesis is why it performed best
-* Investigate varying depth of 3D convolution whilst holding other
-  hyperparameters constant
-* *visualisation* deconvolution of network
-* Call their architecture C3D
--->
-
-
-
+**Contrastive attention mapping** The application of contrastive EBP to 2SCNN
+yielded attention map sequences with high jitter. The maps in the generated
+sequence tend to highlight a few select regions flipping the attention
+distribution between those regions. We believe this is due to overlap in
+classes; we suggest an investigation into using prior distributions over the
+classification layer in which classes with overlap are set to non-zero
+probabilities to help determine whether this is the case.
 
 # Appendices
 ## Network details
