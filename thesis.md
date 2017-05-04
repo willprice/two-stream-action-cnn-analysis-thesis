@@ -146,7 +146,7 @@ header-includes:
 
 Action Recognition in Computer Vision refers to approaches that aim to infer the
 action or actions of an actor or actors using visual observations, in the form
-of images or videos. In this thesis we further constrain the definition to only
+of images or videos. In this thesis we further constrain the: definition to only
 infer actions from video sequences (sequences of images captured by video
 cameras at regular intervals). Action recognition from video has many critical
 applications[@ranasinghe2016_reviewapplicationsactivity] such as detecting
@@ -1993,6 +1993,97 @@ assessed as having low jitter) and 'bad' attention map sequences (ones
 qualitatively assessed as having high jitter) pairs can be similar if there are
 large camera movements. Our L2 jitter analysis is more appropriate for videos
 shot from static cameras.
+
+Below we give a qualitative analysis of selected attention map sequences to
+determine features learnt by the two streams for different action classes. We
+also make note of pathological behaviour where present and provide plausible
+explanations.
+
+[@Fig:results:beoid:open-door] (*open door*, door): This location is the only one in
+which door videos are shot, so all examples of doors are from this specific
+door. The SNC maps indicate that the salient regions are the edges of the windows,
+the badges above the handle, and the handle itself suggesting that the network
+has learnt to recognise the appearance of the door in addition to the hand on
+the handle to discriminate this action. The SC maps demonstrate less
+jitter than compared to other actions in the dataset although they do not
+localise the hand on the door handle. There are no other videos from different
+classes with the presence of a door, thus making the appearance of a door sufficient
+for distinction between other classes.
+
+[@Fig:results:beoid:treadmill-press-button] (*press button*, treadmill): The
+only action recorded on the treadmill is press button, so recognising the frame
+as treadmill should be sufficient to discriminate the action from other
+press-button actions conducted with different objects. The red stop button of
+the treadmill is a good indicator that the object of interaction is the
+treadmill. The SNC maps have low jitter primarily localising the hand and the
+red stop button of the treadmill suggesting that the spatial stream is both
+recognising the object of interaction, the treadmill dashboard, and the shape of
+the hand in the interaction. The SNC maps are consistent across the frames and
+primarily localise the text on the display and the surrounding border of
+display, the hand has no localisation suggesting that a neuron at a lower layer
+in the network recognises the appearance of the hand in press-button
+interactions; the contrastive method will not distribute attention to this
+neuron as it will also contribute to activation of the dual class neuron
+'not-press-button-treadmill' (e.g. press coffee machine button). It is
+noteworthy that the red stop button is not localised in the SC maps despite not
+being present on other exercise machines used in the dataset.
+
+[@Fig:results:beoid:treadmill-press-button2] (*press button*, exercise bike): The TNC maps
+suffer from some jitter, particularly notable between the last two frames
+between which attention shifts from the tip of the shoe to the display on the
+bike. There is poor localisation of the hand with the regions covering it
+receiving little attention this is likely due to the lack of presence of the
+hand in the optical flow since the hand exhibits little motion during the
+action. The left shoe receives the majority of attention throughout the first 4
+frames as this is the dominant motion in the clip acting as a good discrimantor
+for actions taking place on the exercise bike. The TC maps suffer from jitter
+making them difficult to infer features learnt. Constant throughout the TC maps
+is an area in the top right corner which consistently receives attention; the
+video exhibits side to side motion during the press-button action as the person
+peddles meaning that the corner of the machine in the top left will come in and
+out of view causing noisy spikes in the corresponding optical flow, it is
+possible that the network has learnt to use this noise as a proxy indicator for
+this action.
+
+[@Fig:results:beoid:sink-press-button] (*press button*, coffee machine): The SNC
+maps distribute attention across the whole frame localising boundaries of
+objects suggesting the network has learnt to recognise the location. There are
+strong regions of attention over the handle on the mirrored top of the coffee
+machine which produces good contrast making a good feature to learn to recognise
+the coffee machine. There is little attention over the region covering the hand,
+the action location suggesting that the surrounding visual context has been
+learnt. The SC maps have low jitter further localising attention to the top
+handle and the back of the mirrored top of the coffee machine. Similarly to the
+SNC maps, the SC maps fail to localise the hand. The TNC maps localise almost
+all the attention to a small region at the back of the mirrored top of the
+coffee machine, similar to the regions localised by the SC maps. The TC maps
+suffer from jitter but do localise the button press in 3 of the 5 frames.
+
+[@Fig:results:beoid:sink-turn-tap] (*turn tap*, sink): All but the TC maps have
+low jitter. The SNC maps localise the rim of the cup, the washing up liquid
+bottle logo, the visible tap handle, and the boundaries of the arm and hand; the
+spatial network has learnt to recognise the cup being filled. The washing up
+bottle logo acts as a strong visual indicator that location is the sink in which
+the only action recorded is turning the tap, these contextual clues act as
+stronger discriminator for the network then the extended arm covering the tap.
+If you consider the frame with the surrounding context removed with just the
+outstretched arm remaining it would be difficult to infer the action, with the
+surrounding context: the sink, the mug under the tap head, and the running
+water; it is clear that the action has something to do with the tap. The SC maps
+localise the majority of attention to the visible red tap handle suggesting that
+there is a neuron recognising the red tap handle which acts as a strong
+indicator of tap turning. The TNC maps localise attention to the changing
+reflections of the water in the mug, these cause strong regions in the
+corresponding optical flow (c.f. UCF101 swimming examples) indicative of moving
+water. Some attention is paid in the TNC maps to the movement of the arm used to
+turn the tap. The TC maps have high jitter but do localise the hand and wrist
+movement in 2 of the 5 frames.
+
+
+[@Fig:results:beoid:sink-stir-spoon] (*stir spoon*, microwave): The TNC and TC
+maps both have low jitter and are very similar in attention localisation. The
+attention is primarily distributed to the movement of the spoon bowl in the
+water in the cup, the TNC maps also localise some hand motion unlike the TC maps.
 
 \newpage
 
