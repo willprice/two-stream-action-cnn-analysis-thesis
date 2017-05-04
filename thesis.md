@@ -58,8 +58,7 @@ papersize: A4
 geometry: margin=1in
 documentclass: scrreprt
 # Maximum number of depths in cross reference (pandoc-crossref)
-chaptersDepth: 3
-sectionsDepth: 3
+secnumdepth: 2
 # Make citations clickable
 link-citations: true
 header-includes:
