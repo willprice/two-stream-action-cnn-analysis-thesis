@@ -929,22 +929,6 @@ don't compute any useful transform. Zeiler \etal{} empirically establish a new
 architecture which learns fewer dead filters in the first layer using first
 layer filter visualisation to check this.
 
-We present the filters for both network streams in a 2SCNN trained on UCF101 in
-[@fig:spatial-network-filters:ucf101;@fig:temporal-network-filters:ucf101]. We
-also visualised the filters for a 2SCNN trained on BEOID where the weights
-where initialised as the UCF101 weights, but the differences were imperceptible
-to the us, so we omitted them for brevity.
-
-![Filters of the first convolutional layer from the spatial stream
-in the 2SCNN trained for action recognition on UCF101
-](media/images/vgg16-spatial-ucf101-filters.pdf){#fig:spatial-network-filters:ucf101}
-
-![Filters from the first convolutional layer from the temporal stream
-in the 2SCNN trained on UCF101. Since the filters are 3D ($20 \times 3 \times 3$) we
-flatten the 3D tensor into a 2D image by slicing it into $1 \times 3 \times 3$
-parts and joining them horizontally (so each filter spans a row).
-](media/images/vgg16-temporal-ucf101-filters.pdf){#fig:temporal-network-filters:ucf101}
-
 
 **Filter response** involves visualising the response of a filter after
 application to a specific input, similar to *filter visualisation* this gives us
@@ -1638,6 +1622,65 @@ determine what features the networks learn to recognise.
 
 ## Learnt filter analysis
 
+We present the learnt filters for the spatial stream of the 2SCNN for both BEOID
+and UCF101 in [@fig:first-layer-filters], the filter sets are similar with only
+1/64 of the parameters differing across the two spatial stream models. The
+filters for the action recognition networks are initialised to values from the
+same VGG16 architecture trained for object detection on ImageNet during
+training. We also present the filters for the VGG16 model trained on ImageNet
+for object detection in [@fig:first-layer-filters:imagenet].
+
+The filters for both the BEOID and UCF101 models are similar to the filters of
+the ImageNet model; we suggest that this is due to the spatial network
+predicting actions based on object recognition and so we see little divergence
+from the ImageNet model's filters.
+
+
+<div id='fig:first-layer-filters'>
+![UCF101 `conv1_1` filters](media/images/vgg16-spatial-ucf101-filters-conv1_1.pdf){#fig:first-layer-filters:ucf101 width=33%}
+\hfill
+![BEOID `conv1_1` filters](media/images/vgg16-spatial-beoid-filters-conv1_1.pdf){#fig:first-layer-filters:beoid width=33%}
+\hfill
+![ImageNet `conv1_1` filters](media/images/vgg16-spatial-beoid-filters-conv1_1.pdf){#fig:first-layer-filters:imagenet width=33%}
+
+![Difference between UCF101 and ImageNet filters](media/images/vgg16-spatial-ucf101-imagenet-filters-conv1_1.png){width=31%}
+\hfill
+![Difference between BEOID and ImageNet filters](media/images/vgg16-spatial-beoid-imagenet-filters-conv1_1.png){width=31%}
+\hfill
+![Difference between UCF101 and BEOID filters](media/images/vgg16-spatial-beoid-ucf101-diff-filters-conv1_1.png){width=31%}
+
+Filters of the first convolutional layer (`conv1_1`) from the spatial stream
+(VGG16 architecture) in the 2SCNN trained for action recognition on UCF101
+[@fig:first-layer-filters:ucf101] and BEOID [@fig:first-layer-filters:beoid].
+For comparison, the filters from the same layer in a VGG16 network trained on
+ImageNet are also given[@fig:first-layer-filters:imagenet]. We compute the
+pairwise difference between the filters in the bottom row
+
+</div>
+
+The filters for the temporal streams of the 2SCNN trained on UCF101 (BEOID is
+similar) are given in [@fig:temporal-network-filters:ucf101]. The filters are
+split into two columns to fit onto the page, each row represents a single 3D
+filter of dimensions $3 \times 3 \times 20$, the third dimension is spread out
+across the row with the first filter on the left and the last on the right. In
+training, the temporal network uses the weights from the ImageNet trained model,
+to produce. To initialise the weights of the ${3 \times 3 \times 20 \times 64}$
+filters of the first layer in the temporal stream from the weights of the ${3
+\times 3 \times 1 \times 64}$ filters from the ImageNet trained VGG16 model, the
+weights are cloned over the depth (3rd dimension). This weight initialisation
+helps to explain the homogeneity of the filters across the depth dimension, it
+is possible the filter weights get stuck in a local maximum during the training
+process. A small subset of filters (e.g. column 1, row 6; column 2, 5th to
+bottom row) demonstrate an alternating pattern of two 2D filters indicating that
+the network has learnt to distinguish the $u$ and $v$ optical flow pairs in the
+input as they too follow an alternating interleaving.
+
+![Filters from the first convolutional layer from the temporal stream
+in the 2SCNN trained on UCF101. Since the filters are 3D ($20 \times 3 \times 3$) we
+flatten the 3D tensor into a 2D image by slicing it into $1 \times 3 \times 3$
+parts and joining them horizontally (so each filter spans a row).
+](media/images/vgg16-temporal-ucf101-filters.pdf){#fig:temporal-network-filters:ucf101}
+
 ## EBP for two stream CNNs {#sec:ebp-for-2scnn}
 
 
@@ -1999,16 +2042,16 @@ determine features learnt by the two streams for different action classes. We
 also make note of pathological behaviour where present and provide plausible
 explanations.
 
-[@Fig:results:beoid:open-door] (*open door*, door): This location is the only one in
-which door videos are shot, so all examples of doors are from this specific
-door. The SNC maps indicate that the salient regions are the edges of the windows,
-the badges above the handle, and the handle itself suggesting that the network
-has learnt to recognise the appearance of the door in addition to the hand on
-the handle to discriminate this action. The SC maps demonstrate less
+[@Fig:results:beoid:open-door] (*open door*, door): This location is the only
+one in which door videos are shot, so all examples of doors are from this
+specific door. The SNC maps indicate that the salient regions are the edges of
+the windows, the badges above the handle, and the handle itself suggesting that
+the network has learnt to recognise the appearance of the door in addition to
+the hand on the handle to discriminate this action. The SC maps demonstrate less
 jitter than compared to other actions in the dataset although they do not
 localise the hand on the door handle. There are no other videos from different
-classes with the presence of a door, thus making the appearance of a door sufficient
-for distinction between other classes.
+classes with the presence of a door, thus making the appearance of a door
+sufficient for distinction between other classes.
 
 [@Fig:results:beoid:treadmill-press-button] (*press button*, treadmill): The
 only action recorded on the treadmill is press button, so recognising the frame
