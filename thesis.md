@@ -2025,12 +2025,22 @@ Methods:
 
 ### Qualitative attention map evaluation
 
+We give a qualitative analysis of selected attention map sequences to
+determine features learnt by the two streams for different action classes. We
+also make note of pathological behaviour where present and provide plausible
+explanations. We first examine examples from UCF101 and then BEOID concluding
+with general comments on features observed from both datasets.
+
 #### UCF101
+
 We select a few interesting examples from which we can infer the features
 recognised by the network streams or that demonstrate pathological behaviour
-for which we give possible explanations.
+for which we give possible explanations. For each example we give the ground
+truth class following the figure reference.
 
 <##todo decide whether to include full results in the appendices>
+
+![UCF101 Example: `v_Mixing_g01_c04`](media/results/ucf101/v_Mixing_g01_c04-spatial.pdf){#fig:results:ucf101:mixing}
 
 [@Fig:results:ucf101:mixing] (mixing): Good SNC maps, the attention is localised
 to the bowl and is consistent across the frame sequence. SC suffers from heavy
@@ -2041,7 +2051,7 @@ The localisation of attention to regions over the bowl indicate that the spatial
 stream has learnt to recognise bowls as a proxy for mixing since mixing most
 often occurs in bowls.
 
-![UCF101 Example: `v_Mixing_g01_c04`](media/results/ucf101/v_Mixing_g01_c04-spatial.pdf){#fig:results:ucf101:mixing}
+![UCF101 Example: `v_WritingOnBoard_g04_c03`](media/results/ucf101/v_WritingOnBoard_g04_c03-spatial.pdf){#fig:results:ucf101:writing}
 
 [@Fig:results:ucf101:writing] (writing on board): A good example of where the
 spatial network has learnt features sufficient for distinction between classes,
@@ -2056,7 +2066,7 @@ network is has not learnt to recognise the action for this class in this
 example, but instead uses proxy features (patches of writing on the board) for
 differentiating between classes.
 
-![UCF101 Example: `v_WritingOnBoard_g04_c03`](media/results/ucf101/v_WritingOnBoard_g04_c03-spatial.pdf){#fig:results:ucf101:writing}
+![UCF101 Example: `v_TennisSwing_g07_c02` (high spatial contrastive)](media/results/ucf101/v_TennisSwing_g07_c02-spatial.pdf){#fig:results:ucf101:tennis}
 
 [@Fig:results:ucf101:tennis] (tennis): Noisy attention maps for both SNC and SC.
 A good proportion of the attention is distributed the regions covering the
@@ -2065,7 +2075,7 @@ regions of attention in one frame are not present in the next frame. Attention
 is distributed to the fence suggesting that there are multiple examples in the
 training dataset in which fences are present in the `TennisSwing` action.
 
-![UCF101 Example: `v_TennisSwing_g07_c02` (high spatial contrastive)](media/results/ucf101/v_TennisSwing_g07_c02-spatial.pdf){#fig:results:ucf101:tennis}
+![UCF101 Example: `v_PlayingFlute_g03_c05`](media/results/ucf101/v_PlayingFlute_g03_c05.pdf){#fig:results:ucf101:flute}
 
 [@Fig:results:ucf101:flute] (flute): Excellent attention maps for SNC, TC,
 TC with accurately localised attention. The SNC maps localise attention to the
@@ -2079,7 +2089,7 @@ recognising by appearance rather than by motion. The TC maps localise attention
 to the face and tip of the flute unlike the TNC maps which localise over the full
 length flute.
 
-![UCF101 Example: `v_PlayingFlute_g03_c05`](media/results/ucf101/v_PlayingFlute_g03_c05.pdf){#fig:results:ucf101:flute}
+![UCF101 Example: `v_SoccerPenalty_g01_c06`](media/results/ucf101/v_SoccerPenalty_g01_c06.pdf){#fig:results:ucf101:soccer}
 
 [@Fig:results:ucf101:soccer] (soccer penalty): The SNC maps are consistent and
 correctly localise the player, referee, and goal goalkeeper; attention is
@@ -2097,7 +2107,8 @@ posit this is due to the overlap in classes featuring moving balls, like
 neurons resulting in the attention not being distributed to regions over the
 moving ball.
 
-![UCF101 Example: `v_SoccerPenalty_g01_c06`](media/results/ucf101/v_SoccerPenalty_g01_c06.pdf){#fig:results:ucf101:soccer}
+
+![UCF101 Example: `v_RopeClimbing_g05_c07`](media/results/ucf101/v_RopeClimbing_g05_c07.pdf){#fig:results:ucf101:climbing}
 
 [@Fig:results:ucf101:climbing] (rope climbing): This is one of the few examples in
 which SC performs better than SNC at localising the action, SC distributes
@@ -2108,7 +2119,7 @@ instructor is localised in TNC, but not in TC. The localisation of the climber
 is finer in TC, but only covers the upper portion of the body whereas TNC covers
 the full body of the climber in addition to the rope below.
 
-![UCF101 Example: `v_RopeClimbing_g05_c07`](media/results/ucf101/v_RopeClimbing_g05_c07.pdf){#fig:results:ucf101:climbing}
+![UCF101 Example: `v_Hammering_g07_c05`](media/results/ucf101/v_Hammering_g07_c05-temporal.pdf){#fig:results:ucf101:hammering}
 
 [@Fig:results:ucf101:hammering] (hammering): TC localises hammer action better
 than TNC, both are good restricting attention localisation to the child and
@@ -2116,14 +2127,14 @@ hammer, but TC further restricts the attention to the region in which the hammer
 is moving suggesting the temporal network has learnt to recognise the repetitive
 motion of hammering.
 
-![UCF101 Example: `v_Hammering_g07_c05`](media/results/ucf101/v_Hammering_g07_c05-temporal.pdf){#fig:results:ucf101:hammering}
+![UCF101 Example: `v_PlayingGuitar_g05_c01`](media/results/ucf101/v_PlayingGuitar_g05_c01-temporal.pdf){#fig:results:ucf101:guitar}
 
 [@Fig:results:ucf101:guitar] (playing guitar): TC fails to localise the
 strumming motion, instead localising the top of the musicians head. The TNC
 attention maps spread over a significant proportion of the frame, but do indeed
 localise the musician and peak around the soundhole and fretboard.
 
-![UCF101 Example: `v_PlayingGuitar_g05_c01`](media/results/ucf101/v_PlayingGuitar_g05_c01-temporal.pdf){#fig:results:ucf101:guitar}
+![UCF101 Example: `v_Swing_g06_c07`](media/results/ucf101/v_Swing_g06_c07-temporal.pdf){#fig:results:ucf101:swing}
 
 [@Fig:results:ucf101:swing] (swing): The features highlighted in the attention
 maps for both TNC and TC are hard to determine, attention is localised to the
@@ -2131,129 +2142,144 @@ reflection of light on the child's hair which will exhibit a strong swinging
 motion in the optical flow frames, the temporal network may have learnt a
 feature encapsulating objects following this swinging motion.
 
-![UCF101 Example: `v_Swing_g06_c07`](media/results/ucf101/v_Swing_g06_c07-temporal.pdf){#fig:results:ucf101:swing}
-
+\newpage
 
 #### BEOID
 
-We give a qualitative analysis of selected attention map sequences to
-determine features learnt by the two streams for different action classes. We
-also make note of pathological behaviour where present and provide plausible
-explanations.
-
-[@Fig:results:beoid:open-door] (*open door*, door): This location is the only
-one in which door videos are shot, so all examples of doors are from this
-specific door. The SNC maps indicate that the salient regions are the edges of
-the windows, the badges above the handle, and the handle itself suggesting that
-the network has learnt to recognise the appearance of the door in addition to
-the hand on the handle to discriminate this action. The SC maps demonstrate less
-jitter than compared to other actions in the dataset although they do not
-localise the hand on the door handle. There are no other videos from different
-classes with the presence of a door, thus making the appearance of a door
-sufficient for distinction between other classes.
-
-[@Fig:results:beoid:treadmill-press-button] (*press button*, treadmill): The
-only action recorded on the treadmill is press button, so recognising the frame
-as treadmill should be sufficient to discriminate the action from other
-press-button actions conducted with different objects. The red stop button of
-the treadmill is a good indicator that the object of interaction is the
-treadmill. The SNC maps have low jitter primarily localising the hand and the
-red stop button of the treadmill suggesting that the spatial stream is both
-recognising the object of interaction, the treadmill dashboard, and the shape of
-the hand in the interaction. The SNC maps are consistent across the frames and
-primarily localise the text on the display and the surrounding border of
-display, the hand has no localisation suggesting that a neuron at a lower layer
-in the network recognises the appearance of the hand in press-button
-interactions; the contrastive method will not distribute attention to this
-neuron as it will also contribute to activation of the dual class neuron
-'not-press-button-treadmill' (e.g. press coffee machine button). It is
-noteworthy that the red stop button is not localised in the SC maps despite not
-being present on other exercise machines used in the dataset.
-
-[@Fig:results:beoid:treadmill-press-button2] (*press button*, exercise bike): The TNC maps
-suffer from some jitter, particularly notable between the last two frames
-between which attention shifts from the tip of the shoe to the display on the
-bike. There is poor localisation of the hand with the regions covering it
-receiving little attention this is likely due to the lack of presence of the
-hand in the optical flow since the hand exhibits little motion during the
-action. The left shoe receives the majority of attention throughout the first 4
-frames as this is the dominant motion in the clip acting as a good discrimantor
-for actions taking place on the exercise bike. The TC maps suffer from jitter
-making them difficult to infer features learnt. Constant throughout the TC maps
-is an area in the top right corner which consistently receives attention; the
-video exhibits side to side motion during the press-button action as the person
-peddles meaning that the corner of the machine in the top left will come in and
-out of view causing noisy spikes in the corresponding optical flow, it is
-possible that the network has learnt to use this noise as a proxy indicator for
-this action.
-
-[@Fig:results:beoid:sink-press-button] (*press button*, coffee machine): The SNC
-maps distribute attention across the whole frame localising boundaries of
-objects suggesting the network has learnt to recognise the location. There are
-strong regions of attention over the handle on the mirrored top of the coffee
-machine which produces good contrast making a good feature to learn to recognise
-the coffee machine. There is little attention over the region covering the hand,
-the action location suggesting that the surrounding visual context has been
-learnt. The SC maps have low jitter further localising attention to the top
-handle and the back of the mirrored top of the coffee machine. Similarly to the
-SNC maps, the SC maps fail to localise the hand. The TNC maps localise almost
-all the attention to a small region at the back of the mirrored top of the
-coffee machine, similar to the regions localised by the SC maps. The TC maps
-suffer from jitter but do localise the button press in 3 of the 5 frames.
-
-[@Fig:results:beoid:sink-turn-tap] (*turn tap*, sink): All but the TC maps have
-low jitter. The SNC maps localise the rim of the cup, the washing up liquid
-bottle logo, the visible tap handle, and the boundaries of the arm and hand; the
-spatial network has learnt to recognise the cup being filled. The washing up
-bottle logo acts as a strong visual indicator that location is the sink in which
-the only action recorded is turning the tap, these contextual clues act as
-stronger discriminator for the network then the extended arm covering the tap.
-If you consider the frame with the surrounding context removed with just the
-outstretched arm remaining it would be difficult to infer the action, with the
-surrounding context: the sink, the mug under the tap head, and the running
-water; it is clear that the action has something to do with the tap. The SC maps
-localise the majority of attention to the visible red tap handle suggesting that
-there is a neuron recognising the red tap handle which acts as a strong
-indicator of tap turning. The TNC maps localise attention to the changing
-reflections of the water in the mug, these cause strong regions in the
-corresponding optical flow (c.f. UCF101 swimming examples) indicative of moving
-water. Some attention is paid in the TNC maps to the movement of the arm used to
-turn the tap. The TC maps have high jitter but do localise the hand and wrist
-movement in 2 of the 5 frames.
-
-
-[@Fig:results:beoid:sink-stir-spoon] (*stir spoon*, microwave): The TNC and TC
-maps both have low jitter and are very similar in attention localisation. The
-attention is primarily distributed to the movement of the spoon bowl in the
-water in the cup, the TNC maps also localise some hand motion unlike the TC maps.
+For each example we note the action and location of the example after the figure
+reference as (*action*, location).
 
 
 ![BEOID Example: `04_Door2_open_door_284-333`](media/results/beoid/04_Door2_open_door_284-333-spatial.pdf){#fig:results:beoid:open-door
 width=90%}
 
-\newpage
+[@Fig:results:beoid:open-door] (*open door*, door): All door videos are shot in
+this location with this specific door. The SNC maps indicate that the salient
+regions are the edges of the windows, the badges above the handle, and the
+handle itself suggesting that the network has learnt to recognise the appearance
+of the door (probably overfitting to the appearance of the specific door
+pictured) in addition to the hand on the handle to discriminate this action. The
+SC maps demonstrate less jitter than compared to other actions in the dataset
+although they do not localise the hand on the door handle. No other clips for
+different action classes feature the presence of a door, so the appearance of a
+door sufficient for distinction between other classes.
 
 ![BEOID Example: `07_Treadmill1_press_button_193-305`](media/results/beoid/07_Treadmill1_press_button_193-305-spatial.pdf){#fig:results:beoid:treadmill-press-button
 width=90%}
 
+[@Fig:results:beoid:treadmill-press-button] (*press button*, treadmill): The
+only action recorded on the treadmill is press button, thus recognising the
+treadmill should be sufficient to discriminate this action from other
+press-button actions conducted with different objects. The red stop button of
+the treadmill is a good indicator that the object of interaction is the
+treadmill as it doesn't appear on other exercise equipment in the other action
+classes. The SNC maps have low jitter, primarily localising the hand and the red
+stop button of the treadmill suggesting that the spatial stream is both
+recognising the object of interaction, the treadmill dashboard, and the shape of
+the hand in the interaction. The SNC maps are consistent across the frames and
+primarily localise the text on the display and the surrounding border of the
+display. The hand has receives no attention in the SC map, but does in the SNC
+map suggesting the existence of a neuron recognising hands that activates for
+multiple classes. This 'hand' neuron will activate for images classified as
+'push-button' and 'non-push-button' (this is called a common-winner neuron). The
+contrastive EBP method will cancel the 'hand' neuron's activation causing the
+region that excites the neuron to receive no attention. It is noteworthy that
+the red stop button is not localised in the SC maps despite not being present on
+other exercise machines used in the dataset, the closest similar object in
+appearance is the red tap in the 'turn-tap' action; it is possible a common
+winner neuron firing for both of these visual features exists explaining the
+absence of attention in the SC map.
+
+
 ![BEOID Example: `06_Treadmill1_press_button_4469-4493`](media/results/beoid/06_Treadmill1_press_button_4469-4493-temporal.pdf){#fig:results:beoid:treadmill-press-button2
 width=90%}
 
-\newpage
+
+[@Fig:results:beoid:treadmill-press-button2] (*press button*, exercise bike):
+The TNC maps suffer from some jitter, particularly notable between the last two
+frames between which attention shifts from the tip of the shoe to the display on
+the bike. There is poor localisation of the hand with the regions covering it
+receiving little attention; this is likely due to the absence of a hand outline
+in the optical flow as the hand doesn't move during the action. The left shoe
+receives the majority of attention throughout the first 4 frames since it is the
+source of the dominant motion in the clip. The movement of the shoe acts as a
+good discrimantor for actions taking place on the exercise bike. The TC maps
+suffer from jitter making them difficult to infer features learnt. Constant
+throughout the TC maps is an area in the top right corner which consistently
+receives attention; the video exhibits side to side motion during the
+press-button action as the person peddles meaning that the corner of the machine
+in the top left will come in and out of view causing noisy spikes in the
+corresponding optical flow, it is possible that the network has learnt to use
+this noise as a proxy indicator for this action.
 
 ![BEOID Example: `01_Sink2_press_button_527-561`](media/results/beoid/01_Sink2_press_button_527-561.pdf){#fig:results:beoid:sink-press-button width=90%}
 
-\newpage
+[@Fig:results:beoid:sink-press-button] (*press button*, coffee machine): The SNC
+maps distribute attention across the whole frame localising boundaries of
+objects indicating the network has learnt to recognise the visual appearance of
+the location. There are strong regions of attention over the handle on the
+mirrored top of the coffee machine which produces good contrast making a good
+feature to learn to recognise the coffee machine. There is little attention over
+the hand suggesting that *environment* has been learnt instead of the appearance
+of the hand during the action. The SC maps have low jitter further localising
+attention to the top handle and the back of the mirrored top of the coffee
+machine. Similarly to the SNC maps, the SC maps fail to localise the hand. The
+TNC maps localise almost all the attention to a small region at the back of the
+mirrored top of the coffee machine, similar to the regions localised by the SC
+maps. The TC maps suffer from jitter but do localise the button press in 3 of
+the 5 frames.
+
 
 ![BEOID Example: `00_Sink1_turn_tap_694-717`](media/results/beoid/00_Sink1_turn_tap_694-717.pdf){#fig:results:beoid:sink-turn-tap width=90%}
 
-\newpage
+[@Fig:results:beoid:sink-turn-tap] (*turn tap*, sink): All but the TC maps have
+low jitter. The SNC maps localise the rim of the cup, the washing up liquid
+bottle logo, the visible tap handle, and the boundaries of the arm and hand. The
+strong regions of attention surround the cup rim suggest the spatial network has
+learnt to recognise the cup. The washing up bottle logo acts as a strong visual
+indicator that location is the sink helping refine the number of possible action
+classes taking place. Consider a frame from the clip with the surrounding
+context removed, leaving only the outstretched arm; it would be difficult to
+infer the action of 'turn tap', it necessary to have the surrounding environment
+to infer the action: the sink, the mug under the tap head, and the running
+water. The SC maps localise the majority of attention to the red tap handle
+indicating this is a discriminator for the 'turn tap' action. The TNC maps
+localise attention to the changing reflections of the water in the mug, these
+cause strong regions in the corresponding optical flow (c.f. UCF101 swimming
+examples) typical of moving water. Some attention is localised to the movement
+of the arm used to turn the tap in the TNC map. The TC maps have high jitter but
+do localise the hand and wrist movement in 2 of the 5 frames.
 
 ![BEOID Example: `03_Sink2_stir_spoon_1793-1887`](media/results/beoid/03_Sink2_stir_spoon_1793-1887-temporal.pdf){#fig:results:beoid:sink-stir-spoon
 width=90%}
 
-\newpage
+[@Fig:results:beoid:sink-stir-spoon] (*stir spoon*, microwave): The TNC and TC
+maps both have low jitter and are very similar in attention localisation. The
+attention is primarily distributed to the movement of the spoon bowl in the
+water in the cup, the TNC maps also localise some hand motion unlike the TC
+maps.
 
+
+#### Summary
+
+In this section we have analysed selected examples representative of the
+attention map sequences generated for both the UCF101 and BEOID datasets. We
+have show examples ranging from those with excellent attention map sequences
+across all EBP methods for both the spatial and temporal streams (e.g.
+[@fig:results:ucf101:climbing]) to those where the attention maps are difficult
+to interpret ([@fig:results:ucf101:tennis]). We have seen that non-contrastive
+EBP usually produces more intelligible attention map sequences compared to
+contrastive EBP (e.g.
+[@fig:results:ucf101:mixing;@fig:results:beoid:press-button-2;@fig:results:beoid:turn-tap])
+although there are some cases where contrastive produces more interpretable
+sequences at the cost of increased jitter
+([@fig:results:beoid:sink-press-button]). Attention maps created with
+non-contrastive EBP are easily interpretable for they show the regions salient
+to a classification. Contrastive EBP highlights the regions that discriminate
+between classes, alone they are hard to interpret, but combined with comparing to
+non-contrastive maps they can provide additional information although the high
+jitter across frames makes it difficult to determine whether they provide
+accurate information.
 
 # Conclusion
 
