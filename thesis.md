@@ -59,7 +59,7 @@ geometry: margin=1in
 documentclass: scrreprt
 # Maximum number of depths in cross reference (pandoc-crossref)
 chaptersDepth: 3
-sectionsDepth: 0
+sectionsDepth: 3
 # Make citations clickable
 link-citations: true
 header-includes:
@@ -1817,6 +1817,14 @@ optical flow is read back from JPEG format stored on disk into memory, they are
 transformed to be in the range $[-127.5, 127.5]$ performed by mean centring
 around $127.5$.
 
+
+We make use of the following abbreviations in this section:
+
+* **SC**: Attention maps for Spatial network generated from Contrastive EBP
+* **SNC**: Attention maps for Spatial network generated from Non-Contrastive EBP
+* **TC**: Attention maps for Temporal network generated from Contrastive EBP
+* **TNC**: Attention maps for Temporal network generated from Non-Contrastive EBP
+
 ### Evaluating attention maps for jitter
 
 Contrastive attention maps (those produced with contrastive EBP) demonstrate
@@ -1900,16 +1908,128 @@ attention map, would have a high distance.
 
 #### UCF101
 
+
+| Clip               | SNC jitter | SC jitter | TNC jitter | TC jitter |
+|--------------------|------------|-----------|------------|-----------|
+| `v_Mixing_g01_c04` |            |           |            |           |
+: Jitter measurements for the examples of UCF101
+
+
+#### BEOID
+
+The distribution of L2-jitter for BEOID ([@fig:average-jitter-distribution:beoid])
+suggests that for the spatial stream contrastive and non-contrastive EBP perform
+similarly, however our qualitative analysis contradicts this. We observe less
+jitter in non-contrastive attention maps compared to contrastive attention maps
+(especially for the attention maps from the spatial stream).
+that this is not the case and that the contrastive attention maps are
+considerably more variable in the objects they highlight than the
+non-contrastive (we propose a more robust jitter measure in [@sec:future-work]).
+The BEOID dataset is shot from a head mounted camera, so all videos have at
+least some camera motion whereas UCF101 is composed mostly of static camera
+shots, the L2-jitter for 'good' attention map sequences (ones qualitatively
+assessed as having low jitter) and 'bad' attention map sequences (ones
+qualitatively assessed as having high jitter) pairs can be similar if there are
+large camera movements. Our L2 jitter analysis is more appropriate for videos
+shot from static cameras.
+
+\newpage
+
+![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
+
+### Evaluating attention map quality by egocentric gaze
+
+We use the gaze data of the operator in the BEOID dataset as a proxy variable
+for the action location, as the two are correlated; a person's gaze when
+performing an action is directed towards the action. We compare the location of
+the attention map maximum (i.e. the most salient region) to the location of the
+operator's gaze to comparatively assess the different EBP methods over both
+network streams.
+
+We expect the attention map to peak at the location an action is being performed
+as it is necessary for the network to implicitly localise the action for it to
+be able to recognise the action. BEOID, nor UCF101 have bounding box annotations
+of the actions as what does and doesn't constitute part of an action is
+debatable,
+
+<##todo Insert Michael Land reference from Dima>
+
+The BEOID dataset is provided with gaze data for each video: the operator
+performing the action is wearing a set of glasses that are both recording what
+the operator can see and the operator's gaze across the 2D video frame.
+
+Human gaze flips between two modes of operation: fixation and saccading.
+When fixating, the eye is stationary focusing on specific object in the field of
+view. Saccades occur between periods of fixation, during the saccade, the eye
+darts around the field of view. Gaze data is provided
+
+<div id='fig:attention-map-peak-gaze-distance-plots'>
+![Distribution of attention map peak - gaze distance across all attention maps](media/plots/gaze-attention-map-peak-distance-distribution-beoid.pdf){#fig:gaze-peak-distance-distribution
+width=45%}
+![Cumulative frequency density of ](media/plots/gaze-attention-map-peak-distance-cumfreq-beoid.pdf){#fig:gaze-peak-distance-cumfreq width=45%}
+
+Attention map peak - gaze distance plots
+</div>
+
+
+<##todo Decide whether to include this table>
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll|lllll}
+  \toprule
+  Network  & EBP Type        & \multicolumn{5}{c}{\% of attention maps under distance (px)} \\
+  {}       &                 & 10\%   & 25\%   & 50\%   & 75\%    & 90\% \\
+  \hline
+  Spatial  & Non-contrastive & 23     & 56     & 116    & 200     & 277  \\
+  {}       & Contrastive     & 42     & 108    & 163    & 267     & 349  \\
+  \hline
+  Temporal & Non-contrastive & 31     & 76     & 164    & 265     & 368  \\
+  {}       & Contrastive     & 38     & 85     & 164    & 287     & 367  \\
+  \bottomrule \\
+\end{tabular}
+\label{tbl:gaze-attention-map-peak-cumfreq-distances}
+\caption{Summary statistics regarding cumulative frequency density of attention map peak - gaze distance}
+
+\end{table}
+
+![Average attention map peak - gaze distance per clip across all locations (BEOID)](media/plots/gaze-attention-map-peak-distance-distribution-beoid-by-location.pdf)
+
+| Network  | Location  | # of attention maps |
+|----------|-----------|---------------------|
+| Spatial  | Desk      |                 678 |
+|          | Door      |                 105 |
+|          | Printer   |                 293 |
+|          | Row       |                 353 |
+|          | Sink      |                1201 |
+|          | Treadmill |                1128 |
+| Temporal | Desk      |                 614 |
+|          | Door      |                  99 |
+|          | Printer   |                 248 |
+|          | Row       |                 317 |
+|          | Sink      |                 978 |
+|          | Treadmill |                 876 |
+: Attention map counts by location for each network stream (BEOID), temporal has
+  fewer due to the temporal window
+  {#tbl:beoid-gaze-attention-map-counts}
+
+
+
+Methods:
+
+* Model attention as a 2D Gaussian around center of gaze
+* Find top-N peaks and compare them to the center of gaze, pick the one closest,
+  then plot cumulative frequency at 10%, 20% etc
+* As above but instead threshold correctness at X% distance
+
+
+
+
+### Qualitative attention map evaluation
+
+#### UCF101
 We select a few interesting examples from which we can infer the features
 recognised by the network streams or that demonstrate pathological behaviour
 for which we give possible explanations.
-
-For brevity we make use of the following abbreviations:
-
-* **SC**: Attention maps for Spatial network generated from Contrastive EBP
-* **SNC**: Attention maps for Spatial network generated from Non-Contrastive EBP
-* **TC**: Attention maps for Temporal network generated from Contrastive EBP
-* **TNC**: Attention maps for Temporal network generated from Non-Contrastive EBP
 
 <##todo decide whether to include full results in the appendices>
 
@@ -2015,29 +2135,9 @@ feature encapsulating objects following this swinging motion.
 ![UCF101 Example: `v_Swing_g06_c07`](media/results/ucf101/v_Swing_g06_c07-temporal.pdf){#fig:results:ucf101:swing}
 
 
-| Clip               | SNC jitter | SC jitter | TNC jitter | TC jitter |
-|--------------------|------------|-----------|------------|-----------|
-| `v_Mixing_g01_c04` |            |           |            |           |
-: Jitter measurements for the examples of UCF101
-
-
 #### BEOID
 
-The distribution of jitter for BEOID ([@fig:average-jitter-distribution:beoid])
-suggests that for the spatial stream contrastive and non-contrastive EBP perform
-similarly, however qualitatively on viewing the attention map videos one can see
-that this is not the case and that the contrastive attention maps are
-considerably more variable in the objects they highlight than the
-non-contrastive (we propose a more robust jitter measure in [@sec:future-work]).
-The BEOID dataset is shot from a head mounted camera, so all videos have at
-least some camera motion whereas UCF101 is composed mostly of static camera
-shots, the L2-jitter for 'good' attention map sequences (ones qualitatively
-assessed as having low jitter) and 'bad' attention map sequences (ones
-qualitatively assessed as having high jitter) pairs can be similar if there are
-large camera movements. Our L2 jitter analysis is more appropriate for videos
-shot from static cameras.
-
-Below we give a qualitative analysis of selected attention map sequences to
+We give a qualitative analysis of selected attention map sequences to
 determine features learnt by the two streams for different action classes. We
 also make note of pathological behaviour where present and provide plausible
 explanations.
@@ -2128,10 +2228,6 @@ maps both have low jitter and are very similar in attention localisation. The
 attention is primarily distributed to the movement of the spoon bowl in the
 water in the cup, the TNC maps also localise some hand motion unlike the TC maps.
 
-\newpage
-
-![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
-
 
 ![BEOID Example: `04_Door2_open_door_284-333`](media/results/beoid/04_Door2_open_door_284-333-spatial.pdf){#fig:results:beoid:open-door
 width=90%}
@@ -2158,92 +2254,6 @@ width=90%}
 width=90%}
 
 \newpage
-
-
-### Evaluating attention map quality by egocentric gaze
-
-We use the gaze data of the operator in the BEOID dataset as a proxy variable
-for the action location, as the two are correlated; a person's gaze when
-performing an action is directed towards the action. We compare the location of
-the attention map maximum (i.e. the most salient region) to the location of the
-operator's gaze to comparatively assess the different EBP methods over both
-network streams.
-
-We expect the attention map to peak at the location an action is being performed
-as it is necessary for the network to implicitly localise the action for it to
-be able to recognise the action. BEOID, nor UCF101 have bounding box annotations
-of the actions as what does and doesn't constitute part of an action is
-debatable,
-
-<##todo Insert Michael Land reference from Dima>
-
-The BEOID dataset is provided with gaze data for each video: the operator
-performing the action is wearing a set of glasses that are both recording what
-the operator can see and the operator's gaze across the 2D video frame.
-
-Human gaze flips between two modes of operation: fixation and saccading.
-When fixating, the eye is stationary focusing on specific object in the field of
-view. Saccades occur between periods of fixation, during the saccade, the eye
-darts around the field of view. Gaze data is provided
-
-<div id='fig:attention-map-peak-gaze-distance-plots'>
-![Distribution of attention map peak - gaze distance across all attention maps](media/plots/gaze-attention-map-peak-distance-distribution-beoid.pdf){#fig:gaze-peak-distance-distribution
-width=45%}
-![Cumulative frequency density of ](media/plots/gaze-attention-map-peak-distance-cumfreq-beoid.pdf){#fig:gaze-peak-distance-cumfreq width=45%}
-
-Attention map peak - gaze distance plots
-</div>
-
-
-<##todo Decide whether to include this table>
-\begin{table}[h!]
-\centering
-\begin{tabular}{ll|lllll}
-  \toprule
-  Network  & EBP Type        & \multicolumn{5}{c}{\% of attention maps under distance (px)} \\
-  {}       &                 & 10\%   & 25\%   & 50\%   & 75\%    & 90\% \\
-  \hline
-  Spatial  & Non-contrastive & 23     & 56     & 116    & 200     & 277  \\
-  {}       & Contrastive     & 42     & 108    & 163    & 267     & 349  \\
-  \hline
-  Temporal & Non-contrastive & 31     & 76     & 164    & 265     & 368  \\
-  {}       & Contrastive     & 38     & 85     & 164    & 287     & 367  \\
-  \bottomrule \\
-\end{tabular}
-\label{tbl:gaze-attention-map-peak-cumfreq-distances}
-\caption{Summary statistics regarding cumulative frequency density of attention map peak - gaze distance}
-
-\end{table}
-
-![Average attention map peak - gaze distance per clip across all locations (BEOID)](media/plots/gaze-attention-map-peak-distance-distribution-beoid-by-location.pdf)
-
-| Network  | Location  | # of attention maps |
-|----------|-----------|---------------------|
-| Spatial  | Desk      |                 678 |
-|          | Door      |                 105 |
-|          | Printer   |                 293 |
-|          | Row       |                 353 |
-|          | Sink      |                1201 |
-|          | Treadmill |                1128 |
-| Temporal | Desk      |                 614 |
-|          | Door      |                  99 |
-|          | Printer   |                 248 |
-|          | Row       |                 317 |
-|          | Sink      |                 978 |
-|          | Treadmill |                 876 |
-: Attention map counts by location for each network stream (BEOID), temporal has
-  fewer due to the temporal window
-  {#tbl:beoid-gaze-attention-map-counts}
-
-
-
-Methods:
-
-* Model attention as a 2D Gaussian around center of gaze
-* Find top-N peaks and compare them to the center of gaze, pick the one closest,
-  then plot cumulative frequency at 10%, 20% etc
-* As above but instead threshold correctness at X% distance
-
 
 
 # Conclusion
