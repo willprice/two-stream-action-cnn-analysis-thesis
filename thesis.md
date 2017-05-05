@@ -2176,8 +2176,14 @@ feature encapsulating objects following this swinging motion.
 
 #### BEOID
 
-For each example we note the action and location of the example after the figure
-reference as (*action*, location).
+We present four actions from BEOID, these are: *open door*, *press button*,
+*turn tap* and *stir spoon*. We present three examples of the *press button*
+action at different locations and compare the attention maps across the
+location. The examples are selected to make conclusions of interest to
+understanding the attention maps in BEOID. The examples chosen are
+representative of the full gamut of attention maps for BEOID. For each example
+we note the action and location of the example after the figure reference as
+(*action*, location).
 
 
 ![BEOID Example: `04_Door2_open_door_284-333`](media/results/beoid/04_Door2_open_door_284-333-spatial.pdf){#fig:results:beoid:open-door
@@ -2208,17 +2214,10 @@ stop button of the treadmill suggesting that the spatial stream is both
 recognising the object of interaction, the treadmill dashboard, and the shape of
 the hand in the interaction. The SNC maps are consistent across the frames and
 primarily localise the text on the display and the surrounding border of the
-display. The hand has receives no attention in the SC map, but does in the SNC
-map suggesting the existence of a neuron recognising hands that activates for
-multiple classes. This 'hand' neuron will activate for images classified as
-'push-button' and 'non-push-button' (this is called a common-winner neuron). The
-contrastive EBP method will cancel the 'hand' neuron's activation causing the
-region that excites the neuron to receive no attention. It is noteworthy that
-the red stop button is not localised in the SC maps despite not being present on
-other exercise machines used in the dataset, the closest similar object in
-appearance is the red tap in the 'turn-tap' action; it is possible a common
-winner neuron firing for both of these visual features exists explaining the
-absence of attention in the SC map.
+display. It is noteworthy that the red stop button is not localised in the SC
+maps despite not being present on other exercise machines recorded in the
+dataset, the closest similar object in appearance is the red tap in the *sink*
+location.
 
 
 ![BEOID Example: `06_Treadmill1_press_button_4469-4493`](media/results/beoid/06_Treadmill1_press_button_4469-4493-temporal.pdf){#fig:results:beoid:treadmill-press-button2
@@ -2227,8 +2226,8 @@ width=90%}
 
 [@Fig:results:beoid:treadmill-press-button2] (*press button*, exercise bike):
 The TNC maps suffer from some jitter, particularly notable between the last two
-frames between which attention shifts from the tip of the shoe to the display on
-the bike. There is poor localisation of the hand with the regions covering it
+frames where attention shifts from the tip of the shoe to the display on the
+bike. There is poor localisation of the hand with the regions covering it
 receiving little attention; this is likely due to the absence of a hand outline
 in the optical flow as the hand doesn't move during the action. The left shoe
 receives the majority of attention throughout the first 4 frames since it is the
@@ -2237,10 +2236,10 @@ good discrimantor for actions taking place on the exercise bike. The TC maps
 suffer from jitter making them difficult to infer features learnt. Constant
 throughout the TC maps is an area in the top right corner which consistently
 receives attention; the video exhibits side to side motion during the
-press-button action as the person peddles meaning that the corner of the machine
-in the top left will come in and out of view causing noisy spikes in the
-corresponding optical flow, it is possible that the network has learnt to use
-this noise as a proxy indicator for this action.
+press-button action as the person peddles. The side to side motion causes the
+corner of the machine in the top left to come in and out of view resulting in
+noisy spikes in the corresponding optical flow, and so the network has learnt to
+use this noise as a proxy indicator for this action.
 
 ![BEOID Example: `01_Sink2_press_button_527-561`](media/results/beoid/01_Sink2_press_button_527-561.pdf){#fig:results:beoid:sink-press-button width=90%}
 
@@ -2256,8 +2255,8 @@ attention to the top handle and the back of the mirrored top of the coffee
 machine. Similarly to the SNC maps, the SC maps fail to localise the hand. The
 TNC maps localise almost all the attention to a small region at the back of the
 mirrored top of the coffee machine, similar to the regions localised by the SC
-maps. The TC maps suffer from jitter but do localise the button press in 3 of
-the 5 frames.
+maps. The TC maps suffer from jitter but do localise the button press in three of
+the five frames; specifically the first, second and fifth.
 
 
 ![BEOID Example: `00_Sink1_turn_tap_694-717`](media/results/beoid/00_Sink1_turn_tap_694-717.pdf){#fig:results:beoid:sink-turn-tap width=90%}
@@ -2265,20 +2264,19 @@ the 5 frames.
 [@Fig:results:beoid:sink-turn-tap] (*turn tap*, sink): All but the TC maps have
 low jitter. The SNC maps localise the rim of the cup, the washing up liquid
 bottle logo, the visible tap handle, and the boundaries of the arm and hand. The
-strong regions of attention surround the cup rim suggest the spatial network has
-learnt to recognise the cup. The washing up bottle logo acts as a strong visual
-indicator that location is the sink helping refine the number of possible action
-classes taking place. Consider a frame from the clip with the surrounding
-context removed, leaving only the outstretched arm; it would be difficult to
-infer the action of 'turn tap', it necessary to have the surrounding environment
-to infer the action: the sink, the mug under the tap head, and the running
-water. The SC maps localise the majority of attention to the red tap handle
-indicating this is a discriminator for the 'turn tap' action. The TNC maps
-localise attention to the changing reflections of the water in the mug, these
-cause strong regions in the corresponding optical flow (c.f. UCF101 swimming
-examples) typical of moving water. Some attention is localised to the movement
-of the arm used to turn the tap in the TNC map. The TC maps have high jitter but
-do localise the hand and wrist movement in 2 of the 5 frames.
+strong regions of attention surrounding the cup rim suggest the spatial network
+has learnt to recognise the cup. The washing up bottle logo acts as a strong
+visual indicator that location is the sink helping refine the number of possible
+action classes taking place. The environment surrounding the outstretched arm is
+necessary to infer the action, without it the appearance of the arm is
+insufficient to distinguish between actions. The SC maps localise the majority
+of attention to the red tap handle indicating this is a discriminator for the
+'turn tap' action. The TNC maps localise attention to the changing reflections
+of the water in the mug, these cause strong regions in the corresponding optical
+flow typical of moving water. Some attention is localised to the movement of the
+arm used to turn the tap in the TNC map. The TC maps have high jitter but do
+localise the hand and wrist movement in 2 of the 5 frames: the first and fifth
+frame.
 
 ![BEOID Example: `03_Sink2_stir_spoon_1793-1887`](media/results/beoid/03_Sink2_stir_spoon_1793-1887-temporal.pdf){#fig:results:beoid:sink-stir-spoon
 width=90%}
