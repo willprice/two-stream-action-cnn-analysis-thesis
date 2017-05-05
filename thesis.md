@@ -1682,7 +1682,7 @@ parts and joining them horizontally (so each filter spans a row).
 
 ## EBP for two stream CNNs {#sec:ebp-for-2scnn}
 
-
+### Choosing a stopping layer
 Two stream CNNs (2SCNN) were introduced in
 [@sec:background:cnn:architectures:2scnn], they are composed of two network
 streams concurrently processing the network input: the spatial stream takes a
@@ -1707,6 +1707,19 @@ generate attention maps for each frame with EBP.
 
 ![The affect of stopping EBP at different layers (UCF101 boxing)](media/images/ebp-pooling-layer-sizes.pdf){#fig:ebp-pooling-layer-sizes width=6in}
 
+Selecting the stopping layer for EBP was an exercise in trial and error, we
+computed attention maps by stopping at various layers in the network and found
+that the third pooling layer provided a good compromise between visual
+interpretability and resolution of attention (i.e. the size of the area for
+which the marginal winning probability applies). At the third pooling layer of
+VGG16, the attention map dimensions are $28 \times 28$ and so each marginal
+winning probability covers a $224/28 \times 224/28 = 8 \times 8$ patch of pixels
+in input space giving acceptable spatial resolution. See
+[@fig:ebp-pooling-layer-sizes] for a visual comparison of attention maps
+computed for the same frame using different stopping layers.
+
+
+### EBP for the temporal stream
 We propose a novel method for generating attention maps on a per frame basis for
 temporal streams in the 2SCNN architecture using EBP. For a temporal stream
 network with temporal extent $L$, a window over $L + 1$ video frames is
@@ -1747,20 +1760,9 @@ the output in [@fig:ebp-temporal-underlay].
 
 ![Choosing the underlay frame for (example from UCF101)](media/images/ebp-temporal-layering-vertical.pdf){#fig:ebp-temporal-underlay height=9in}
 
+
 ## EBP Attention map evaluation {#sec:ebp-evaluation}
 
-
-**Stopping layer**
-Selecting the stopping layer for EBP was an exercise in trial and error, we
-computed attention maps by stopping at various layers in the network and found
-that the third pooling layer provided a good compromise between visual
-interpretability and resolution of attention (i.e. the size of the area for
-which the marginal winning probability applies). At the third pooling layer of
-VGG16, the attention map dimensions are $28 \times 28$ and so each marginal
-winning probability covers a $224/28 \times 224/28 = 8 \times 8$ patch of pixels
-in input space giving acceptable spatial resolution. See
-[@fig:ebp-pooling-layer-sizes] for a visual comparison of attention maps
-computed for the same frame using different stopping layers.
 
 
 The attention maps we generate are those for the videos from the test set used
@@ -1848,7 +1850,7 @@ temporal contrastive attention maps have little overlap frame to frame with
 regions of high attention appearing and disappearing between frames and so
 suffer from high jitter.
 
-![Example of attention map sequence suffering from high jitter (Cliff diving, UCF101)](media/results/ucf101/v_CliffDiving_g01_c05.pdf){#fig:jitter-examples:ucf101}
+![Attention map sequences with high and low jitter: The contrastive attention maps suffer significantly higher jitter than the non contrastive attention maps for both the temporal and spatial streams (Cliff diving, UCF101)](media/results/ucf101/v_CliffDiving_g01_c05.pdf){#fig:jitter-examples:ucf101}
 
 We quantitatively assess the jitter of a sequence of attention maps by first
 computing the jitter between pairs of consecutive frames, then averaging the
