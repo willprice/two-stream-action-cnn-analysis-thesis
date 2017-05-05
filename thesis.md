@@ -1829,61 +1829,92 @@ We make use of the following abbreviations in this section:
 Contrastive attention maps (those produced with contrastive EBP) demonstrate
 large variances between consecutive frames where there is little change in the
 corresponding video frames, we expect there to be a correspondingly small change
-between the attention maps, we call this property of attention map sequences
+between the attention maps; we call this property of attention map sequences
 **jitter**. Attention map pairs with low jitter are those in which the
-highlighted regions in the first map are highlighted in the next map; map pairs
-with high jitter can be considered unstable in the sense that a highlighted
-region in one frame is not highlighted in the next frame, there are rapid
-changes in region highlighting across the sequence.
-[@fig:jitter-examples:ucf101] shows a cliff diving clip in which the spatial
-non-contrastive attention maps are considered to have low jitter, they localise
-the diver through each consecutive frame. The spatial contrastive attention map
-sequence is one we consider to have high jitter; specifically the behaviours we
-consider 'jitter' in the sequence for spatial contrastive are the first frame
-correctly highlighting the diver, but then the next frame not highlighting any
-region over the diver, instead highlighting an irrelevant region in the top
-right; frame 4 highlighting the diving platform but neither frames 3 or 5 do.
-Similarly the temporal non contrastive attention maps have low jitter, they
-localise the action well and have significant overlap whereas the temporal
-contrastive attention maps have little overlap frame to frame with regions of
-high attention appearing and disappearing between frames.
+highlighted regions in the first map are highlighted in the next map. High
+jitter pairs can be considered unstable in the sense that a highlighted region
+in one frame is not highlighted in the next frame, there are rapid changes in
+region highlighting across the sequence. [@fig:jitter-examples:ucf101] shows a
+cliff diving clip in which the spatial non-contrastive attention maps are
+considered to have low jitter, they localise the diver through each consecutive
+frame. The spatial contrastive attention map sequence is one we consider to have
+high jitter; specifically the first frame correctly highlights the diver, but
+then in the next frame does not highlight any region over the diver instead
+highlighting an irrelevant region in the top right. Frame 4 highlights the
+diving platform but neither frames 3 or 5 do. In contrast, the temporal non
+contrastive attention maps have low jitter, they localise the action well and
+have significant overlap between pairs of consecutive attention maps. The
+temporal contrastive attention maps have little overlap frame to frame with
+regions of high attention appearing and disappearing between frames and so
+suffer from high jitter.
 
 ![Example of attention map sequence suffering from high jitter (Cliff diving, UCF101)](media/results/ucf101/v_CliffDiving_g01_c05.pdf){#fig:jitter-examples:ucf101}
 
 We quantitatively assess the jitter of a sequence of attention maps by first
 computing the jitter between pairs of consecutive frames, then averaging the
 jitter between pairs over the whole sequence to give a jitter score for each
-video clip. To compute the jitter between frames we compute the L2 difference
-element-wise and sum over the element differences.
+video clip. We quantify jitter by means of a metric we call L2-jitter. We
+compute the L2-jitter between pairs of consecutive attention maps by computing
+the L2 element-wise difference summing over the element differences to produce a
+scalar score per attention map pair.
 
-We compare the distribution of jitter for each network stream and EBP type in
-[@fig:average-jitter-distribution] over all video clips, the number of clips and
-average frame counts used for this analysis are detailed in
+We compare the distribution of average L2-jitter per clip for each network
+stream and EBP type in [@fig:average-jitter-distribution]. The number of clips
+and average frame counts used for this analysis are detailed in
 [@tbl:dataset-statistics]. The distribution for jitter in UCF101
 ([@fig:average-jitter-distribution:ucf101]) highlights the large disparity
 between contrastive and non-contrastive EBP in the spatial stream. We believe
-that the inferiority of the attention maps produced by contrastive EBP compared
-to non contrastive EBP is due to feature overlap across classes in each
-network's respective domain. Consider the classes `PlayingGuitar` and
-`PlayingSitar` in UCF101, both actions involve the musician holding the
-fretboard in one hand, and picking or strumming the strings by the
-other hand. The instruments are similar in shape, they each have a body,
-a fretted neck and tuning pegs although the sitar is generally a much longer
-instrument with a wider fretboard. Suppose there exists a filter in the spatial
-network that recognises part of a fretboard, the fully connected layers will
-piece together
+the inferiority of the attention maps produced by contrastive EBP compared to
+non contrastive EBP is due to feature overlap between classes. Contrastive EBP
+aims to produce an attention map highlighting the region that discriminate
+between classes unlike non-contrastive EBP which highlights regions that cause
+contribute to the class classification whether they are discriminative between
+classes or not. Contrastive EBP produces discriminative attention maps by
+computing two attention maps at the target stopping layer $L_{\text{stop}}$, the
+first attention map $\attentionmap{\text{pos}}$ is that computed by
+non-contrastive EBP, the second $\attentionmap{\text{neg}}$ is computed by
+first inverting the weights in the starting layer to produce a dual unit for
+each recognising the negation of the original class: a 'press-button' class
+neuron has a dual neuron 'not-press-button'. The attention maps are combined and
+thresholded at 0 to produce the contrastive attention map:
+${\attentionmap{\text{contrastive}} = \max(\attentionmap{\text{pos}} -
+\attentionmap{\text{neg}}, 0)}$. This contrastive attention map will have
+non-zero components where the attention in $\attentionmap{\text{pos}}$ is
+greater than $\attentionmap{\text{negative}}$. The attention maps we generate
+for both BEOID and UCF101 demonstrate *flickering* across similar frames where
+consecutive contrastive attention maps highlight the same regions but
+inconsistently across frames. This behaviour is caused by presence attention
+over the same regions in both $\attentionmap{\text{pos}}$ and
+$\attentionmap{\text{neg}}$, between consecutive maps the region will flip
+from having greater attention in $\attentionmap{\text{neg}}$ to
+$\attentionmap{\text{pos}}$ causing it to reappear in
+$\attentionmap{\text{contrastive}}$, similarly, if the attention becomes greater
+in $\attentionmap{\text{neg}}$ than in $\attentionmap{\text{pos}}$ the region
+disappears from $\attentionmap{\text{contrastive}}$. The jitter across the
+consecutive attention maps suggests that $\attentionmap{\text{pos}}$ and
+$\attentionmap{\text{neg}}$ are very similar; this is likely due to the
+significant overlap in features common to the both neurons. The spatial network
+predicts actions based on the appearance of the video frame, and since there are
+objects common to multiple classes these will
+same location there will be features common across classes
 
-<##todo continue this train of thought>
+Consider the classes `PlayingGuitar` and `PlayingSitar` in
+UCF101, both actions involve the musician holding the fretboard in one hand, and
+picking or strumming the strings by the other hand. The instruments are similar
+in shape, they each have a body, a fretted neck and tuning pegs although the
+sitar is generally a much longer instrument with a wider fretboard. Suppose
+there exists a filter in the spatial network that recognises part of a
+fretboard, the fully connected layers will piece together
 
-see [@sec:future-work]
-for future research directions to answer this question.
 
+See [@sec:appendix:jitter] for a table of clips listing the videos with extreme
+jitter values in the datasets.
 
-| Dataset | Fold | Clip Count | Average frame count |
-|---------|------|------------|---------------------|
-| UCF101  |    1 |        100 |                 186 |
-| BEOID   |    1 |        155 |                  47 |
-: Dataset statistics {#tbl:dataset-statistics}
+| Dataset  | Fold | Clip Count | Average frame count per clip | Total number of frames in dataset |
+|----------|------|------------|------------------------------|-----------------------------------|
+| *UCF101* |    1 |        100 |                          186 |                             18573 |
+| *BEOID*  |    1 |        155 |                           47 |                              7294 |
+: Test dataset summary statistics {#tbl:dataset-statistics}
 
 <div id='fig:average-jitter-distribution'>
 ![UCF101](media/plots/average-jitter-distribution-ucf101.pdf){
@@ -1893,6 +1924,7 @@ for future research directions to answer this question.
 
 Distribution of average jitter over clips for each network stream and EBP type.
 </div>
+
 
 The camera motion in BEOID causes considerable deviation in attention maps when
 compared with the L2 distance, a better metric would be the Earth movers
@@ -1904,17 +1936,6 @@ between frames the attention map consistently highlights the same object will
 have a low distance whereas those attention maps that truly are 'jittery', i.e
 objects highlighted in one attention map are not highlighted in the next
 attention map, would have a high distance.
-
-#### UCF101
-
-
-| Clip               | SNC jitter | SC jitter | TNC jitter | TC jitter |
-|--------------------|------------|-----------|------------|-----------|
-| `v_Mixing_g01_c04` |            |           |            |           |
-: Jitter measurements for the examples of UCF101
-
-
-#### BEOID
 
 The distribution of L2-jitter for BEOID ([@fig:average-jitter-distribution:beoid])
 suggests that for the spatial stream contrastive and non-contrastive EBP perform
@@ -1932,44 +1953,65 @@ qualitatively assessed as having high jitter) pairs can be similar if there are
 large camera movements. Our L2 jitter analysis is more appropriate for videos
 shot from static cameras.
 
-\newpage
 
 ![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
 
+
 ### Evaluating attention map quality by egocentric gaze
 
-We use the gaze data of the operator in the BEOID dataset as a proxy variable
-for the action location, as the two are correlated; a person's gaze when
-performing an action is directed towards the action. We compare the location of
-the attention map maximum (i.e. the most salient region) to the location of the
-operator's gaze to comparatively assess the different EBP methods over both
-network streams.
-
-We expect the attention map to peak at the location an action is being performed
-as it is necessary for the network to implicitly localise the action for it to
-be able to recognise the action. BEOID, nor UCF101 have bounding box annotations
-of the actions as what does and doesn't constitute part of an action is
-debatable,
-
-<##todo Insert Michael Land reference from Dima>
+In this section we evaluate the quality attention maps generated in the BEOID
+dataset by comparing the action location to the attention map peak location,
+smaller distances between the peak and action location suggest the network has
+learnt to recognise the action rather than the surrounding context.
 
 The BEOID dataset is provided with gaze data for each video: the operator
-performing the action is wearing a set of glasses that are both recording what
-the operator can see and the operator's gaze across the 2D video frame.
+performing the action is wearing a head mounted video camera and gaze tracker
+that both records the operator field of view and the point of gaze across the
+recorded 2D video frame.
 
 Human gaze flips between two modes of operation: fixation and saccading.
-When fixating, the eye is stationary focusing on specific object in the field of
-view. Saccades occur between periods of fixation, during the saccade, the eye
-darts around the field of view. Gaze data is provided
+When fixating, the eye is stationary focusing on a specific object in the field of
+view. Saccades occur between periods of fixation; during the saccade the eye
+darts around the field of view.
+
+We use the gaze data recorded from a head mounted gaze tracker worn by the
+operator in the BEOID dataset as a proxy variable for the action location as the
+two are correlated[@land2001_whatwayseye]; a person's gaze when performing an
+action is directed towards the action. We compare the location of the attention
+map maximum (i.e. the most salient region across the map) to the location of the
+operator's gaze to comparatively assess the different EBP methods over both
+network streams.
+We first compute the location of the attention map peak and scale it by the dimensions
+of the source frame, then compute the L2 distance in pixels between the
+scaled peak location and the gaze location (recorded as a pixel location in the
+video frame). A graphical depiction of this
+measurement is given in [@fig:attention-map-peak-gaze-distance-measurement].
+
+![Attention map peak to gaze is measured in pixels (px) along the blue line from
+the point of fixation of the operator (pink) to the attention map peak (green)](media/images/attention-map-gaze-peak-distance-annotated.pdf){#fig:attention-map-peak-gaze-distance-measurement}
+
+We perform the comparison over all attention maps for which corresponding
+fixation data is available, filtering out attention maps for which the eye
+saccades. We present the distribution of distances for each network stream and
+EBP type in [@fig:gaze-peak-distance-distribution] and record the proportion of
+attention maps under a certain distance threshold in
+[@fig:gaze-peak-distance-cumfreq]. We give a further breakdown of distances by
+action location (the environment in which the video was taken) in
+[@fig:gaze-peak-distance-distribution:by-location].
+
 
 <div id='fig:attention-map-peak-gaze-distance-plots'>
 ![Distribution of attention map peak - gaze distance across all attention maps](media/plots/gaze-attention-map-peak-distance-distribution-beoid.pdf){#fig:gaze-peak-distance-distribution
 width=45%}
-![Cumulative frequency density of ](media/plots/gaze-attention-map-peak-distance-cumfreq-beoid.pdf){#fig:gaze-peak-distance-cumfreq width=45%}
+\hfill
+![Proportion of attention maps with peak-gaze distance under given threshold](media/plots/gaze-attention-map-peak-distance-cumfreq-beoid.pdf){#fig:gaze-peak-distance-cumfreq width=45%}
 
 Attention map peak - gaze distance plots
 </div>
 
+
+![Average attention map peak -
+gaze distance per clip across all locations (BEOID)](media/plots/gaze-attention-map-peak-distance-distribution-beoid-by-location.pdf){#fig:gaze-peak-distance-distribution:by-location}
 
 <##todo Decide whether to include this table>
 \begin{table}[h!]
@@ -1991,8 +2033,6 @@ Attention map peak - gaze distance plots
 
 \end{table}
 
-![Average attention map peak - gaze distance per clip across all locations (BEOID)](media/plots/gaze-attention-map-peak-distance-distribution-beoid-by-location.pdf)
-
 | Network  | Location  | # of attention maps |
 |----------|-----------|---------------------|
 | Spatial  | Desk      |                 678 |
@@ -2008,20 +2048,10 @@ Attention map peak - gaze distance plots
 |          | Sink      |                 978 |
 |          | Treadmill |                 876 |
 : Attention map counts by location for each network stream (BEOID), temporal has
-  fewer due to the temporal window
+  fewer maps due to the limited number of temporal window positions.
   {#tbl:beoid-gaze-attention-map-counts}
 
-
-
-Methods:
-
-* Model attention as a 2D Gaussian around center of gaze
-* Find top-N peaks and compare them to the center of gaze, pick the one closest,
-  then plot cumulative frequency at 10%, 20% etc
-* As above but instead threshold correctness at X% distance
-
-
-
+\newpage
 
 ### Qualitative attention map evaluation
 
@@ -2397,6 +2427,8 @@ classes; we suggest an investigation into using prior distributions over the
 classification layer in which classes with overlap are set to non-zero
 probabilities to help determine whether this is the case.
 
+<##todo Improve the wording of the last paragraph>
+
 # Appendices
 ## Network details
 
@@ -2417,7 +2449,7 @@ GitHub^[[https://github.com/jimmie33/Caffe-ExcitationBP](https://github.com/jimm
 making our work available on
 GitHub^[[https://github.com/willprice/two-stream-action-cnn-analysis](https://github.com/willprice/two-stream-action-cnn-analysis)].
 
-## Jitter extrema
+## Jitter extrema {#sec:appendix:jitter}
 
 The following tables ([@tbl:ucf101-jitter] and [@tbl:beoid-jitter]) summarise
 the clips leading to extreme jitter values across each network stream and EBP
