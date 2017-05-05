@@ -812,8 +812,6 @@ computed, the scores are then combined (*fused*) by a linear classifier.
 
 ![Two stream CNN architecture[@simonyan2014_TwoStreamConvolutionalNetworks]](media/images/two-stream-cnn-vertical.pdf){#fig:architecture:two-stream}
 
-<##todo figure out how to include the rotated version of this figure without it unrotating>
-
 ## Video Datasets {#sec:background:datasets}
 
 In [@sec:background:visualisation] the surveyed papers frequently make use
@@ -916,8 +914,6 @@ into one of the following four main categories of visualisation:
 makes more sense for each case and try and be consistent throughout>
 
 ### Filter analysis
-
-<##todo Think of a better name than Filter analysis>
 
 **Filter visualisation** is the process of taking a filter and visualising it as
 an image. Typically this is most useful at the first layer in the network where
@@ -1045,7 +1041,6 @@ is presented in [@fig:am:method-comparison]
 
 ### Feature map inversion {#sec:vis:feature-map-inversion}
 
-**Feature map inversion**
 Feature maps (a.k.a CNN codes) are the outputs produced by a layer for use by
 the next layer. In feature map inversion we try to determine an input $\bm{x}$
 to the network to produce a given feature map $\bm{m}$ at layer $l$. This can be
@@ -1080,8 +1075,6 @@ be pointless in the case that the feature map to invert comes from the same
 layer as the one that the DGN is trained to invert, in that case the DGN would
 be used directly to invert the feature map.
 
-<##todo t-SNE>
-**Dataset clustering through dimensionality reduction** T-SNE, add example of ImageNet
 
 ![A comparison of different approaches for feature map inversion, the generated
 images all come from [@dosovitskiy2015_InvertingVisualRepresentationsa]](media/images/fm-inversion-comparison.pdf){#fig:fm-inversion:method-comparison}
@@ -1197,6 +1190,25 @@ the number of hits and misses are counted; *object localisation* similar to
 [@simonyan2013_DeepConvolutionalNetworks], but instead of using an object
 segmentation to produce a bounding box they simply threshold the attention map
 and compute the smallest bounding box around the remaining thresholded points.
+
+
+### Dataset-centric
+
+**Dataset clustering through dimensionality reduction**
+t-SNE (t-Distributed Stochastic Neighbour
+Embedding)[@maaten2008_VisualizingDatausing] is an algorithm for dimensionality
+reduction where clusterings in the high dimensional space are preserved in the lower
+dimensional space. The method sees significant use in representing high dimensional data points
+in 2D, Anrej Karpathy uses t-SNE to visualise a subset of ImageNet validation
+images according to their corresponding FC7 feature maps from AlexNet, his
+visualisation is reproduced in [@fig:fm-inversion:tsne].
+
+![t-SNE visualisation of ImageNet validation images using the corresponding FC7 feature maps](media/images/cnn_tsne_embed.jpg){#fig:fm-inversion:tsne}
+
+**Example activation optimisation** A simple technique for gauging what features
+a neuron might have learnt is to determine the top-$n$ examples that minimally
+or maximally excite a chosen neuron. Through a comparative qualitative analysis
+one can determine the invariants of the neuron.
 
 # Excitation backpropagation {#sec:ebp}
 
