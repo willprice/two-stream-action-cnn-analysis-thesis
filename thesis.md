@@ -9,29 +9,32 @@ abstract: |
   indicating the relevance of region to the activation of a given neuron across
   the input.
 
-  We apply Excitation Backprop (EBP), an attention mapping method developed and
-  tested on object detection networks, to the two stream CNN (2SCNN), a network
+  We apply Excitation Backprop (EBP)[@zhang2016_TopdownNeuralAttention], an
+  attention mapping method developed and tested on object detection networks, to
+  the two stream CNN (2SCNN)[@simonyan2014_VeryDeepConvolutional], a network
   architecture designed for action recognition. The network is composed of two
   separate network towers: the spatial tower, receiving a single video frame as
   input; and the temporal tower, operating over a stack of optical flow frames
   derived from the video sequence. We generate attention maps for two pretrained
-  models of the 2SCNN, one trained on UCF101, an action recognition dataset sourced
-  from YouTube; the other on BEOID, an egocentric object-interaction action
+  models of the 2SCNN, one trained on UCF101[@soomro2012_UCF101Dataset101], an
+  action recognition dataset sourced from YouTube; the other on
+  BEOID[@damen2016_YouDoILearn], an egocentric object-interaction action
   recognition dataset using two variations of EBP: contrastive and
-  non-contrastive. We also visualise the first and second layer filters from the
-  network.
+  non-contrastive.
 
-  We show that attention maps generated from the temporal stream highlight
-  salient regions over a temporal window determined by the network input. We
-  extend EBP on the temporal stream to produce attention maps on a per frame
+  We extend EBP on the temporal stream to produce attention maps on a per frame
   basis. We use a sliding window approach to produce a sequence of attention
   maps from which we can determine attention changes after sliding the temporal
-  window.
+  window. We show that temporal attention maps highlight salient regions over a
+  temporal window determined by the network input. We analyse the attention maps
+  generated for the spatial stream confirming that the network uses
+  environmental cues for action prediction.
 
   We analyse the learnt features in the network, and study the attention maps
-  over a sequence of frames. We assess the jitter in the attention maps over
-  time, quantitively and qualitaitvely, and compare the attention location to a
-  proxy location estimated by wearable gaze on BEOID.
+  over a sequence of frames. We assess the *jitter* in attention map sequences,
+  and compare the attention location of the network to the action location
+  estimated by operator gaze on BEOID. We also visualise the first and second
+  layer filters from the network.
 
   The thesis concludes with a summary of contributions and a direction into
   future work.
