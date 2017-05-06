@@ -1757,25 +1757,25 @@ into a video. The videos illustrate the impact of the frame choice:
 * $\tau_{\text{underlay}} = \tau + L + 1$: The attention map indicates the salient
   regions over the last $L + 1$ frames.
 
-We take a short clip of the break in a billiards game and show how the choice of
-underlying frame affects the interpretability of the output in
-[@fig:attention-map-underlay-choice]. We highlight two batches of frames with
-pink and green dotted borders respectively from which the first and sixth
-attention map are created. The generated attention map is relevant to all 11
-frames from which the network input was derived[^temporal-batch-size], so we
-have a choice between the 11 frames to use as an underlay for the attention map.
-We show the *same* attention map sequence with three different underlay choices,
-using the spatial frame at a specified offset $t$ from the index of the first
-frame in the batch for $t \in \{0, 5, 10\}$ (the first, middle and last frames
-of the batch). When $t = 0$, the attention map sequence shows the path that
-balls will take as the underlying frames are lagging behind by 11 frames.
-Similarly when $t = 5$, the attention map highlights the future trajectories of
-the balls but with less of a lag. Finally, when $t = 10$ the frame underlays
-represent the latest frame in the input batch and the attention map highlights
-past path of the ball with no indication of future trajectories. We find the
-choice of $t = 10$ the most easily interpretable as one has seen the motion in
-the clip before the attention map highlights salient parts of the motion.
 
+We visually assess which frame to use (out of the 11 frames used to calculate
+the optical flow in the sliding window[^temporal-batch-size]) to overlap the
+temporal attention map onto. We take a short clip of the break in a billiards
+game and show how the choice of the frame to underlay the attention map affects
+the interpretability of the output in [@fig:attention-map-underlay-choice]. The
+figure shows attention maps from six sliding windows, highlighting the first of
+the six sliding windows in dotted pink border and the last in dotted green
+border. We assess three different choices of the underlaying frame, particularly
+the first frame in the batch ($t = 0$) at the top row, the middle frame in the
+batch ($t = 5$) at the middle row, and the last frame ($t = 10$) at the bottom.
+The figure shows that overlays on both ($t = 0$) and ($t = 5$) highlight the
+future trajectory of the ball rather than where the action is taking place.
+However, underlaying the attention map on the last frame ($t = 10$) is the most
+easily interpretable as the attention map localises the past and current path of
+the ball, rather than the future motion. From this and other examples, we
+conclude that using the last frame in the batch, namely $t = 10$, better
+highlights salient parts of the motion and offers the best visualisation of
+temporal attention maps. We use this choice in all overlays in this thesis.
 
 [^temporal-batch-size]: The temporal network has a batch size of $L$ formed
   from optical flow frames each of which is derived from a pair of consecutive
