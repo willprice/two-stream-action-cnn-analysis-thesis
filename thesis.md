@@ -1853,27 +1853,26 @@ We make use of the following abbreviations in this section:
 
 ### Evaluating attention maps for jitter {#sec:ebp-evaluation:jitter}
 
-Contrastive attention maps (those produced with contrastive EBP) demonstrate
-large variances between consecutive frames where there is little change in the
-corresponding video frames, we expect there to be a correspondingly small change
-between the attention maps; we call this property of attention map sequences
-*jitter*. Attention map pairs with low jitter are those in which the
-salient regions in the first map are also salient in the next map. High
-jitter pairs can be considered unstable in the sense that a salient region
-in one frame is not salient in the next frame, there are rapid changes in
-region salience across the sequence. [@fig:jitter-examples:ucf101] shows a
-cliff diving clip in which the spatial non-contrastive attention maps are
-considered to have low jitter, they localise the diver through each consecutive
-frame. The spatial contrastive attention map sequence is one we consider to have
-high jitter; specifically the first frame correctly localises the diver, but
-then in the next frame does not localise the diver, instead
-highlighting an irrelevant region in the top right. Frame 4 highlights the
-diving platform but neither frames 3 or 5 do. In contrast, the temporal non
-contrastive attention maps have low jitter, they localise the action well and
-have significant overlap between pairs of consecutive attention maps. The
-temporal contrastive attention maps have little overlap frame to frame with
-regions of high attention appearing and disappearing between frames and so
-suffer from high jitter.
+Contrastive attention maps (those produced by contrastive EBP) demonstrate large
+variances between consecutive maps where there is little change in the
+corresponding video frames. We expect the attention maps to change
+proportionally to the change in the corresponding video frames; we call this
+property of attention map sequences *jitter*. Attention map sequences with low
+jitter are those in which the salient regions in one map are also salient in the
+following map. High jitter sequences can be considered unstable: regions flip
+between salience and irrelevance across the sequence.
+[@fig:jitter-examples:ucf101] shows a cliff diving clip in which the spatial
+non-contrastive attention maps are considered to have low jitter, they localise
+the diver through each consecutive frame. The spatial contrastive attention map
+sequence is one we consider to have high jitter; specifically the first frame
+correctly localises the diver, but then in the next frame does not localise the
+diver instead highlighting an irrelevant region in the top right. Frame 4
+highlights the diving platform but neither frames 3 or 5 do. In contrast, the
+temporal non contrastive attention maps have low jitter, they localise the
+action well and have significant overlap between pairs of consecutive attention
+maps. The temporal contrastive attention maps have little overlap frame to frame
+with salient regions appearing and disappearing between frames and so are
+declared to suffer from high jitter.
 
 ![Attention map sequences with high and low jitter: The contrastive attention maps suffer significantly higher jitter than the non contrastive attention maps for both the temporal and spatial streams (Cliff diving, UCF101)](media/results/ucf101/v_CliffDiving_g01_c05.pdf){#fig:jitter-examples:ucf101}
 
@@ -1882,36 +1881,35 @@ computing the jitter between pairs of consecutive frames, then averaging the
 jitter between pairs over the whole sequence to give a jitter score for each
 video clip. We quantify jitter by means of a metric we call *L2-jitter*. We
 compute the L2-jitter between pairs of consecutive attention maps by computing
-the L2 element-wise difference summing over the element differences to produce a
-scalar score per attention map pair. See [@sec:appendix:jitter] for a table of
-clips listing the videos with extreme jitter values in the datasets.
+the L2 element-wise difference and summing over the element differences to
+produce a scalar score per attention map pair. See [@sec:appendix:jitter] for a
+table of clips listing the videos with extreme jitter values in the datasets.
 
 We compare the distribution of average L2-jitter per clip for each network
 stream and EBP type in [@fig:average-jitter-distribution]. The number of clips
 and average frame counts used for this analysis are detailed in
-[@tbl:dataset-statistics]. The distribution for jitter in UCF101
+[@tbl:dataset-statistics]. The distribution for L2-jitter in UCF101
 ([@fig:average-jitter-distribution:ucf101]) highlights the large disparity
 between contrastive and non-contrastive EBP in the spatial stream but fails to
-capture this on BEOID, or in the temporal attention maps. The distribution of
-L2-jitter for BEOID ([@fig:average-jitter-distribution:beoid]) suggests that for
-the spatial stream contrastive and non-contrastive EBP perform similarly,
-however our qualitative analysis contradicts this. We observe less jitter in
-non-contrastive attention maps compared to contrastive attention maps
-(especially for the attention maps from the spatial stream). The BEOID video
-dataset is shot from a head mounted gaze tracker, so all videos have at least
-some camera motion whereas UCF101 is composed mostly of static camera shots, the
-L2-jitter for 'good' attention map sequences (ones qualitatively assessed as
-having low jitter) and 'bad' attention map sequences (ones qualitatively
-assessed as having high jitter) pairs can be similar if there are large camera
-movements. Our L2 jitter analysis is more appropriate for videos shot from
-static cameras, we suggest an alternative metric, the *earth movers distance*
-(EMD). The EMD considers a 2D array as piles of earth on a surface, the distance
+capture this on BEOID, or in the temporal attention maps. Over the set of tested
+clips from BEOID, the distribution of L2-jitter for the spatial contrastive
+attention maps does not differ significantly from the spatial non-contrastive
+attention maps ([@fig:average-jitter-distribution:beoid]), however our
+qualitative analysis contradicts this; we observe higher levels of jitter in the
+spatial contrastive attention maps suggesting the need for a better metric.
+
+The BEOID video dataset is shot from a head mounted gaze tracker, so all videos
+have at least some camera motion, whereas UCF101 is composed mostly of static
+camera shots. For attention map sequences with camera motion, we observe similar
+L2-jitter results for sequences qualitatively considered to have low jitter and
+high jitter; the measure fails to quantify this visual difference in clips with
+large camera movements due to producing large L2-jitter values for similar
+attention maps that are shifted across the frame. Our L2-jitter analysis is more
+appropriate for videos shot from static cameras. We suggest an alternative
+metric, the *earth movers distance* (EMD) to better cope with camera movement.
+The EMD considers a 2D array as piles of earth on a surface, the distance
 between the two piles of earth is computed as the minimum effort required to
-shift earth such that the first array is transformed into the second one. The
-attention maps with large jitter in BEOID that are considered 'good', i.e.
-between frames the attention map consistently highlights the same object will
-have a low EMD whereas those attention maps that demonstrate jitter would have a
-high EMD.
+shift earth such that the first array is transformed into the second one.
 
 We further subdivide the L2-jitter distribution by location for BEOID in
 [@fig:average-jitter-distribution:beoid:by-location] to determine whether jitter
@@ -1933,7 +1931,6 @@ location.
 Distribution of average jitter over clips for each network stream and EBP type.
 </div>
 
-
 We believe the inferiority of the attention maps produced by contrastive EBP
 compared to non contrastive EBP is due to feature overlap between classes.
 Contrastive EBP aims to produce an attention map highlighting the region that
@@ -1941,29 +1938,25 @@ discriminates between classes unlike non-contrastive EBP which highlights
 regions that contribute to the activation of the class neuron regardless of
 whether they are discriminative. Contrastive EBP produces discriminative
 attention maps by computing two attention maps at the target stopping layer
-$L_{\text{stop}}$, the first attention map $\attentionmap{\text{pos}}$ is that
-computed by non-contrastive EBP, the second $\attentionmap{\text{neg}}$ is
+$L_{\text{stop}}$. The first attention map $\attentionmap{\text{pos}}$ is that
+computed by non-contrastive EBP. The second $\attentionmap{\text{neg}}$ is
 computed by first inverting the weights in the starting layer to produce a dual
-unit for each neuron that recognises the negation of the original class, e.g. a
+unit for each neuron recognising the negation of the original class, e.g. a
 'press-button' class neuron has a dual neuron 'not-press-button'. The attention
 maps are combined and thresholded at 0 to produce the contrastive attention map:
 ${\attentionmap{\text{contrastive}} = \max(\attentionmap{\text{pos}} -
 \attentionmap{\text{neg}}, 0)}$. This contrastive attention map will have
 non-zero components where the attention in $\attentionmap{\text{pos}}$ is
-greater than $\attentionmap{\text{negative}}$. The contrastive attention maps we generate
-for both BEOID and UCF101 demonstrate across similar frames where
-consecutive contrastive attention maps highlight the same regions but
-inconsistently across frames. The flickering behaviour is caused by attention
-distributed to the same regions in both $\attentionmap{\text{pos}}$ and
-$\attentionmap{\text{neg}}$. In a flickering sequence the region will flip from
-having greater attention in $\attentionmap{\text{neg}}$ to
-$\attentionmap{\text{pos}}$ causing it to reappear in
-$\attentionmap{\text{contrastive}}$, similarly, if the attention becomes greater
-in $\attentionmap{\text{neg}}$ than in $\attentionmap{\text{pos}}$ the region
-disappears from $\attentionmap{\text{contrastive}}$. The jitter across the
-consecutive attention maps suggests that $\attentionmap{\text{pos}}$ and
-$\attentionmap{\text{neg}}$ are very similar; this is likely due to the
-significant overlap in features common to the both neurons.
+greater than $\attentionmap{\text{negative}}$. The jitter in the contrastive
+attention maps we generate can be explained by very similar
+$\attentionmap{\text{pos}}$ and $\attentionmap{\text{neg}}$ where regions with
+similar levels of attention fluctuate between being present in the contrastive
+attention map $\attentionmap{\text{contrastive}}$ when the region has higher
+attention in $\attentionmap{\text{pos}}$ than $\attentionmap{\text{neg}}$, and
+disappearing when $\attentionmap{\text{neg}}$ has higher attention than
+$\attentionmap{\text{pos}}$. The high prevalence of jitter across the
+dataset suggests that there is significant feature overlap in classes causing
+high similarity between $\attentionmap{\text{pos}}$ and $\attentionmap{\text{neg}}$.
 
 
 ![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
