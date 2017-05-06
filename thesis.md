@@ -1031,11 +1031,15 @@ clues to the invariants of the neuron.
 A visual comparison of results of the main methods for activation maximisation
 is presented in [@fig:am:method-comparison]
 
-<##todo caricaturing>
-
-**Caricaturing** (aka. Deep Dreaming)
-
-**Dataset activation optimisation**
+**Caricaturing** (aka. Deep Dreaming) is very similar to *activation
+maximisation*, but rather than synthesising an artificial image by initialising
+the input to be a random image, an image provided is provided by the researcher.
+Activation maximisation is then carried w.r.t a chosen neuron resulting in a
+*caricature* of the original image in which regions contributing to the
+activation of the chosen neuron are distorted to cause a higher activation. The
+distortions of the image tend to emphasize visual features relevant to the
+chosen neuron, but can also result in synthesising recognisable visual features
+out of nothing.
 
 ![A comparison of the results of different methods for activation maximisation, the generated images come from the authors respective papers[@simonyan2013_DeepConvolutionalNetworks;@mahendran2016_VisualizingDeepConvolutional;@nguyen2016_Synthesizingpreferredinputs]](media/images/activation-maximisation-comparison.pdf){#fig:am:method-comparison}
 
@@ -1131,26 +1135,9 @@ of neurons in different layers showing that the deeper layers in VGG16 learn
 more discriminate features than those in AlexNet.
 <##todo Reword explanation of deconv with diagrams>
 
-**Layerwise relevance propagation**[@bach2015_PixelWiseExplanationsNonLinear]
-
-<!--
-Samek 2015: Evaluating the visualisation of what a deep network learned
-
-* "Layer-wise relevance propagation provides a better explanation of what made a
-  DNN arrive at a particular classification decision than the sensitivity based
-  approach or the deconvolution method"
-* Looks at these visualisation techniques as a way to determine why the DNN
-  predicted the class it did and not others
-* Criticises deconvolution for *only* using image specific information when
-  going backwards through ReLU layer, I think they want it to use more
-  information so the results are more heavily tied to that image
-* Crticises taylor series expansion of partial derivatives to produce image
-  indicating importance of pixels for classification (simonyan et al) as it
-  "tells us what change would make the image more or less belong to the category
-  car" and not "what speaks for the presence of a car in the image"
-* Uses LVP
--->
-
+**Layerwise relevance propagation (LRP)**[@bach2015_PixelWiseExplanationsNonLinear]
+produces discriminative attention maps highlighting regions which contribute to
+the classification of the input over other classes using a backprop like method.
 In [@samek2015_Evaluatingvisualizationwhat;@lapuschkin2016_LRPToolboxArtificial],
 Samek \etal{} compare sensitivity analysis, deconvolution and LRP for object
 detection networks. One of their comparisons is reproduced in [@fig:vis:attention-mapping:method-comparison]
@@ -1191,7 +1178,6 @@ the number of hits and misses are counted; *object localisation* similar to
 segmentation to produce a bounding box they simply threshold the attention map
 and compute the smallest bounding box around the remaining thresholded points.
 
-
 ### Dataset-centric
 
 **Dataset clustering through dimensionality reduction**
@@ -1208,7 +1194,8 @@ visualisation is reproduced in [@fig:fm-inversion:tsne].
 **Example activation optimisation** A simple technique for gauging what features
 a neuron might have learnt is to determine the top-$n$ examples that minimally
 or maximally excite a chosen neuron. Through a comparative qualitative analysis
-one can determine the invariants of the neuron.
+of the examples one can determine the invariants of the neuron.
+
 
 # Excitation backpropagation {#sec:ebp}
 
