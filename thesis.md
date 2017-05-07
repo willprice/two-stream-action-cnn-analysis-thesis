@@ -144,6 +144,17 @@ header-includes:
 <##define todo|\coloredtext{green}{TODO: #1}\newline>
 
 
+
+**Declaration**
+
+This dissertation is submitted to the University of Bristol in accordance with
+the requirements of the degree of Bachelor of Science in the Faculty of
+Engineering. It has not been submitted for any other degree or diploma of any
+examining body. Except where specifically acknowledged, it is all the work of
+the Author.
+
+Will Price, May 2017.
+
 # Introduction {#sec:introduction}
 
 Action Recognition in Computer Vision refers to approaches that aim to infer the
@@ -278,12 +289,15 @@ each term in this definition before presenting the perceptron:
 A graphical representation of the perceptron is given in [@fig:perceptron], each
 element $x_i$ of the feature vector forms an input node on a graph, elements of
 the weight vector $w_i$ form edges from the corresponding input ($x_i$) to the
-perceptron body which computes the weighted sum of all the inputs. One can think
-of inputs flowing along the edges into the perceptron body, as they flow along
-the edge they are multiplied by the edge's weight, finally the perceptron body
-sums its inputs producing the perceptron output $z = \bm{w} \cdot \bm{x}$.
+perceptron body which computes the weighted sum of all the inputs. An additional
+input $x_0 = 1$ known as the perceptron *bias* is implicitly added to the input
+determining the intersection of the linear boundary with the y-axis. One can
+think of inputs flowing along the edges into the perceptron body, as they flow
+along the edge they are multiplied by the edge's weight, finally the perceptron
+body sums its inputs producing the perceptron output $z = \bm{w} \cdot \bm{x}$.
 
-![Graphical representation of the perceptron](media/images/perceptron.pdf){#fig:perceptron}
+![Graphical representation of the perceptron](media/images/perceptron.pdf){#fig:perceptron
+width=4in}
 
 The perceptron learning algorithm constructs $\bm{w}$ from a set
 of labelled training examples ${\mathscr{X} = \{ (\bm{x}_0, y_0), \ldots,
@@ -1017,16 +1031,10 @@ different features that activate the neuron.
 
 An interesting take on the idea of activation maximisation is to try and fool
 the network by generating inputs that are classified incorrectly with almost
-perfect confidence that to the human eye are completely incorrect, In
-[@nguyen2014_DeepNeuralNetworksa] Nguyen \etal{} generate a series of images of
-abstract patterns that are classified with almost perfect confidence on ImageNet
-trained object detection networks.
-
-A simple technique for gauging what features a neuron might have learnt is to
-generate a set of inputs by searching through the examples used to train the
-network and collecting the top-$n$ example that minimally and maximally excite a
-chosen neuron. The variety of images in the top-$n$ excitation example set give
-clues to the invariants of the neuron.
+perfect confidence that to the human eye are completely incorrect. In
+[@nguyen2014_DeepNeuralNetworksa], Nguyen \etal{} generate a series of images of
+abstract patterns that are classified as natural objects with almost perfect
+confidence on ImageNet trained object detection networks.
 
 A visual comparison of results of the main methods for activation maximisation
 is presented in [@fig:am:method-comparison]
@@ -1180,16 +1188,17 @@ and compute the smallest bounding box around the remaining thresholded points.
 
 ### Dataset-centric
 
-**Dataset clustering through dimensionality reduction**
-t-SNE (t-Distributed Stochastic Neighbour
-Embedding)[@maaten2008_VisualizingDatausing] is an algorithm for dimensionality
-reduction where clusterings in the high dimensional space are preserved in the lower
-dimensional space. The method sees significant use in representing high dimensional data points
-in 2D, Anrej Karpathy uses t-SNE to visualise a subset of ImageNet validation
-images according to their corresponding FC7 feature maps from AlexNet, his
-visualisation is reproduced in [@fig:fm-inversion:tsne].
+**Dataset clustering through dimensionality reduction** t-SNE (t-Distributed
+Stochastic Neighbour Embedding)[@maaten2008_VisualizingDatausing] is an
+algorithm for dimensionality reduction where clusterings in the high dimensional
+space are preserved in the lower dimensional space. The method sees significant
+use in representing high dimensional data points in 2D, Anrej Karpathy uses
+t-SNE to visualise a subset of ImageNet validation images according to their
+corresponding FC7 feature maps from AlexNet, his visualisation is reproduced in
+[@fig:fm-inversion:tsne].
 
-![t-SNE visualisation of ImageNet validation images using the corresponding FC7 feature maps](media/images/cnn_tsne_embed.jpg){#fig:fm-inversion:tsne}
+![t-SNE visualisation of ImageNet validation images. Images close together have
+similar FC7 feature maps](media/images/cnn_tsne_embed.jpg){#fig:fm-inversion:tsne}
 
 **Example activation optimisation** A simple technique for gauging what features
 a neuron might have learnt is to determine the top-$n$ examples that minimally
@@ -1954,9 +1963,9 @@ similar levels of attention fluctuate between being present in the contrastive
 attention map $\attentionmap{\text{contrastive}}$ when the region has higher
 attention in $\attentionmap{\text{pos}}$ than $\attentionmap{\text{neg}}$, and
 disappearing when $\attentionmap{\text{neg}}$ has higher attention than
-$\attentionmap{\text{pos}}$. The high prevalence of jitter across the
-dataset suggests that there is significant feature overlap in classes causing
-high similarity between $\attentionmap{\text{pos}}$ and $\attentionmap{\text{neg}}$.
+$\attentionmap{\text{pos}}$. The high prevalence of jitter across the dataset
+suggests that there is significant feature overlap in classes causing high
+similarity between $\attentionmap{\text{pos}}$ and $\attentionmap{\text{neg}}$.
 
 
 ![Distribution of average jitter over clips broken down by location clip was shot in](media/plots/average-jitter-distribution-beoid-by-location.pdf){#fig:average-jitter-distribution:beoid:by-location width=99%}
@@ -2174,7 +2183,7 @@ although they do not localise the hand on the door handle. No other clips for
 different action classes feature the presence of a door, so the appearance of a
 door sufficient for distinction between other classes.
 
-![BEOID Example: `07_Treadmill1_press_button_193-305`](media/results/beoid/07_Treadmill1_press_button_193-305-spatial.pdf){#fig:results:beoid:treadmill-press-button
+![BEOID Example: `07_Treadmill1_press_button_193-305`](media/results/beoid/07_Treadmill1_press_button_193-305.pdf){#fig:results:beoid:treadmill-press-button
 width=90%}
 
 [@Fig:results:beoid:treadmill-press-button] (*press button*, treadmill): The
@@ -2194,7 +2203,7 @@ dataset, the closest similar object in appearance is the red tap in the *sink*
 location.
 
 
-![BEOID Example: `06_Treadmill1_press_button_4469-4493`](media/results/beoid/06_Treadmill1_press_button_4469-4493-temporal.pdf){#fig:results:beoid:treadmill-press-button2
+![BEOID Example: `06_Treadmill1_press_button_4469-4493`](media/results/beoid/06_Treadmill1_press_button_4469-4493.pdf){#fig:results:beoid:treadmill-press-button2
 width=90%}
 
 
@@ -2232,6 +2241,25 @@ mirrored top of the coffee machine, similar to the regions localised by the SC
 maps. The TC maps suffer from jitter but do localise the button press in three of
 the five frames; specifically the first, second and fifth.
 
+The *press button* action is presented across three locations: *treadmill*,
+*exercise bike* and *coffee machine* in
+[@fig:results:beoid:treadmill-press-button],
+[@fig:results:beoid:treadmill-press-button2], and
+[@fig:results:beoid:sink-press-button] respectively. The SNC maps for the
+*treadmill* and *exercise bike* locations exhibit significant attention over the
+hand, given that multiple actions are performed with similar POV in these
+locations the spatial network has learnt to recognise both the location and the
+appearance of the hand and forearm during the press button action. In the
+*coffee machine* location, there is not attention over the hand for either of
+the spatial attention map sequences indicating the network has learnt the
+environmental appearance alone, or that the environmental appearance is
+sufficient and more discriminative than the outstretched hand. The temporal
+non-contrastive attention maps for the *treadmill* location localise the press
+button action well, but not in either of the other two locations. The temporal
+contrastive maps localise the treadmill dashboard, but not so much the dashboard
+on the exercise bike. Unlike the exercise machines, the temporal contrastive
+maps for the coffee machine localise the press button in a majority of the
+frames.
 
 ![BEOID Example: `00_Sink1_turn_tap_694-717`](media/results/beoid/00_Sink1_turn_tap_694-717.pdf){#fig:results:beoid:sink-turn-tap width=90%}
 

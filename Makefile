@@ -64,23 +64,9 @@ $(BUILD_DIR)/%.md.pp: %.md
 		$(GPP_OPTIONS) \
 		$< >/dev/null
 
-$(BUILD_DIR)/%.tex: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
-	$(PANDOC) \
-		$(PANDOC_OPTIONS)\
-		$<\
-		--standalone\
-		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
-		--to=latex\
-		--output=$@\
-
-$(BUILD_DIR)/%.pdf: $(BUILD_DIR)/%.md.pp $(IMAGES) $(BUILD_DIR)
-	$(PANDOC) \
-		$(PANDOC_OPTIONS)\
-		$<\
-		--standalone\
-		--from=markdown$(subst $(SPACE),,$(foreach ext,$(MARKDOWN_EXTENSIONS),+$(ext)))\
-		--to=latex\
-		--output=$@\
+$(BUILD_DIR)/%.pdf: $(THESIS).tex $(IMAGES) $(BUILD_DIR)
+	cd $(BUILD_DIR) && \
+	latexmk -pdf -bibtex -interaction=nonstopmode ../$<
 
 %.pdf: %.svg
 	$(INKSCAPE) \

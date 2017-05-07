@@ -284,57 +284,76 @@ Interesting:
 * [x] Select frames from BEOID examples
 * [x] Generate PDFs of BEOID examples
 * [x] Include BEOID examples
-* [ ] Discuss BEOID examples
+* [x] Discuss BEOID examples
 * [ ] Make a comparison of underlay, we chose the last frame, trails behind the
   action, otherwise plotting ahead is confusing producing a cognitive
   dissonance, very few things in life have a leading 'trail'
-* [ ] Add billiards example for underlay choice
-* [ ] Add filter diff
-* [ ] Make frame underlay choice examples bigger (that big A4 figure)
-* [ ] Make sure reference to the concept of jitter is distinct from the
-  L2-jitter measure
-* [ ] Explain how the distance between the attention map peak and gaze location
+* [x] Add billiards example for underlay choice
+* [x] Move filters to results section
+* [x] Add filter diff
+* [x] Make observations on the filter visualisations
+* [x] Make frame underlay choice examples bigger (that big A4) figure
+* [x] Explain how the distance between the attention map peak and gaze location
   is calculated
-* [ ] Add figure demonstrating the above showing what the distance actually is.
-* [ ] Move jitter analysis future work back of jitter analysis section
-* [ ] Add references to abstract
-* [ ] Discuss hypothesis as to why contrastive doesn't work well, class overlap,
+* [x] Add figure demonstrating the above showing what the distance actually is.
+* [x] Move jitter analysis future work back of jitter analysis section
+* [x] Make sure reference to the concept of jitter is distinct from the
+  L2-jitter measure
+* [x] Complete quantitative jitter analysis
+* [x] Complete quantitative gaze analysis
+* [x] Add references to abstract
+* [x] Discuss hypothesis as to why contrastive doesn't work well, class overlap,
   common winner neurons
+* [x] Revisit definition of jitter in light of insight of regions flickering in and out of existence in the contrastive attention map sequences
+* [x]Compare the 'press-button' action across the different locations in BEOID qualitative analysis
+* [x] Complete the explanation of jitter caused by contrastive attention
+* [x] Complete visualisation hierarchy figure
+* [x] Add t-SNE feature map visualisation section to background
+* [x] Add caricaturing section to background
 
 ## Gaze
-* [ ] Select interesting examples from gaze analysis, do similar thing to what
+* [x] Select interesting examples from gaze analysis, do similar thing to what
   we did for jitter
-* [ ] Produce images for the above examples
 * [x] Add plots of gaze distance distribution
 * [x] Produce a table listing the proportion of frames with gaze-attention map
   peak distance under certain thresholds, e.g. 10/25/50/75/90/100% limits and
   the corresponding bounding distance for which all those frames are under
 
 ## Future work
-* [ ] Discuss potential methods for evaluating attention maps.
-* [ ] Add underlay choice to future work, saying we don't know what is optimal.
-* [ ] Compare attention maps from temporal to spatial?
+* [x] Add underlay choice to future work, saying we don't know what is optimal.
+* [x] Compare attention maps from temporal to spatial?
 
 ## Tidy
 * [x] Reduce number of frames in figures and make them bigger
 * [x] Reduce size of text in figures and make frames bigger
-* [ ] Move filter analysis to results section
+* [x] Move filter analysis to results section
 * [ ] Add intro and conclusion in each section. Introduction should outline the
   motivation or the section and what is included, conclusion should summarise
   what was discussed and significant insights.
 
 ## Final checklist
 
+* [x] Add short captions to all figures
 * [ ] Make titles more descriptive, you should be able to read them and
  understand what is included
+* [ ] Final read through note down new concepts and notation add to glossary and
+  notation sections
+* [ ] Check each section has an introduction
+* [ ] Check each section has a conclusion
 * [ ] Abstract
 * [ ] Conclusion
 * [ ] Acknowledgements
 * [ ] Spell check
 * [ ] Weasel word check
-* [ ] Figure positioning (VERY LAST!)
 * [ ] Add cool picture to cover page
+* [ ] Figure positioning (VERY LAST!)
 
  Format for future work:
  Title, what is it, how is it currently used, critique on this, propose
  something better
+
+
+## Final read through notes
+
+* [ ] If I add the filter section then update the abstract.
+* [ ]
